@@ -3,6 +3,7 @@ import sys
 import cplex
 from cplex.exceptions import CplexError
 import networkx as nx
+from networkx.algorithms import bipartite
 import random
 import time
 
@@ -18,20 +19,22 @@ def dimacsToNx(filename):
 def generateRevsCosts(g, whichSet, setParam):
     if whichSet == 'SET1':
         for node in g.nodes():
-            g.node[node]['revenue'] = random.randint(1,100)
+            g.nodes[node]['revenue'] = random.randint(1,100)
         for u,v,edge in g.edges(data=True):
-            edge['cost'] = (g.node[u]['revenue'] + g.node[v]['revenue'])/float(setParam)
+            edge['cost'] = (g.nodes[u]['revenue'] + g.nodes[v]['revenue'])/float(setParam)
     elif whichSet == 'SET2':
         for node in g.nodes():
-            g.node[node]['revenue'] = float(setParam)
+            g.nodes[node]['revenue'] = float(setParam)
         for u,v,edge in g.edges(data=True):
             edge['cost'] = 1.0
+            edge['E2'] = False
 
 def generateE2(g, alphaE2):
     E2 = set()
-    for edge in g.edges():
+    for u,v,edge in g.edges(data=True):
         if random.random() <= alphaE2:
-            E2.add(edge)
+            E2.add((u,v))
+            edge['E2'] = True
     return E2
 
 def createIP(g, E2, ipfilename):  
@@ -46,7 +49,7 @@ def createIP(g, E2, ipfilename):
     variable_names = []
     for node in g.nodes():
         variable_names.append("x" + str(node))
-        objective_coeffs.append(g.node[node]['revenue'])
+        objective_coeffs.append(g.nodes[node]['revenue'])
     for edge in E2:
         variable_names.append("y" + str(edge[0]) + "_" + str(edge[1]))
         objective_coeffs.append(-1*g[edge[0]][edge[1]]['cost'])
@@ -67,10 +70,58 @@ def createIP(g, E2, ipfilename):
     ip.linear_constraints.add(lin_expr=rows, senses=constraint_senses, rhs=constraint_rhs)
     
     ip.write(ipfilename + '.lp')
-    return ip
+    return ip, variable_names
+
+def extractVCG(g, E2, ip):
+    vcg = nx.Graph()
+
+    num_solutions = ip.solution.pool.get_num()
+
+    print("num_solutions = %d" % num_solutions)
+
+    vcg.add_nodes_from([("x" + str(node), {'objcoeff':-node_data['revenue']}) for node, node_data in g.nodes(data=True)], bipartite=0)
+    vcg.add_nodes_from(["y" + str(edge[0]) + "_" + str(edge[1]) for edge in E2], bipartite=0)
+    # vcg.add_nodes_from(["x" + str(node) for node in g.nodes()], bipartite=1)
+
+    for node, node_data in g.nodes(data=True):
+        node_name = "x" + str(node)
+        bias = 0
+        for sol_idx in range(num_solutions):
+            bias += ip.solution.pool.get_values(sol_idx, node_name) / num_solutions
+        vcg.add_node(node_name, bias=bias, objcoeff=-1*node_data['revenue'], bipartite=0)
+    for edge in E2:
+        node_name = "y" + str(edge[0]) + "_" + str(edge[1])
+        bias = 0
+        for sol_idx in range(num_solutions):
+            bias += ip.solution.pool.get_values(sol_idx, node_name) / num_solutions
+        vcg.add_node(node_name, bias=bias, objcoeff=g[edge[0]][edge[1]]['cost'], bipartite=0)
+    
+    constraint_counter = 0        
+    for node1, node2, edge in g.edges(data=True):
+        node_name = "c" + str(constraint_counter)
+        vcg.add_node(node_name, rhs=1.0, bipartite=1)
+        if (node1,node2) in E2:
+            edge_varname = "y" + str(node1) + "_" + str(node2)
+            vcg.add_edge(edge_varname, node_name, coeff=-1)
+        vcg.add_edge("x" + str(node1), node_name, coeff=1)
+        vcg.add_edge("x" + str(node2), node_name, coeff=1)
+        constraint_counter += 1
+
+    return vcg
+
 
 def solveIP(ip, timelimit):
     ip.parameters.timelimit.set(timelimit)
+
+    """ https://www.ibm.com/support/knowledgecenter/SSSA5P_12.9.0/ilog.odms.cplex.help/refpythoncplex/html/cplex._internal._subinterfaces.SolnPoolInterface-class.html#get_values """
+    # 2 = Moderate: generate a larger number of solutions
+    ip.parameters.mip.pool.intensity = 2
+    # Maximum number of solutions generated for the solution pool by populate
+    ip.parameters.mip.limits.populate = 1000
+    # Replace the solution which has the worst objective
+    # ip.parameters.mip.pool.replace = 1
+    # Relative gap for the solution pool
+    ip.parameters.mip.pool.relgap = 0.2
 
     # disable all cplex output
 #     ip.set_log_stream(None)
@@ -95,8 +146,8 @@ if __name__ == "__main__":
     whichSet = 'SET2'
     setParam = 100.0
     alphaE2 = 0.75
-    timelimit = 7200.0
-    solveInstance = False
+    timelimit = 120.0
+    solveInstance = True
     seed = 0
     for i in range(1, len(sys.argv), 2):
         if sys.argv[i] == '-instance':
@@ -139,6 +190,13 @@ if __name__ == "__main__":
     except OSError:
         if not os.path.exists(sol_dir):
             raise
+
+    data_dir = "DATA/" + exp_dir
+    try: 
+        os.makedirs(data_dir)
+    except OSError:
+        if not os.path.exists(data_dir):
+            raise
         
     # Seed generator
     random.seed(seed)
@@ -149,7 +207,7 @@ if __name__ == "__main__":
     
     if instance is None:
         # Generate random graph
-        numnodes = random.randint(min_n, max_n)
+        numnodes = random.randint(min_n, max_n+1)
         g = nx.erdos_renyi_graph(n=numnodes, p=er_prob, seed=seed)
         lpname = ("er_n=%d_m=%d_p=%.2f_%s_setparam=%.2f_alpha=%.2f_%d" % (numnodes, nx.number_of_edges(g), er_prob, whichSet, setParam, alphaE2, seed))
     else:
@@ -162,11 +220,20 @@ if __name__ == "__main__":
     generateRevsCosts(g, whichSet, setParam)
     # Generate the set of removable edges
     E2 = generateE2(g, alphaE2)
+
     # Create IP, write it to file, and solve it with CPLEX
     print(lpname)
-    ip = createIP(g, E2, lp_dir + "/" + lpname)
+    ip, variable_names = createIP(g, E2, lp_dir + "/" + lpname)
 
     if solveInstance:
         cpx_sol, cpx_status, cpx_gap = solveIP(ip, timelimit)
         with open(sol_dir + "/" + lpname + ".sol", "w+") as sol_file:
             sol_file.write(("%s,%d,%g,%g" % (lpname, cpx_status, cpx_gap, cpx_sol)))
+
+    # Create variable-constraint graph
+    vcg = extractVCG(g, E2, ip)
+
+    nx.write_gpickle(vcg, data_dir + "/" + lpname + ".pk")
+
+    vcg2=nx.read_gpickle(data_dir + "/" + lpname + ".pk")
+    print([d['bias'] for n, d in vcg2.nodes(data=True) if d['bipartite']==0])
