@@ -13,8 +13,8 @@ import networkx as nx
 from torch_geometric.data import (InMemoryDataset, Data)
 from torch_geometric.data import DataLoader
 import torch_geometric
-#from gnn_models import simple_edge_architecture as arch
-from gnn_models import mpnn_architecture as arch
+from gnn_models import simple_edge_architecture as arch
+#from gnn_models import mpnn_architecture as arch
 
 
 class GISDS(InMemoryDataset):
@@ -25,11 +25,11 @@ class GISDS(InMemoryDataset):
 
     @property
     def raw_file_names(self):
-        return "GIdrteeeddddrrrredg sDS"
+        return "GIdrteeedddddrrrredg sDS"
 
     @property
     def processed_file_names(self):
-        return "GrddteeddedrrrrrIdgSsDS"
+        return "GrddteeddeddrrrrrIdgSsDS"
 
     def download(self):
         pass
@@ -83,20 +83,17 @@ class GISDS(InMemoryDataset):
             data.assoc_var = torch.from_numpy(np.array(assoc_var)).to(torch.long)
             data.assoc_con = torch.from_numpy(np.array(assoc_con)).to(torch.long)
 
-            edge_features = []
+
             edge_types = []
             for i, (s, t, edge_data) in enumerate(graph.edges(data=True)):
-                edge_features.append(edge_data['coeff'])
 
                 if graph.nodes[s]['bipartite']:
-                    edge_types.append(0)
+                    edge_types.append([0, edge_data['coeff']])
                 else:
-                    edge_types.append(1)
+                    edge_types.append([1, edge_data['coeff']])
 
-            data.edge_features = torch.from_numpy(np.array(edge_features)).to(torch.float)
 
-            data.edge_types = torch.from_numpy(np.eye(2)[edge_types]).to(
-                torch.float)
+            data.edge_types = torch.from_numpy(np.array(edge_types)).to(torch.float)
             data_list.append(data)
 
         data, slices = self.collate(data_list)
