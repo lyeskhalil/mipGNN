@@ -87,11 +87,10 @@ class GISDS(InMemoryDataset):
             for i, (s, t, edge_data) in enumerate(graph.edges(data=True)):
                 edge_features.append(edge_data['coeff'])
 
-                if  graph.nodes[s]['bipartite']:
+                if graph.nodes[s]['bipartite']:
                     edge_types.append(0)
                 else:
                     edge_types.append(1)
-
 
             data.edge_features = torch.from_numpy(np.array(edge_features)).to(torch.float)
 
@@ -101,6 +100,7 @@ class GISDS(InMemoryDataset):
 
         data, slices = self.collate(data_list)
         torch.save((data, slices), self.processed_paths[0])
+
 
 class MyData(Data):
     def __inc__(self, key, value):
@@ -130,8 +130,6 @@ train_loader = DataLoader(train_dataset, batch_size=5, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=5, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=5, shuffle=True)
 
-
-
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = arch.Net(dim=64).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
@@ -139,7 +137,6 @@ scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
     optimizer, mode='min', factor=0.7, patience=5, min_lr=0.00001)
 
 print("SETUP DONE")
-
 
 
 def train():
@@ -168,7 +165,6 @@ def test(loader):
     model.eval()
     error = 0
 
-
     l1 = torch.nn.L1Loss()
     i = 0
     for data in loader:
@@ -176,7 +172,6 @@ def test(loader):
         out = model(data)
 
         loss = l1(out, data.y)
-
 
         error += loss.item() * data.num_graphs
         i += 1
@@ -189,7 +184,7 @@ best_val_error = None
 test_error = test(test_loader)
 print(test_error)
 
-for epoch in range(1, 5):
+for epoch in range(1, 100):
     lr = scheduler.optimizer.param_groups[0]['lr']
     loss, l1 = train()
 
