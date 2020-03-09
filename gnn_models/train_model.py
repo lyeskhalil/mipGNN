@@ -14,6 +14,7 @@ from torch_geometric.data import (InMemoryDataset, Data)
 from torch_geometric.data import DataLoader
 import torch_geometric
 from gnn_models import simple_edge_architecture as arch
+#from gnn_models import mpnn_architecture as arch
 
 
 class GISDS(InMemoryDataset):
@@ -130,13 +131,15 @@ train_loader = DataLoader(train_dataset, batch_size=5, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=5, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=5, shuffle=True)
 
+print("### DATA LOADED.")
+
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = arch.Net(dim=64).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
     optimizer, mode='min', factor=0.7, patience=5, min_lr=0.00001)
 
-print("SETUP DONE")
+print("### SETUP DONE.")
 
 
 def train():
@@ -196,4 +199,4 @@ for epoch in range(1, 100):
     print('Epoch: {:03d}, LR: {:7f}, Loss: {:.7f}, '
           'Train MAE: {:.7f} , Test MAE: {:.7f}'.format(epoch, lr, loss, l1, test_error))
 
-# torch.save(model.state_dict(), "train_mpnn_selbyc6_100")
+# torch.save(model.state_dict(), "train_mip")
