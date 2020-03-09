@@ -41,7 +41,7 @@ class Net(torch.nn.Module):
         # self.fc2 = Lin(dim, dim)
         self.fc3 = Lin(dim, 1)
 
-    def forward(self, data, first_cut=False):
+    def forward(self, data):
         n = self.var_mlp(data.var_node_features)
         e = self.con_mlp(data.con_node_features)
 

@@ -30,14 +30,13 @@ class Net(torch.nn.Module):
         self.fc1 = Lin(4 * dim, dim)
         self.fc4 = Lin(dim, 1)
 
-    def forward(self, data, first_cut=False):
+    def forward(self, data):
         n = self.var_mlp(data.var_node_features)
         e = self.con_mlp(data.con_node_features)
 
         x = e.new_zeros((data.node_types.size(0), n.size(-1)))
         x = x.scatter_(0, data.assoc_var.view(-1, 1).expand_as(n), n)
         x = x.scatter_(0, data.assoc_con.view(-1, 1).expand_as(e), e)
-
 
         xs = [x]
         xs.append(F.relu(self.conv1(xs[-1], data.edge_index, data.edge_types)))
