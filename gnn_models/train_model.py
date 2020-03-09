@@ -13,6 +13,7 @@ import networkx as nx
 from torch_geometric.data import (InMemoryDataset, Data)
 from torch_geometric.data import DataLoader
 import torch_geometric
+from gnn_models import simple_edge_architecture as arch
 
 
 class GISDS(InMemoryDataset):
@@ -23,11 +24,11 @@ class GISDS(InMemoryDataset):
 
     @property
     def raw_file_names(self):
-        return "GIdrtddedg sDS"
+        return "GIdrteeeddddrrrredg sDS"
 
     @property
     def processed_file_names(self):
-        return "GrddtedIdgSsDS"
+        return "GrddteeddedrrrrrIdgSsDS"
 
     def download(self):
         pass
@@ -65,13 +66,13 @@ class GISDS(InMemoryDataset):
                     node_type.append(0)
                     assoc_var.append(i)
                     coeff = node_data['objcoeff']
-                    var_feat.append(coeff)
+                    var_feat.append([coeff, graph.degree[i]])
                 # Node is constraint.
                 else:
                     node_type.append(1)
                     assoc_con.append(i)
                     rhs = node_data['rhs']
-                    con_feat.append(rhs)
+                    con_feat.append([rhs, graph.degree[i]])
 
             y = torch.from_numpy(np.array(y)).to(torch.float).to(torch.float)
             data.y = y
@@ -81,22 +82,30 @@ class GISDS(InMemoryDataset):
             data.assoc_var = torch.from_numpy(np.array(assoc_var)).to(torch.long)
             data.assoc_con = torch.from_numpy(np.array(assoc_con)).to(torch.long)
 
-            edges_features = []
+            edge_features = []
+            edge_types = []
             for i, (s, t, edge_data) in enumerate(graph.edges(data=True)):
-                edges_features.append(edge_data['coeff'])
+                edge_features.append(edge_data['coeff'])
 
-            data.edge_features = torch.from_numpy(np.array(edges_features)).to(torch.float)
+                if  graph.nodes[s]['bipartite']:
+                    edge_types.append(0)
+                else:
+                    edge_types.append(1)
 
+
+            data.edge_features = torch.from_numpy(np.array(edge_features)).to(torch.float)
+
+            data.edge_types = torch.from_numpy(np.eye(2)[edge_types]).to(
+                torch.float)
             data_list.append(data)
 
         data, slices = self.collate(data_list)
         torch.save((data, slices), self.processed_paths[0])
 
-
 class MyData(Data):
     def __inc__(self, key, value):
         return self.num_nodes if key in [
-            'edge_index', 'assoc_constraint', 'assoc_edge', 'assoc_node'
+            'edge_index', 'assoc_var', 'assoc_con'
         ] else 0
 
 
@@ -111,4 +120,85 @@ class MyTransform(object):
 
 path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'DS')
 dataset = GISDS(path, transform=MyTransform())
-# print(len(dataset))
+print(len(dataset))
+
+train_dataset = dataset[0:2].shuffle()
+val_dataset = dataset[0:2].shuffle()
+test_dataset = dataset[0:2].shuffle()
+
+train_loader = DataLoader(train_dataset, batch_size=5, shuffle=True)
+val_loader = DataLoader(val_dataset, batch_size=5, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=5, shuffle=True)
+
+
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+model = arch.Net(dim=64).to(device)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+    optimizer, mode='min', factor=0.7, patience=5, min_lr=0.00001)
+
+print("SETUP DONE")
+
+
+
+def train():
+    model.train()
+    error = 0
+    total_loss = 0
+    mse = torch.nn.MSELoss()
+    # l1 = torch.nn.L1Loss()
+
+    for data in train_loader:
+        optimizer.zero_grad()
+        data = data.to(device)
+        out = model(data)
+
+        loss = mse(out, data.y)
+        loss.backward()
+
+        total_loss += loss.item() * data.num_graphs
+        error += loss.item() * data.num_graphs
+        optimizer.step()
+
+    return total_loss / len(train_loader.dataset), error / len(train_loader.dataset)
+
+
+def test(loader):
+    model.eval()
+    error = 0
+
+
+    l1 = torch.nn.L1Loss()
+    i = 0
+    for data in loader:
+        data = data.to(device)
+        out = model(data)
+
+        loss = l1(out, data.y)
+
+
+        error += loss.item() * data.num_graphs
+        i += 1
+
+    return error / len(loader.dataset)
+
+
+best_val_error = None
+
+test_error = test(test_loader)
+print(test_error)
+
+for epoch in range(1, 5):
+    lr = scheduler.optimizer.param_groups[0]['lr']
+    loss, l1 = train()
+
+    val_error = test(val_loader)
+
+    if best_val_error is None or val_error < best_val_error:
+        test_error = test(test_loader)
+
+    print('Epoch: {:03d}, LR: {:7f}, Loss: {:.7f}, '
+          'Train MAE: {:.7f} , Test MAE: {:.7f}'.format(epoch, lr, loss, l1, test_error))
+
+# torch.save(model.state_dict(), "train_mpnn_selbyc6_100")
