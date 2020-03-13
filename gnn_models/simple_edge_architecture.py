@@ -36,11 +36,13 @@ class Net(torch.nn.Module):
         self.conv2 = EdgeConv(dim, dim)
         self.conv3 = EdgeConv(dim, dim)
         self.conv4 = EdgeConv(dim, dim)
+        self.conv5 = EdgeConv(dim, dim)
 
         # Final MLP for regression.
-        self.fc1 = Lin(5 * dim, dim)
+        self.fc1 = Lin(6 * dim, dim)
         self.fc2 = Lin(dim, dim)
-        self.fc3 = Lin(dim, 1)
+        self.fc3 = Lin(dim, dim)
+        self.fc4 = Lin(dim, 1)
 
     def forward(self, data):
         n = self.var_mlp(data.var_node_features)
@@ -62,7 +64,8 @@ class Net(torch.nn.Module):
         x = F.relu(self.fc1(x))
         # x = F.dropout(x, p=0.5, training=self.training)
         x = F.relu(self.fc2(x))
+        x = F.relu(self.fc3(x))
         # x = F.dropout(x, p=0.5, training=self.training)
-        x = torch.sigmoid(self.fc3(x))
+        x = torch.sigmoid(self.fc4(x))
 
         return x.squeeze(-1)
