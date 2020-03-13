@@ -166,15 +166,13 @@ def test(loader):
     error = 0
 
     l1 = torch.nn.L1Loss()
-    i = 0
+
     for data in loader:
         data = data.to(device)
         out = model(data)
-
         loss = l1(out, data.y)
-
         error += loss.item() * data.num_graphs
-        i += 1
+
 
     return error / len(loader.dataset)
 
