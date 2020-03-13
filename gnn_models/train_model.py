@@ -151,7 +151,7 @@ print("### DATA LOADED.")
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = arch.Net(dim=64).to(device)
-optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
     optimizer, mode='min', factor=0.7, patience=5, min_lr=0.00001)
 
@@ -200,7 +200,7 @@ best_val_error = None
 test_error = test(test_loader)
 print(test_error)
 
-for epoch in range(1, 100):
+for epoch in range(1, 200):
     lr = scheduler.optimizer.param_groups[0]['lr']
     loss = train()
 
