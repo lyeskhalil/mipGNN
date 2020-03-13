@@ -38,7 +38,7 @@ class Net(torch.nn.Module):
         self.conv4 = EdgeConv(dim, dim)
 
         # Final MLP for regression.
-        self.fc1 = Lin(4 * dim, dim)
+        self.fc1 = Lin(5 * dim, dim)
         self.fc2 = Lin(dim, dim)
         self.fc3 = Lin(dim, 1)
 
