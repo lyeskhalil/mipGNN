@@ -60,6 +60,6 @@ class Net(torch.nn.Module):
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         # x = F.dropout(x, p=0.5, training=self.training)
-        x = F.sigmoid(self.fc3(x))
+        x = torch.sigmoid(self.fc3(x))
 
         return x.squeeze(-1)
