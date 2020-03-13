@@ -43,7 +43,8 @@ class Net(torch.nn.Module):
         self.fc1 = Lin(1 * dim, dim)
         self.fc2 = Lin(dim, dim)
         self.fc3 = Lin(dim, dim)
-        self.fc4 = Lin(dim, 1)
+        self.fc4 = Lin(dim, dim)
+        self.fc5 = Lin(dim, 1)
 
     def forward(self, data):
         n = self.var_mlp(data.var_node_features)
@@ -71,6 +72,8 @@ class Net(torch.nn.Module):
         x = F.dropout(x, p=0.5, training=self.training)
         x = F.relu(self.fc3(x))
         x = F.dropout(x, p=0.5, training=self.training)
-        x = torch.sigmoid(self.fc4(x))
+        x = F.dropout(x, p=0.5, training=self.training)
+        x = F.relu(self.fc4(x))
+        x = torch.sigmoid(self.fc5(x))
 
         return x.squeeze(-1)
