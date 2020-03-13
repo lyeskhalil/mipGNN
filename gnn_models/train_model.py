@@ -178,6 +178,7 @@ def train():
     return total_loss / len(train_loader.dataset)
 
 
+
 def test(loader):
     model.eval()
     error = 0
