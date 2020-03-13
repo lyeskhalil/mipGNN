@@ -117,10 +117,24 @@ class MyTransform(object):
         return new_data
 
 
+class RMSELoss(torch.nn.Module):
+    def __init__(self, eps=1e-6):
+        super().__init__()
+        self.mse = torch.nn.MSELoss()
+        self.eps = eps
+
+    def forward(self, yhat, y):
+        loss = torch.sqrt(self.mse(yhat, y) + self.eps)
+        return loss
+
 path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'DS')
 dataset = GISDS(path, transform=MyTransform()).shuffle()
 print(len(dataset))
 
+plt.hist(dataset.data.y.cpu().numpy(), bins=list(np.arange(0.0, 1.0, 0.01)))
+plt.show()
+
+exit()
 
 train_dataset = dataset[0:800].shuffle()
 val_dataset = dataset[800:900].shuffle()
@@ -136,7 +150,7 @@ test_loader = DataLoader(test_dataset, batch_size=5, shuffle=True)
 print("### DATA LOADED.")
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = arch.Net(dim=64).to(device)
+model = arch.Net(dim=32).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
     optimizer, mode='min', factor=0.7, patience=5, min_lr=0.00001)
@@ -149,6 +163,7 @@ def train():
     error = 0
     total_loss = 0
     mse = torch.nn.MSELoss()
+    mse = torch.nn.RMSELoss()
     # mse = torch.nn.L1Loss()
 
     for data in train_loader:
