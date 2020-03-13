@@ -37,7 +37,7 @@ class Net(torch.nn.Module):
         self.conv3 = EdgeConv(dim, dim)
         self.conv4 = EdgeConv(dim, dim)
         self.conv5 = EdgeConv(dim, dim)
-        self.conv6 = EdgeConv(dim, dim)
+        # self.conv6 = EdgeConv(dim, dim)
 
         # Final MLP for regression.
         self.fc1 = Lin(1 * dim, dim)
@@ -59,7 +59,7 @@ class Net(torch.nn.Module):
         xs.append(F.relu(self.conv3(xs[-1], data.edge_index, data.edge_types)))
         xs.append(F.relu(self.conv4(xs[-1], data.edge_index, data.edge_types)))
         xs.append(F.relu(self.conv5(xs[-1], data.edge_index, data.edge_types)))
-        xs.append(F.relu(self.conv6(xs[-1], data.edge_index, data.edge_types)))
+        # xs.append(F.relu(self.conv6(xs[-1], data.edge_index, data.edge_types)))
 
         # x = torch.cat(xs[0:], dim=-1)
         x = xs[-1]
