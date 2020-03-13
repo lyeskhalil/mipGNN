@@ -38,7 +38,7 @@ class Net(torch.nn.Module):
 
         # Final MLP for regression.
         self.fc1 = Lin(4 * dim, dim)
-        # self.fc2 = Lin(dim, dim)
+        self.fc2 = Lin(dim, dim)
         self.fc3 = Lin(dim, 1)
 
     def forward(self, data):
@@ -58,7 +58,8 @@ class Net(torch.nn.Module):
         x = x[data.assoc_var]
 
         x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
         # x = F.dropout(x, p=0.5, training=self.training)
-        x = self.fc3(x)
+        x = F.sigmoid(self.fc3(x))
 
         return x.squeeze(-1)
