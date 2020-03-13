@@ -116,10 +116,9 @@ class MyTransform(object):
 
 
 path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'DS')
-dataset = GISDS(path, transform=MyTransform())
+dataset = GISDS(path, transform=MyTransform()).shuffle()
 print(len(dataset))
 
-dataset = dataset.shuffle()
 
 train_dataset = dataset[0:800].shuffle()
 val_dataset = dataset[800:900].shuffle()
@@ -145,7 +144,7 @@ def train():
     error = 0
     total_loss = 0
     mse = torch.nn.MSELoss()
-    # l1 = torch.nn.L1Loss()
+    mse = torch.nn.L1Loss()
 
     for data in train_loader:
         optimizer.zero_grad()
