@@ -131,10 +131,9 @@ path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'DS')
 dataset = GISDS(path, transform=MyTransform()).shuffle()
 print(len(dataset))
 
-plt.hist(dataset.data.y.cpu().numpy(), bins=list(np.arange(0.0, 1.0, 0.01)))
-plt.show()
-
-exit()
+# plt.hist(dataset.data.y.cpu().numpy(), bins=list(np.arange(0.0, 1.0, 0.01)))
+# plt.show()
+# exit()
 
 train_dataset = dataset[0:800].shuffle()
 val_dataset = dataset[800:900].shuffle()
