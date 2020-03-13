@@ -17,7 +17,7 @@ from torch_geometric.data import DataLoader
 import torch_geometric
 from gnn_models import simple_edge_architecture as arch
 #from gnn_models import mpnn_architecture as arch
-from gnn_models import dummy_architecture as arch
+
 
 class GISDS(InMemoryDataset):
     def __init__(self, root, transform=None, pre_transform=None,
