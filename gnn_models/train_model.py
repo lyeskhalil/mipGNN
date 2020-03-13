@@ -15,8 +15,8 @@ import matplotlib.pyplot as plt
 from torch_geometric.data import (InMemoryDataset, Data)
 from torch_geometric.data import DataLoader
 import torch_geometric
-#from gnn_models import simple_edge_architecture as arch
-from gnn_models import mpnn_architecture as arch
+from gnn_models import simple_edge_architecture as arch
+# from gnn_models import mpnn_architecture as arch
 
 
 class GISDS(InMemoryDataset):
