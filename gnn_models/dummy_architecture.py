@@ -19,7 +19,7 @@ class Net(torch.nn.Module):
         self.con_mlp = Seq(Lin(2, dim), ReLU(), Lin(dim, dim))
 
         # Final MLP for regression.
-        self.fc1 = Lin(6 * dim, dim)
+        self.fc1 = Lin(1 * dim, dim)
         self.fc2 = Lin(dim, dim)
         self.fc3 = Lin(dim, dim)
         self.fc4 = Lin(dim, 1)
@@ -34,8 +34,8 @@ class Net(torch.nn.Module):
 
         xs = [x]
 
-        x = torch.cat(xs[0:], dim=-1)
-        # x = xs[-1]
+
+        x = xs[-1]
         x = x[data.assoc_var]
 
         x = F.relu(self.fc1(x))
