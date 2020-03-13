@@ -6,6 +6,7 @@ import networkx as nx
 from networkx.algorithms import bipartite
 import random
 import time
+import numpy as np
 
 def dimacsToNx(filename):
     g = nx.Graph()
@@ -76,6 +77,9 @@ def extractVCG(g, E2, ip):
     vcg = nx.Graph()
 
     num_solutions = ip.solution.pool.get_num()
+    for sol_idx in range(ip.solution.pool.get_num()):
+        if ip.solution.pool.get_objective_value(sol_idx) <= 0:
+            num_solutions -= 1
 
     print("num_solutions = %d" % num_solutions)
 
@@ -117,11 +121,11 @@ def solveIP(ip, timelimit):
     # 2 = Moderate: generate a larger number of solutions
     ip.parameters.mip.pool.intensity = 2
     # Maximum number of solutions generated for the solution pool by populate
-    ip.parameters.mip.limits.populate = 1000
+    ip.parameters.mip.limits.populate = 100
     # Replace the solution which has the worst objective
     # ip.parameters.mip.pool.replace = 1
     # Relative gap for the solution pool
-    ip.parameters.mip.pool.relgap = 0.2
+    # ip.parameters.mip.pool.relgap = 0.2
 
     # disable all cplex output
 #     ip.set_log_stream(None)
@@ -130,7 +134,8 @@ def solveIP(ip, timelimit):
 #     ip.set_results_stream(None)
 
     try:
-        ip.solve()
+        # ip.solve()
+        ip.populate_solution_pool()
     except CplexError as exc:
         print(exc)
         return
@@ -200,6 +205,7 @@ if __name__ == "__main__":
         
     # Seed generator
     random.seed(seed)
+    np.random.seed(seed)
 
     print(whichSet)
     print(setParam)
@@ -236,4 +242,4 @@ if __name__ == "__main__":
     nx.write_gpickle(vcg, data_dir + "/" + lpname + ".pk")
 
     vcg2=nx.read_gpickle(data_dir + "/" + lpname + ".pk")
-    print([d['bias'] for n, d in vcg2.nodes(data=True) if d['bipartite']==0])
+    print(["(%s, %g)" % (n, d['bias']) for n, d in vcg2.nodes(data=True) if d['bipartite']==0])
