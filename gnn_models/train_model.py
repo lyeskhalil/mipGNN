@@ -134,9 +134,10 @@ dataset = GISDS(path, transform=MyTransform()).shuffle()
 dataset.data.y = torch.log(dataset.data.y + 0.001)
 print(len(dataset))
 
-# print(dataset.data.y.mean())
-# plt.hist(dataset.data.y.cpu().numpy())
-# plt.show()
+print(dataset.data.y.mean())
+plt.hist(dataset.data.y.cpu().numpy(), np.arange(10,0.1))
+plt.show()
+exit()
 
 train_dataset = dataset[0:800].shuffle()
 val_dataset = dataset[800:900].shuffle()
@@ -150,7 +151,7 @@ print("### DATA LOADED.")
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = arch.Net(dim=32).to(device)
-optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
     optimizer, mode='min', factor=0.7, patience=5, min_lr=0.00001)
 
