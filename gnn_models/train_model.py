@@ -13,8 +13,8 @@ import networkx as nx
 from torch_geometric.data import (InMemoryDataset, Data)
 from torch_geometric.data import DataLoader
 import torch_geometric
-from gnn_models import simple_edge_architecture as arch
-#from gnn_models import mpnn_architecture as arch
+# from gnn_models import simple_edge_architecture as arch
+from gnn_models import mpnn_architecture as arch
 
 
 class GISDS(InMemoryDataset):
@@ -25,11 +25,11 @@ class GISDS(InMemoryDataset):
 
     @property
     def raw_file_names(self):
-        return "GIdrteeedddddrrrredg sDS"
+        return "ER"
 
     @property
     def processed_file_names(self):
-        return "GrddteeddeddrrrrrIdgSsDS"
+        return "ER"
 
     def download(self):
         pass
@@ -120,9 +120,9 @@ path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'DS')
 dataset = GISDS(path, transform=MyTransform())
 print(len(dataset))
 
-train_dataset = dataset[0:2].shuffle()
-val_dataset = dataset[0:2].shuffle()
-test_dataset = dataset[0:2].shuffle()
+train_dataset = dataset[0:1].shuffle()
+val_dataset = dataset[1:2].shuffle()
+test_dataset = dataset[1:2].shuffle()
 
 train_loader = DataLoader(train_dataset, batch_size=5, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=5, shuffle=True)
@@ -155,10 +155,9 @@ def train():
         loss.backward()
 
         total_loss += loss.item() * data.num_graphs
-        error += loss.item() * data.num_graphs
         optimizer.step()
 
-    return total_loss / len(train_loader.dataset), error / len(train_loader.dataset)
+    return total_loss / len(train_loader.dataset)
 
 
 def test(loader):
@@ -186,14 +185,13 @@ print(test_error)
 
 for epoch in range(1, 100):
     lr = scheduler.optimizer.param_groups[0]['lr']
-    loss, l1 = train()
+    loss = train()
 
     val_error = test(val_loader)
 
     if best_val_error is None or val_error < best_val_error:
         test_error = test(test_loader)
 
-    print('Epoch: {:03d}, LR: {:7f}, Loss: {:.7f}, '
-          'Train MAE: {:.7f} , Test MAE: {:.7f}'.format(epoch, lr, loss, l1, test_error))
+    print('Epoch: {:03d}, LR: {:7f}, Loss: {:.7f}, Test MAE: {:.7f}'.format(epoch, lr, loss, test_error))
 
 # torch.save(model.state_dict(), "train_mip")
