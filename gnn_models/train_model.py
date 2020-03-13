@@ -69,6 +69,8 @@ class GISDS(InMemoryDataset):
                     node_type.append(0)
                     assoc_var.append(i)
                     coeff = node_data['objcoeff']
+
+                    # TODO: Maybe scale this
                     var_feat.append([coeff, graph.degree[i]])
                 # Node is constraint.
                 else:
@@ -129,16 +131,16 @@ class RMSELoss(torch.nn.Module):
 
 path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'DS')
 dataset = GISDS(path, transform=MyTransform()).shuffle()
+dataset.data.y = torch.log(dataset.data.y + 0.001)
 print(len(dataset))
 
-
+# print(dataset.data.y.mean())
+# plt.hist(dataset.data.y.cpu().numpy())
+# plt.show()
 
 train_dataset = dataset[0:800].shuffle()
 val_dataset = dataset[800:900].shuffle()
 test_dataset = dataset[900:].shuffle()
-
-
-
 
 train_loader = DataLoader(train_dataset, batch_size=5, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=5, shuffle=True)
@@ -168,7 +170,7 @@ def train():
         data = data.to(device)
         out = model(data)
 
-        loss = mse(out,  torch.log(data.y + 0.01))
+        loss = mse(out, data.y)
         loss.backward()
 
         total_loss += loss.item() * data.num_graphs
@@ -186,7 +188,7 @@ def test(loader):
     for data in loader:
         data = data.to(device)
         out = model(data)
-        loss = l1(out, torch.log(data.y+0.01))
+        loss = l1(torch.exp(out), torch.exp(data.y))
         error += loss.item() * data.num_graphs
 
     return error / len(loader.dataset)
