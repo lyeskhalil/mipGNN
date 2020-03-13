@@ -13,8 +13,8 @@ import networkx as nx
 from torch_geometric.data import (InMemoryDataset, Data)
 from torch_geometric.data import DataLoader
 import torch_geometric
-# from gnn_models import simple_edge_architecture as arch
-from gnn_models import mpnn_architecture as arch
+from gnn_models import simple_edge_architecture as arch
+# from gnn_models import mpnn_architecture as arch
 
 
 class GISDS(InMemoryDataset):
@@ -37,7 +37,7 @@ class GISDS(InMemoryDataset):
     def process(self):
         data_list = []
 
-        path = '../gisp_generator/DATA/test/'
+        path = '../gisp_generator/DATA/er_200/'
 
         total = len(os.listdir(path))
 
@@ -92,7 +92,6 @@ class GISDS(InMemoryDataset):
                 else:
                     edge_types.append([1, edge_data['coeff']])
 
-
             data.edge_types = torch.from_numpy(np.array(edge_types)).to(torch.float)
             data_list.append(data)
 
@@ -120,9 +119,11 @@ path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'DS')
 dataset = GISDS(path, transform=MyTransform())
 print(len(dataset))
 
-train_dataset = dataset[0:1].shuffle()
-val_dataset = dataset[1:2].shuffle()
-test_dataset = dataset[1:2].shuffle()
+dataset = dataset.shuffle()
+
+train_dataset = dataset[0:800].shuffle()
+val_dataset = dataset[800:900].shuffle()
+test_dataset = dataset[900:].shuffle()
 
 train_loader = DataLoader(train_dataset, batch_size=5, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=5, shuffle=True)
