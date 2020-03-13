@@ -131,7 +131,7 @@ class RMSELoss(torch.nn.Module):
 
 path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'DS')
 dataset = GISDS(path, transform=MyTransform()).shuffle()
-dataset.data.y = torch.log(dataset.data.y + 0.001)
+dataset.data.y = torch.log(dataset.data.y + 1.0)
 print(len(dataset))
 
 # print(dataset.data.y.mean())
@@ -189,7 +189,7 @@ def test(loader):
     for data in loader:
         data = data.to(device)
         out = model(data)
-        loss = l1(torch.exp(out), torch.exp(data.y))
+        loss = l1(torch.exp(out), torch.exp(data.y) - 1.0)
         error += loss.item() * data.num_graphs
 
     return error / len(loader.dataset)
