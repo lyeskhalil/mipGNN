@@ -161,7 +161,7 @@ def train():
     model.train()
     total_loss = 0
     mse = torch.nn.MSELoss()
-    # mse = RMSELoss()
+    mse = RMSELoss()
     # mse = torch.nn.L1Loss()
 
     for data in train_loader:
