@@ -11,20 +11,6 @@ from torch_geometric.nn import EdgeConv, MessagePassing
 import torch
 
 
-class EdgeConv(MessagePassing):
-    def __init__(self, F_in, F_out):
-        super(EdgeConv, self).__init__(aggr='mean')
-        self.mlp = Seq(Lin(2 * F_in + 2, F_out), ReLU(), Lin(F_out, F_out))
-
-    def forward(self, x, edge_index, edge_types):
-        return self.propagate(edge_index, x=x, edge_types=edge_types)  # shape [N, F_out]
-
-    def message(self, x_i, x_j, edge_types):
-        # edge_features = torch.cat([x_i, x_j - x_i, edge_types], dim=1)  # shape [E, 2 * F_in]
-        edge_features = torch.cat([x_i, x_j, edge_types], dim=1)  # shape [E, 2 * F_in]
-        return self.mlp(edge_features)
-
-
 class Net(torch.nn.Module):
     def __init__(self, dim):
         super(Net, self).__init__()
@@ -32,11 +18,6 @@ class Net(torch.nn.Module):
         self.var_mlp = Seq(Lin(2, dim), ReLU(), Lin(dim, dim))
         self.con_mlp = Seq(Lin(2, dim), ReLU(), Lin(dim, dim))
 
-        self.conv1 = EdgeConv(dim, dim)
-        self.conv2 = EdgeConv(dim, dim)
-        self.conv3 = EdgeConv(dim, dim)
-        self.conv4 = EdgeConv(dim, dim)
-        self.conv5 = EdgeConv(dim, dim)
 
         # Final MLP for regression.
         self.fc1 = Lin(6 * dim, dim)
@@ -53,11 +34,7 @@ class Net(torch.nn.Module):
         x = x.scatter_(0, data.assoc_con.view(-1, 1).expand_as(e), e)
 
         xs = [x]
-        xs.append(F.relu(self.conv1(xs[-1], data.edge_index, data.edge_types)))
-        xs.append(F.relu(self.conv2(xs[-1], data.edge_index, data.edge_types)))
-        xs.append(F.relu(self.conv3(xs[-1], data.edge_index, data.edge_types)))
-        xs.append(F.relu(self.conv4(xs[-1], data.edge_index, data.edge_types)))
-        xs.append(F.relu(self.conv5(xs[-1], data.edge_index, data.edge_types)))
+
 
 
         x = torch.cat(xs[0:], dim=-1)
