@@ -13,8 +13,8 @@ import networkx as nx
 from torch_geometric.data import (InMemoryDataset, Data)
 from torch_geometric.data import DataLoader
 import torch_geometric
-from gnn_models import simple_edge_architecture as arch
-# from gnn_models import mpnn_architecture as arch
+# from gnn_models import simple_edge_architecture as arch
+from gnn_models import mpnn_architecture as arch
 
 
 class GISDS(InMemoryDataset):
@@ -125,15 +125,15 @@ train_dataset = dataset[0:800].shuffle()
 val_dataset = dataset[800:900].shuffle()
 test_dataset = dataset[900:].shuffle()
 
-train_loader = DataLoader(train_dataset, batch_size=5, shuffle=True)
-val_loader = DataLoader(val_dataset, batch_size=5, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=5, shuffle=True)
+train_loader = DataLoader(train_dataset, batch_size=50, shuffle=True)
+val_loader = DataLoader(val_dataset, batch_size=50, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=50, shuffle=True)
 
 print("### DATA LOADED.")
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = arch.Net(dim=32).to(device)
-optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
     optimizer, mode='min', factor=0.7, patience=5, min_lr=0.00001)
 
