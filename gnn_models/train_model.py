@@ -157,10 +157,8 @@ scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
 
 print("### SETUP DONE.")
 
-
 def train():
     model.train()
-    error = 0
     total_loss = 0
     mse = torch.nn.MSELoss()
     # mse = RMSELoss()
@@ -183,7 +181,6 @@ def train():
 def test(loader):
     model.eval()
     error = 0
-
     l1 = torch.nn.L1Loss()
 
     for data in loader:
