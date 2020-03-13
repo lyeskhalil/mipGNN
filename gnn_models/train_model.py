@@ -170,7 +170,7 @@ def train():
         data = data.to(device)
         out = model(data)
 
-        loss = mse(out, data.y)
+        loss = mse(out,  torch.log(data.y))
         loss.backward()
 
         total_loss += loss.item() * data.num_graphs
@@ -190,7 +190,6 @@ def test(loader):
         out = model(data)
         loss = l1(out, data.y)
         error += loss.item() * data.num_graphs
-
 
     return error / len(loader.dataset)
 
