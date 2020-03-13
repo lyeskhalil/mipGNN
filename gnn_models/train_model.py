@@ -124,9 +124,9 @@ train_dataset = dataset[0:800].shuffle()
 val_dataset = dataset[800:900].shuffle()
 test_dataset = dataset[900:].shuffle()
 
-train_loader = DataLoader(train_dataset, batch_size=5, shuffle=True)
-val_loader = DataLoader(val_dataset, batch_size=5, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=5, shuffle=True)
+train_loader = DataLoader(train_dataset, batch_size=25, shuffle=True)
+val_loader = DataLoader(val_dataset, batch_size=25, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=25, shuffle=True)
 
 print("### DATA LOADED.")
 
@@ -144,7 +144,7 @@ def train():
     error = 0
     total_loss = 0
     mse = torch.nn.MSELoss()
-    mse = torch.nn.L1Loss()
+    # mse = torch.nn.L1Loss()
 
     for data in train_loader:
         optimizer.zero_grad()
