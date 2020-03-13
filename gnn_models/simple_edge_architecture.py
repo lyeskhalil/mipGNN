@@ -29,12 +29,13 @@ class Net(torch.nn.Module):
     def __init__(self, dim):
         super(Net, self).__init__()
 
-        self.var_mlp = Seq(Lin(2, dim), ReLU(), Lin(dim, dim))
-        self.con_mlp = Seq(Lin(2, dim), ReLU(), Lin(dim, dim))
+        self.var_mlp = Seq(ReLU(Lin(2, dim)))
+        self.con_mlp = Seq(ReLU(Lin(2, dim)))
 
         self.conv1 = EdgeConv(dim, dim)
         self.conv2 = EdgeConv(dim, dim)
         self.conv3 = EdgeConv(dim, dim)
+        self.conv4 = EdgeConv(dim, dim)
 
         # Final MLP for regression.
         self.fc1 = Lin(4 * dim, dim)
@@ -53,6 +54,7 @@ class Net(torch.nn.Module):
         xs.append(F.relu(self.conv1(xs[-1], data.edge_index, data.edge_types)))
         xs.append(F.relu(self.conv2(xs[-1], data.edge_index, data.edge_types)))
         xs.append(F.relu(self.conv3(xs[-1], data.edge_index, data.edge_types)))
+        xs.append(F.relu(self.conv4(xs[-1], data.edge_index, data.edge_types)))
 
         x = torch.cat(xs[0:], dim=-1)
         x = x[data.assoc_var]
