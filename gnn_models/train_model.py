@@ -189,7 +189,7 @@ def test(loader):
     for data in loader:
         data = data.to(device)
         out = model(data)
-        loss = l1(torch.exp(out) 1.0, torch.exp(data.y) - 1.0)
+        loss = l1(torch.exp(out) - 1.0, torch.exp(data.y) - 1.0)
         error += loss.item() * data.num_graphs
 
     return error / len(loader.dataset)
