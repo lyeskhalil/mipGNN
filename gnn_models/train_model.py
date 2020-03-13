@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 from torch_geometric.data import (InMemoryDataset, Data)
 from torch_geometric.data import DataLoader
 import torch_geometric
-# from gnn_models import simple_edge_architecture as arch
+#from gnn_models import simple_edge_architecture as arch
 from gnn_models import mpnn_architecture as arch
 
 
@@ -27,11 +27,11 @@ class GISDS(InMemoryDataset):
 
     @property
     def raw_file_names(self):
-        return "ER"
+        return "ERS"
 
     @property
     def processed_file_names(self):
-        return "ER"
+        return "ERS"
 
     def download(self):
         pass
@@ -71,7 +71,7 @@ class GISDS(InMemoryDataset):
                     coeff = node_data['objcoeff']
 
                     # TODO: Maybe scale this
-                    var_feat.append([coeff, graph.degree[i]])
+                    var_feat.append([coeff/100.0, graph.degree[i]])
                 # Node is constraint.
                 else:
                     node_type.append(1)
