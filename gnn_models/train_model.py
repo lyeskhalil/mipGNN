@@ -160,9 +160,10 @@ print("### SETUP DONE.")
 def train():
     model.train()
     total_loss = 0
+    total_loss_mae = 0
     mse = torch.nn.MSELoss()
     mse = RMSELoss()
-    # mse = torch.nn.L1Loss()
+    mae = torch.nn.L1Loss()
 
     for data in train_loader:
         optimizer.zero_grad()
@@ -173,9 +174,11 @@ def train():
         loss.backward()
 
         total_loss += loss.item() * data.num_graphs
+        total_loss_mae += mae(out, data.y).item() * data.num_graphs
+
         optimizer.step()
 
-    return total_loss / len(train_loader.dataset)
+    return total_loss_mae / len(train_loader.dataset), total_loss / len(train_loader.dataset)
 
 
 
@@ -200,13 +203,13 @@ print(test_error)
 
 for epoch in range(1, 200):
     lr = scheduler.optimizer.param_groups[0]['lr']
-    loss = train()
+    mae, loss = train()
 
     val_error = test(val_loader)
 
     if best_val_error is None or val_error < best_val_error:
         test_error = test(test_loader)
 
-    print('Epoch: {:03d}, LR: {:7f}, Loss: {:.7f}, Test MAE: {:.7f}'.format(epoch, lr, loss, test_error))
+    print('Epoch: {:03d}, LR: {:7f}, Loss: {:.7f}, Train MAE: {:.7f}, Test MAE: {:.7f}'.format(epoch, lr, loss, mae, test_error))
 
 # torch.save(model.state_dict(), "train_mip")
