@@ -139,7 +139,7 @@ print(len(dataset))
 # plt.show()
 # exit()
 
-train_dataset = dataset[0:800].shuffle()
+train_dataset = dataset[0:50].shuffle()
 val_dataset = dataset[800:900].shuffle()
 test_dataset = dataset[900:].shuffle()
 
