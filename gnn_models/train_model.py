@@ -131,9 +131,9 @@ path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'DS')
 dataset = GISDS(path, transform=MyTransform()).shuffle()
 print(len(dataset))
 
-# plt.hist(dataset.data.y.cpu().numpy(), bins=list(np.arange(0.0, 1.0, 0.01)))
-# plt.show()
-# exit()
+plt.hist(np.log(dataset.data.y.cpu().numpy() + 0.01), )
+plt.show()
+exit()
 
 train_dataset = dataset[0:800].shuffle()
 val_dataset = dataset[800:900].shuffle()
@@ -188,7 +188,7 @@ def test(loader):
     for data in loader:
         data = data.to(device)
         out = model(data)
-        loss = l1(out, data.y)
+        loss = l1(out, torch.log(data.y+0.01))
         error += loss.item() * data.num_graphs
 
     return error / len(loader.dataset)
