@@ -201,7 +201,7 @@ best_val_error = None
 test_error = test(test_loader)
 print(test_error)
 
-for epoch in range(1, 200):
+for epoch in range(1, 500):
     lr = scheduler.optimizer.param_groups[0]['lr']
     mae, loss = train()
 
