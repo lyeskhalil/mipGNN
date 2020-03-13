@@ -29,8 +29,8 @@ class Net(torch.nn.Module):
     def __init__(self, dim):
         super(Net, self).__init__()
 
-        self.var_mlp = Seq(ReLU(Lin(2, dim)))
-        self.con_mlp = Seq(ReLU(Lin(2, dim)))
+        self.var_mlp = Seq(Lin(2, dim))
+        self.con_mlp = Seq(Lin(2, dim))
 
         self.conv1 = EdgeConv(dim, dim)
         self.conv2 = EdgeConv(dim, dim)
