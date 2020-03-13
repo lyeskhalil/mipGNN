@@ -6,6 +6,7 @@ import networkx as nx
 from networkx.algorithms import bipartite
 import random
 import time
+# import numpy as np
 
 def dimacsToNx(filename):
     g = nx.Graph()
@@ -73,11 +74,14 @@ def createIP(g, E2, ipfilename):
     return ip, variable_names
 
 def extractVCG(g, E2, ip):
-    vcg = nx.Graph()
-
     num_solutions = ip.solution.pool.get_num()
+    for sol_idx in range(ip.solution.pool.get_num()):
+        if ip.solution.pool.get_objective_value(sol_idx) <= 0:
+            num_solutions -= 1
 
     print("num_solutions = %d" % num_solutions)
+
+    vcg = nx.Graph(num_solutions=num_solutions)
 
     vcg.add_nodes_from([("x" + str(node), {'objcoeff':-node_data['revenue']}) for node, node_data in g.nodes(data=True)], bipartite=0)
     vcg.add_nodes_from(["y" + str(edge[0]) + "_" + str(edge[1]) for edge in E2], bipartite=0)
@@ -113,15 +117,17 @@ def extractVCG(g, E2, ip):
 def solveIP(ip, timelimit):
     ip.parameters.timelimit.set(timelimit)
 
+    ip.parameters.mip.tolerances.mipgap.set(0.1)
+
     """ https://www.ibm.com/support/knowledgecenter/SSSA5P_12.9.0/ilog.odms.cplex.help/refpythoncplex/html/cplex._internal._subinterfaces.SolnPoolInterface-class.html#get_values """
     # 2 = Moderate: generate a larger number of solutions
     ip.parameters.mip.pool.intensity = 2
     # Maximum number of solutions generated for the solution pool by populate
-    ip.parameters.mip.limits.populate = 1000
+    ip.parameters.mip.limits.populate = 100
     # Replace the solution which has the worst objective
     # ip.parameters.mip.pool.replace = 1
     # Relative gap for the solution pool
-    ip.parameters.mip.pool.relgap = 0.2
+    # ip.parameters.mip.pool.relgap = 0.2
 
     # disable all cplex output
 #     ip.set_log_stream(None)
@@ -131,6 +137,7 @@ def solveIP(ip, timelimit):
 
     try:
         ip.solve()
+        ip.populate_solution_pool()
     except CplexError as exc:
         print(exc)
         return
@@ -200,6 +207,7 @@ if __name__ == "__main__":
         
     # Seed generator
     random.seed(seed)
+    # np.random.seed(seed)
 
     print(whichSet)
     print(setParam)
@@ -236,4 +244,4 @@ if __name__ == "__main__":
     nx.write_gpickle(vcg, data_dir + "/" + lpname + ".pk")
 
     vcg2=nx.read_gpickle(data_dir + "/" + lpname + ".pk")
-    print([d['bias'] for n, d in vcg2.nodes(data=True) if d['bipartite']==0])
+    print(["(%s, %g)" % (n, d['bias']) for n, d in vcg2.nodes(data=True) if d['bipartite']==0])
