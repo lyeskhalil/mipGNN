@@ -67,14 +67,14 @@ class MIPGNN(MessagePassing):
 
         # If no node features are given, we implement a simple embedding
         # loopkup based on the target node index and its edge type.
-        if x_j is None:
-            w = w.view(-1, self.out_channels)
-            index = edge_type * self.in_channels + edge_index_j
-            out = torch.index_select(w, 0, index)
-        else:
-            w = w.view(self.num_relations, self.in_channels, self.out_channels)
-            w = torch.index_select(w, 0, edge_type)
-            out = torch.bmm(x_j.unsqueeze(1), w).squeeze(-2)
+        # if x_j is None:
+        #     w = w.view(-1, self.out_channels)
+        #     index = edge_type * self.in_channels + edge_index_j
+        #     out = torch.index_select(w, 0, index)
+        # else:
+        w = w.view(self.num_relations, self.in_channels, self.out_channels)
+        w = torch.index_select(w, 0, edge_type)
+        out = torch.bmm(x_j.unsqueeze(1), w).squeeze(-2)
 
         return out if edge_norm is None else out * edge_norm.view(-1, 1)
 
