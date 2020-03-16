@@ -57,9 +57,9 @@ class RGCNConv(MessagePassing):
         uniform(size, self.root)
         uniform(size, self.bias)
 
-    def forward(self, x, edge_index, edge_type, edge_norm=None, size=None):
+    def forward(self, x, edge_index, edge_type, edge_feature, edge_norm=None, size=None):
         """"""
-        return self.propagate(edge_index, size=size, x=x, edge_type=edge_type,
+        return self.propagate(edge_index, size=size, x=x, edge_type=edge_type, edge_feature=edge_feature,
                               edge_norm=edge_norm)
 
     def message(self, x_j, edge_index_j, edge_type, edge_norm):
@@ -231,9 +231,9 @@ class Net(torch.nn.Module):
         x = x.scatter_(0, data.assoc_con.view(-1, 1).expand_as(e), e)
 
         xs = [x]
-        xs.append(F.relu(self.conv1(xs[-1], data.edge_index, data.edge_types)))
-        xs.append(F.relu(self.conv2(xs[-1], data.edge_index, data.edge_types)))
-        xs.append(F.relu(self.conv3(xs[-1], data.edge_index, data.edge_types)))
+        xs.append(F.relu(self.conv1(xs[-1], data.edge_index, data.edge_types, data.edge_features)))
+        xs.append(F.relu(self.conv2(xs[-1], data.edge_index, data.edge_types, data.edge_features)))
+        xs.append(F.relu(self.conv3(xs[-1], data.edge_index, data.edge_types, data.edge_features)))
 
         x = torch.cat(xs[0:], dim=-1)
         x = x[data.assoc_var]
