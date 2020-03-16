@@ -24,11 +24,11 @@ class GISR(InMemoryDataset):
 
     @property
     def raw_file_names(self):
-        return "ERR"
+        return "ERRR"
 
     @property
     def processed_file_names(self):
-        return "ERR"
+        return "ERRR"
 
     def download(self):
         pass
@@ -92,7 +92,7 @@ class GISR(InMemoryDataset):
                     edge_types.append(0)
                     edge_features.append([edge_data['coeff']])
                 else:
-                    edge_types.append(0)
+                    edge_types.append(1)
                     edge_features.append([edge_data['coeff']])
 
             data.edge_types = torch.from_numpy(np.array(edge_types)).to(torch.long)
