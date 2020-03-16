@@ -65,7 +65,6 @@ class MIPGNN(MessagePassing):
     def message(self, x_j, edge_index_j, edge_type, edge_norm, edge_feature):
         w = torch.matmul(self.att, self.basis.view(self.num_bases, -1))
 
-        print(edge_type.max())
         w = w.view(self.num_relations, self.in_channels, self.out_channels)
         w = torch.index_select(w, 0, edge_type)
         out = torch.bmm(x_j.unsqueeze(1), w).squeeze(-2)
