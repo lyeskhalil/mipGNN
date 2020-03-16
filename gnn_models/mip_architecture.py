@@ -104,9 +104,9 @@ class Net(torch.nn.Module):
         self.var_mlp = Seq(Lin(2, dim), ReLU(), Lin(dim, dim))
         self.con_mlp = Seq(Lin(2, dim), ReLU(), Lin(dim, dim))
 
-        self.conv1 = RGCNConv(dim, dim, 2, 1, root_weight=True, bias=True)
-        self.conv2 = RGCNConv(dim, dim, 2, 1, root_weight=True, bias=True)
-        self.conv3 = RGCNConv(dim, dim, 2, 1, root_weight=True, bias=True)
+        self.conv1 = MIPGNN(dim, dim, 2, 1, root_weight=True, bias=True)
+        self.conv2 = MIPGNN(dim, dim, 2, 1, root_weight=True, bias=True)
+        self.conv3 = MIPGNN(dim, dim, 2, 1, root_weight=True, bias=True)
 
         # Final MLP for regression.
         self.fc1 = Lin(4 * dim, dim)
