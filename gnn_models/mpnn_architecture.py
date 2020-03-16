@@ -6,8 +6,10 @@ sys.path.insert(0, '.')
 
 import torch
 import torch.nn.functional as F
-from torch.nn import Sequential as Seq, Linear as Lin, ReLU
+from torch.nn import Sequential as Seq, Linear as Lin, ReLU, Sigmoid
 from torch_geometric.nn import NNConv
+
+
 
 
 class Net(torch.nn.Module):

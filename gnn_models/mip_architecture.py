@@ -26,8 +26,7 @@ from torch_geometric.nn.inits import uniform
 
 class MIPGNN(MessagePassing):
 
-    def __init__(self, in_channels, out_channels, num_relations, num_bases,
-                 root_weight=True, bias=True, **kwargs):
+    def __init__(self, in_channels, out_channels, num_relations, num_bases, **kwargs):
         super(MIPGNN, self).__init__(aggr='mean', **kwargs)
 
         self.in_channels = in_channels
@@ -35,18 +34,13 @@ class MIPGNN(MessagePassing):
         self.num_relations = num_relations
         self.num_bases = num_bases
 
+        #self.mlp = Seq(Lin(2 * F_in + 1, F_out), ReLU(), Lin(F_out, F_out))
+
         self.basis = Param(torch.Tensor(num_bases, in_channels, out_channels))
         self.att = Param(torch.Tensor(num_relations, num_bases))
+        self.root = Param(torch.Tensor(in_channels, out_channels))
 
-        if root_weight:
-            self.root = Param(torch.Tensor(in_channels, out_channels))
-        else:
-            self.register_parameter('root', None)
-
-        if bias:
-            self.bias = Param(torch.Tensor(out_channels))
-        else:
-            self.register_parameter('bias', None)
+        self.bias = Param(torch.Tensor(out_channels))
 
         self.reset_parameters()
 
@@ -63,6 +57,9 @@ class MIPGNN(MessagePassing):
     def message(self, x_j, edge_index_j, edge_type, edge_feature):
         w = torch.matmul(self.att, self.basis.view(self.num_bases, -1))
 
+        x_j0 = x_j[edge_type==0]
+        print(y)
+
         w = w.view(self.num_relations, self.in_channels, self.out_channels)
         w = torch.index_select(w, 0, edge_type)
         out = torch.bmm(x_j.unsqueeze(1), w).squeeze(-2)
@@ -70,11 +67,8 @@ class MIPGNN(MessagePassing):
         return out
 
     def update(self, aggr_out, x):
-        if self.root is not None:
-            aggr_out = aggr_out + torch.matmul(x, self.root)
-
-        if self.bias is not None:
-            aggr_out = aggr_out + self.bias
+        aggr_out = aggr_out + torch.matmul(x, self.root)
+        aggr_out = aggr_out + self.bias
 
         return aggr_out
 
@@ -92,10 +86,10 @@ class Net(torch.nn.Module):
         self.var_mlp = Seq(Lin(2, dim), ReLU(), Lin(dim, dim))
         self.con_mlp = Seq(Lin(2, dim), ReLU(), Lin(dim, dim))
 
-        self.conv1 = MIPGNN(dim, dim, 2, root_weight=True, bias=True, num_bases=5)
-        self.conv2 = MIPGNN(dim, dim, 2, root_weight=True, bias=True, num_bases=5)
-        self.conv3 = MIPGNN(dim, dim, 2, root_weight=True, bias=True, num_bases=5)
-        self.conv4 = MIPGNN(dim, dim, 2, root_weight=True, bias=True, num_bases=5)
+        self.conv1 = MIPGNN(dim, dim, 2, num_bases=5)
+        self.conv2 = MIPGNN(dim, dim, 2, num_bases=5)
+        self.conv3 = MIPGNN(dim, dim, 2, num_bases=5)
+        self.conv4 = MIPGNN(dim, dim, 2, num_bases=5)
 
         # Final MLP for regression.
         self.fc1 = Lin(5 * dim, dim)
