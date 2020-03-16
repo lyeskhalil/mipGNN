@@ -10,20 +10,12 @@ import numpy as np
 import networkx as nx
 
 
-
+import torch
 from torch_geometric.data import (InMemoryDataset, Data)
 from torch_geometric.data import DataLoader
-import torch.nn.functional as F
-from torch.nn import Sequential as Seq, Linear as Lin, ReLU
-from torch_geometric.nn import NNConv
 
-import torch
-from torch.nn import Parameter as Param
-from torch_geometric.nn.conv import MessagePassing
 
-from torch_geometric.nn.inits import uniform
-from .mip_architecture import Net
-
+from gnn_models.mip_architecture import Net
 class GISR(InMemoryDataset):
     def __init__(self, root, transform=None, pre_transform=None,
                  pre_filter=None):
