@@ -57,27 +57,21 @@ class MIPGNN(MessagePassing):
         uniform(size, self.root)
         uniform(size, self.bias)
 
-    def forward(self, x, edge_index, edge_type, edge_feature, edge_norm=None, size=None):
-        """"""
-        return self.propagate(edge_index, size=size, x=x, edge_type=edge_type, edge_feature=edge_feature,
-                              edge_norm=edge_norm)
+    def forward(self, x, edge_index, edge_type, edge_feature, size=None):
+        return self.propagate(edge_index, size=size, x=x, edge_type=edge_type, edge_feature=edge_feature)
 
-    def message(self, x_j, edge_index_j, edge_type, edge_norm, edge_feature):
+    def message(self, x_j, edge_index_j, edge_type, edge_feature):
         w = torch.matmul(self.att, self.basis.view(self.num_bases, -1))
-
 
         w = w.view(self.num_relations, self.in_channels, self.out_channels)
         w = torch.index_select(w, 0, edge_type)
         out = torch.bmm(x_j.unsqueeze(1), w).squeeze(-2)
 
-        return out if edge_norm is None else out * edge_norm.view(-1, 1)
+        return out
 
     def update(self, aggr_out, x):
         if self.root is not None:
-            if x is None:
-                aggr_out = aggr_out + self.root
-            else:
-                aggr_out = aggr_out + torch.matmul(x, self.root)
+            aggr_out = aggr_out + torch.matmul(x, self.root)
 
         if self.bias is not None:
             aggr_out = aggr_out + self.bias
@@ -105,6 +99,8 @@ class Net(torch.nn.Module):
 
         # Final MLP for regression.
         self.fc1 = Lin(5 * dim, dim)
+        self.fc2 = Lin(dim, dim)
+        self.fc3 = Lin(dim, dim)
         self.fc4 = Lin(dim, 1)
 
     def forward(self, data):
@@ -125,6 +121,10 @@ class Net(torch.nn.Module):
         x = x[data.assoc_var]
 
         x = F.relu(self.fc1(x))
+        x = F.dropout(x, p=0.5, training=self.training)
+        x = F.relu(self.fc2(x))
+        x = F.dropout(x, p=0.5, training=self.training)
+        x = F.relu(self.fc3(x))
         x = F.dropout(x, p=0.5, training=self.training)
         x = self.fc4(x)
 
