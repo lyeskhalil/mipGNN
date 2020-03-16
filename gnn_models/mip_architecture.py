@@ -65,6 +65,8 @@ class MIPGNN(MessagePassing):
     def message(self, x_j, edge_index_j, edge_type, edge_norm, edge_feature):
         w = torch.matmul(self.att, self.basis.view(self.num_bases, -1))
 
+        print(edge_feature[edge_index_j])
+
         w = w.view(self.num_relations, self.in_channels, self.out_channels)
         w = torch.index_select(w, 0, edge_type)
         out = torch.bmm(x_j.unsqueeze(1), w).squeeze(-2)
@@ -100,9 +102,10 @@ class Net(torch.nn.Module):
         self.conv1 = MIPGNN(dim, dim, 2, root_weight=True, bias=True, num_bases=5)
         self.conv2 = MIPGNN(dim, dim, 2, root_weight=True, bias=True, num_bases=5)
         self.conv3 = MIPGNN(dim, dim, 2, root_weight=True, bias=True, num_bases=5)
+        self.conv4 = MIPGNN(dim, dim, 2, root_weight=True, bias=True, num_bases=5)
 
         # Final MLP for regression.
-        self.fc1 = Lin(4 * dim, dim)
+        self.fc1 = Lin(5 * dim, dim)
         self.fc4 = Lin(dim, 1)
 
     def forward(self, data):
@@ -117,6 +120,7 @@ class Net(torch.nn.Module):
         xs.append(F.relu(self.conv1(xs[-1], data.edge_index, data.edge_types, data.edge_features)))
         xs.append(F.relu(self.conv2(xs[-1], data.edge_index, data.edge_types, data.edge_features)))
         xs.append(F.relu(self.conv3(xs[-1], data.edge_index, data.edge_types, data.edge_features)))
+        xs.append(F.relu(self.conv4(xs[-1], data.edge_index, data.edge_types, data.edge_features)))
 
         x = torch.cat(xs[0:], dim=-1)
         x = x[data.assoc_var]
