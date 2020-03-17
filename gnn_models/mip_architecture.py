@@ -95,10 +95,8 @@ class MIPGNN(MessagePassing):
 
         new_out = torch.zeros(aggr_out.size(0), aggr_out.size(1), device=device)
 
-        # Compute violation of constraint for contraint nodes.
-        violation = aggr_out[assoc_con, -1] - rhs
         # Assign violation back to embedding of contraints.
-        new_out[assoc_con, -1] = violation
+        new_out[assoc_con, -1] = aggr_out[assoc_con, -1] - rhs
         new_out[assoc_con, 0:-1] = aggr_out[assoc_con, 0:-1]
         new_out[assoc_var] = aggr_out[assoc_var]
 
@@ -116,9 +114,9 @@ class MIPGNN(MessagePassing):
         new_out[assoc_con, 0:-1] = s_1
         new_out[assoc_var, 0:-1] = s_2
 
-        aggr_out = new_out + self.bias
+        new_out = new_out + self.bias
 
-        return aggr_out
+        return new_out
 
 
 class Net(torch.nn.Module):
