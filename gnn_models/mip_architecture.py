@@ -69,7 +69,7 @@ class MIPGNN(MessagePassing):
         var_assign = var_assign * c
         out_0 = torch.matmul(x_j_0[:, 0:-2], self.w_cons)
         # Assign left side of constraint to last column.
-        out_0[:, -1] = var_assign.view([var_assign.size(0)])
+        out_0 = torch.cat([out_0, x_j_0[:, -2].view(x_j_0.size(0), 1), var_assign], dim=-1)
 
         ### Cons -> Vars.
         c = edge_feature[edge_index_j][edge_type == 1]
@@ -78,19 +78,12 @@ class MIPGNN(MessagePassing):
         b = x_j_1[:, -2]
         r = c.view([b.size(0)])/b
         r = r * x_j_1[:,-1]
-        out_1[:, -1] = r
-
-
-
-
-        exit()
+        out_1 = torch.cat([out_1, x_j_1[:, -2].view(x_j_1.size(0), 1), r.view(x_j_1.size(0), 1)], dim=-1)
 
         new_out = torch.zeros(x_j.size(0), self.out_channels, device=torch.device("cuda"))
 
         new_out[edge_type == 0] = out_0
         new_out[edge_type == 1] = out_1
-
-
 
         return new_out
 
@@ -98,6 +91,7 @@ class MIPGNN(MessagePassing):
         # Compute violation of constraint.
         #aggr_out[:, -1] = aggr_out[:,-1] - x[:,-1]
         # aggr_out = self.proj(aggr_out)
+
 
         aggr_out = aggr_out + torch.matmul(x, self.root)
         aggr_out = aggr_out + self.bias
