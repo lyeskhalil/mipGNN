@@ -63,6 +63,8 @@ class MIPGNN(MessagePassing):
         var_assign = self.hidden_to_var(x_j_1)
         var_assign = var_assign * c
 
+
+
         out_0 = torch.matmul(x_j_0, self.w_cons)
         out_1 = torch.matmul(x_j_1, self.w_var)
         zeros = torch.zeros(out_0.size(0), 1,device=torch.device("cpu"))
