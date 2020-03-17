@@ -74,7 +74,7 @@ class MIPGNN(MessagePassing):
         var_assign = self.hidden_to_var(out_1)
         var_assign = var_assign * c
 
-        zeros = torch.cuda.zeros(out_0.size(0), 1).
+        zeros = torch.cuda.zeros(out_0.size(0), 1)
         out_0 = torch.cat([out_0, zeros], dim=-1)
         out_1 = torch.cat([out_1, var_assign], dim=-1)
         new_out = torch.Tensor(edge_type.size(0), self.out_channels+1)
