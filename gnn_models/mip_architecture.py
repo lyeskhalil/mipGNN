@@ -91,30 +91,27 @@ class MIPGNN(MessagePassing):
         return new_out
 
     def update(self, aggr_out, x, assoc_con, assoc_var, rhs):
-
-
         new_out = torch.zeros(aggr_out.size(0), aggr_out.size(1), device=device)
 
         # Assign violation back to embedding of contraints.
-        new_out[assoc_con, -1] = aggr_out[assoc_con, -1] - rhs
+        t = aggr_out[assoc_con, -1]
+        new_out[assoc_con, -1] = t - rhs
         new_out[assoc_con, 0:-1] = aggr_out[assoc_con, 0:-1]
         new_out[assoc_var] = aggr_out[assoc_var]
 
         # Normalize aggregation.
         # TODO: Implement normalization!!!
 
-        t_1 = torch.matmul(x[assoc_con], self.root_vars)
-        t_2 = torch.matmul(x[assoc_var], self.root_vars)
-        s_1 = new_out[assoc_con, 0:-1] + t_1
-        s_2 = new_out[assoc_var, 0:-1] +  t_2
+        t_1 = new_out[assoc_con, 0:-1] + torch.matmul(x[assoc_con], self.root_vars)
+        t_2 = new_out[assoc_var, 0:-1] + torch.matmul(x[assoc_var], self.root_vars)
 
+        out = torch.zeros(new_out.size(0), new_out.size(1), device=device)
 
-        new_out[assoc_con, 0:-1] = s_1
-        new_out[assoc_var, 0:-1] = s_2
+        out[assoc_con, 0:-1] = t_1
+        out[assoc_var, 0:-1] = t_2
 
         new_out = new_out + self.bias
 
-        exit()
 
         return new_out
 
