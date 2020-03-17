@@ -31,7 +31,7 @@ class MIPGNN(MessagePassing):
 
         self.in_channels = in_channels
         self.out_channels = out_channels
-        self.hidden_to_var = Seq(Lin(in_channels, in_channels), Sigmoid(), Lin(in_channels, 1))
+        self.hidden_to_var = Seq(Lin(in_channels+1, in_channels), Sigmoid(), Lin(in_channels, 1))
 
         self.w_cons = Param(torch.Tensor(in_channels+1, out_channels+1))
         self.w_var = Param(torch.Tensor(in_channels+1, out_channels+1))
@@ -57,13 +57,15 @@ class MIPGNN(MessagePassing):
         x_j_1 = x_j[edge_type == 1]
 
 
-        out_0 = torch.bmm(x_j_0.unsqueeze(1), self.w_cons).squeeze(-2)
-        out_1 = torch.bmm(x_j_1.unsqueeze(1), self.w_var).squeeze(-2)
+
+        out_0 = torch.matmul(x_j_0.unsqueeze(1), self.w_cons)
+        out_1 = torch.matmul(x_j_1, self.w_var)
 
         # TODO: Check direction of message.
         c = edge_feature[edge_index_j][edge_type == 1]
         var_assign = self.hidden_to_var(out_1)
         var_assign = var_assign * c
+
 
         zeros = torch.zeros(out_0.size(0), 1,device=torch.device("cuda"))
         out_0 = torch.cat([out_0, zeros], dim=-1)
