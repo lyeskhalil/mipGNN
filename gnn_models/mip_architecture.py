@@ -123,9 +123,9 @@ class Net(torch.nn.Module):
 
     def forward(self, data):
 
-        ones = torch.ones(data.var_node_features.size(0), 1)
+        ones = torch.ones(data.var_node_features.size(0), 1).cuda()
         n = torch.cat([self.var_mlp(data.var_node_features),data.var_node_features,ones], dim=-1)
-        ones = torch.ones(data.con_node_features.size(0), 1)
+        ones = torch.ones(data.con_node_features.size(0), 1).cuda()
         e = torch.cat([self.con_mlp(data.con_node_features),data.con_node_features, ones], dim=-1)
 
 
