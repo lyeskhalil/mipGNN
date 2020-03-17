@@ -46,7 +46,7 @@ class MIPGNN(MessagePassing):
     def reset_parameters(self):
         size = self.in_channels
         uniform(size, self.w_cons)
-        uniform(size, self.w_cons)
+        uniform(size, self.w_var)
         uniform(size, self.root)
         uniform(size, self.bias)
 
