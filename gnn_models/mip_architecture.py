@@ -86,8 +86,8 @@ class MIPGNN(MessagePassing):
     def update(self, aggr_out, x, assoc_con, assoc_var):
 
         # Compute violation of constraint.
-        t = aggr_out[assoc_con,-1] - x[assoc_con,-1]
-        aggr_out[assoc_con, -1] = t
+        # t = aggr_out[assoc_con,-1] - x[assoc_con,-1]
+        # aggr_out[assoc_con, -1] = t
 
 
 
@@ -96,7 +96,7 @@ class MIPGNN(MessagePassing):
         new_out = torch.zeros(aggr_out.size(0), aggr_out.size(1), device=torch.device("cuda"))
         new_out[assoc_var] = t_1
         new_out[assoc_con] = t_2
-        
+
         aggr_out = aggr_out + self.bias
 
         return aggr_out
