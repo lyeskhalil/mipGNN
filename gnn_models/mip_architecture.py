@@ -55,26 +55,26 @@ class MIPGNN(MessagePassing):
 
     def message(self, x_j, edge_index_j, edge_type, edge_feature):
         # Split data.
-        # x_j_0 = x_j[edge_type == 0]
-        # x_j_1 = x_j[edge_type == 1]
+        x_j_0 = x_j[edge_type == 0]
+        x_j_1 = x_j[edge_type == 1]
         #
         # # TODO: Check direction of message.
         # c = edge_feature[edge_index_j][edge_type == 1]
         # var_assign = self.hidden_to_var(x_j_1)
         # var_assign = var_assign * c
 
-        out_0 = torch.matmul(x_j, self.w_cons)
-        # out_1 = torch.matmul(x_j_1, self.w_var)
-        # zeros = torch.zeros(out_0.size(0), 1,device=torch.device("cuda"))
+        out_0 = torch.matmul(x_j_0, self.w_cons)
+        out_1 = torch.matmul(x_j_1, self.w_var)
+        zeros = torch.zeros(x_j.size(0), 1, )
         #
-        # new_out = torch.Tensor(edge_type.size(0), self.out_channels).cuda()
+        new_out = torch.Tensor(x_j.size(0), self.out_channels, device=torch.device("cpu"))
         #
-        # new_out[edge_type == 0] = out_0
-        # new_out[edge_type == 1] = out_1
+        new_out[edge_type == 0] = out_0
+        new_out[edge_type == 1] = out_1
 
 
 
-        return out_0
+        return new_out
 
     def update(self, aggr_out, x):
         # Compute violation of constraint.
