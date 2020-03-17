@@ -67,7 +67,7 @@ class MIPGNN(MessagePassing):
         out_1 = torch.matmul(x_j_1, self.w_var)
         zeros = torch.zeros(x_j.size(0), 1, )
         #
-        new_out = torch.Tensor(x_j.size(0), self.out_channels, device=torch.device("cuda"))
+        new_out = torch.Tensor(x_j.size(0), self.out_channels).cuda()
         #
         new_out[edge_type == 0] = out_0
         new_out[edge_type == 1] = out_1
