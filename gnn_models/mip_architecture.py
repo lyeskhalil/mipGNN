@@ -75,7 +75,7 @@ class MIPGNN(MessagePassing):
 
         ### Cons -> Vars.
         out_1 = torch.matmul(x_j_1, self.w_vars)
-        new_out = torch.zeros(x_j.size(0), self.out_channels, device=torch.device("cpu"))
+        new_out = torch.zeros(x_j.size(0), self.out_channels, device=torch.device("cuda"))
 
         new_out[edge_type == 0] = out_0
         new_out[edge_type == 1] = out_1
@@ -115,7 +115,7 @@ class Net(torch.nn.Module):
 
     def forward(self, data):
 
-        ones = torch.ones(data.var_node_features.size(0), 1)#.cuda()
+        ones = torch.ones(data.var_node_features.size(0), 1).cuda()
         n = torch.cat([self.var_mlp(data.var_node_features),data.var_node_features,ones], dim=-1)
         e = torch.cat([self.con_mlp(data.con_node_features),data.con_node_features], dim=-1)
 
