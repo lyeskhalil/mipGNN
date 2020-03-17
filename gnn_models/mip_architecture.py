@@ -28,7 +28,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 class MIPGNN(MessagePassing):
 
     def __init__(self, in_channels, out_channels, **kwargs):
-        super(MIPGNN, self).__init__(aggr='add', **kwargs)
+        super(MIPGNN, self).__init__(aggr='mean', **kwargs)
 
         self.in_channels = in_channels
         self.out_channels = out_channels
