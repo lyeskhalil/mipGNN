@@ -45,8 +45,8 @@ class MIPGNN(MessagePassing):
 
     def reset_parameters(self):
         size = self.in_channels
-        uniform(size-1, self.w_cons)
-        uniform(size-1, self.w_vars)
+        uniform(size-2, self.w_cons)
+        uniform(size-2, self.w_vars)
         uniform(size, self.root)
         uniform(size, self.bias)
 
@@ -71,15 +71,19 @@ class MIPGNN(MessagePassing):
         # Assign left side of constraint to last column.
         out_0 = torch.cat([out_0, x_j_0[:, -2].view(x_j_0.size(0), 1), var_assign], dim=-1)
 
+
+
         ### Cons -> Vars.
         c = edge_feature[edge_index_j][edge_type == 1]
         out_1 = torch.matmul(x_j_1[:, 0:-2], self.w_vars)
         # Computer contribution to violation of constraint.
         b = x_j_1[:, -2]
-        r = c.view([b.size(0)])/b
-        r = r * x_j_1[:,-1]
-        out_1 = torch.cat([out_1, x_j_1[:, -2].view(x_j_1.size(0), 1), r.view(x_j_1.size(0), 1)], dim=-1)
 
+        # TODO: Numerical problems here.
+        # r = c.view([b.size(0)])/b
+        # r = r * x_j_1[:,-1]
+        r = b
+        out_1 = torch.cat([out_1, x_j_1[:, -2].view(x_j_1.size(0), 1), r.view(x_j_1.size(0), 1)], dim=-1)
         new_out = torch.zeros(x_j.size(0), self.out_channels, device=torch.device("cuda"))
 
         new_out[edge_type == 0] = out_0
