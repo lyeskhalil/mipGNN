@@ -63,13 +63,11 @@ class MIPGNN(MessagePassing):
         var_assign = self.hidden_to_var(x_j_1)
         var_assign = var_assign * c
 
-
-
         out_0 = torch.matmul(x_j_0, self.w_cons)
         out_1 = torch.matmul(x_j_1, self.w_var)
-        zeros = torch.zeros(out_0.size(0), 1,device=torch.device("cpu"))
+        zeros = torch.zeros(out_0.size(0), 1,device=torch.device("cuda"))
 
-        new_out = torch.Tensor(edge_type.size(0), self.out_channels).cpu()
+        new_out = torch.Tensor(edge_type.size(0), self.out_channels).cuda()
 
         new_out[edge_type == 0] = out_0
         new_out[edge_type == 1] = out_1
