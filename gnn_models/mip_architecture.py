@@ -97,7 +97,7 @@ class MIPGNN(MessagePassing):
         new_out[assoc_var] = t_1
         new_out[assoc_con] = t_2
 
-        aggr_out = aggr_out + self.bias
+        aggr_out = new_out + self.bias
 
         return aggr_out
 
