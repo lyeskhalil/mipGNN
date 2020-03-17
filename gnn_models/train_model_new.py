@@ -24,11 +24,11 @@ class GISR(InMemoryDataset):
 
     @property
     def raw_file_names(self):
-        return "ERRR"
+        return "ERRRR"
 
     @property
     def processed_file_names(self):
-        return "ERRR"
+        return "ERRRR"
 
     def download(self):
         pass
@@ -68,13 +68,13 @@ class GISR(InMemoryDataset):
                     coeff = node_data['objcoeff']
 
                     # TODO: Maybe scale this
-                    var_feat.append([coeff / 100.0, graph.degree[i]])
+                    var_feat.append([coeff / 100.0])
                 # Node is constraint.
                 else:
                     node_type.append(1)
                     assoc_con.append(i)
                     rhs = node_data['rhs']
-                    con_feat.append([rhs, graph.degree[i]])
+                    con_feat.append([rhs])
 
             y = torch.from_numpy(np.array(y)).to(torch.float).to(torch.float)
             data.y = y
