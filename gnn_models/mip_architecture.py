@@ -14,6 +14,8 @@ from torch_geometric.data import DataLoader
 import torch.nn.functional as F
 from torch.nn import Sequential as Seq, Linear as Lin, ReLU, Sigmoid
 from torch_geometric.nn import NNConv
+from torch_geometric.utils import degree
+
 
 import torch
 from torch.nn import Parameter as Param
@@ -83,8 +85,6 @@ class MIPGNN(MessagePassing):
 
         new_out = torch.zeros(x_j.size(0), self.out_channels, device=device)
 
-
-
         new_out[edge_type == 0] = out_0
         new_out[edge_type == 1] = out_1
 
@@ -92,7 +92,7 @@ class MIPGNN(MessagePassing):
 
     def update(self, aggr_out, x, assoc_con, assoc_var, rhs):
 
-        # TODO Norm
+
         new_out = torch.zeros(aggr_out.size(0), aggr_out.size(1), device=device)
 
         # Compute violation of constraint for contraint nodes.
@@ -101,6 +101,9 @@ class MIPGNN(MessagePassing):
         new_out[assoc_con, -1] = violation
         new_out[assoc_con, 0:-1] = aggr_out[assoc_con, 0:-1]
         new_out[assoc_var] = aggr_out[assoc_var]
+
+        # Normalize aggregation.
+
 
         t_1 = new_out[assoc_var, 0:-1] + torch.matmul(x[assoc_var], self.root_vars)
         t_2 = new_out[assoc_con, 0:-1] + torch.matmul(x[assoc_con], self.root_vars)
