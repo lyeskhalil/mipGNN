@@ -71,8 +71,6 @@ class MIPGNN(MessagePassing):
         # Assign left side of constraint to last column.
         out_0 = torch.cat([out_0, x_j_0[:, -2].view(x_j_0.size(0), 1), var_assign], dim=-1)
 
-
-
         ### Cons -> Vars.
         c = edge_feature[edge_index_j][edge_type == 1]
         out_1 = torch.matmul(x_j_1[:, 0:-2], self.w_vars)
