@@ -24,11 +24,11 @@ class GISR(InMemoryDataset):
 
     @property
     def raw_file_names(self):
-        return "ERRRR"
+        return "ERNEW"
 
     @property
     def processed_file_names(self):
-        return "ERRRR"
+        return "ERNEW"
 
     def download(self):
         pass
@@ -47,6 +47,7 @@ class GISR(InMemoryDataset):
 
             graph = nx.convert_node_labels_to_integers(graph)
             graph = graph.to_directed() if not nx.is_directed(graph) else graph
+
             edge_index = torch.tensor(list(graph.edges)).t().contiguous()
             data = Data(edge_index=edge_index)
 
@@ -152,7 +153,7 @@ test_loader = DataLoader(test_dataset, batch_size=5, shuffle=True)
 
 print("### DATA LOADED.")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = Net(dim=33).to(device)
+model = Net(dim=32).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
     optimizer, mode='min', factor=0.7, patience=5, min_lr=0.00001)

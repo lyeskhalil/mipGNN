@@ -35,8 +35,8 @@ class MIPGNN(MessagePassing):
         self.hidden_to_var = Seq(Lin(in_channels, in_channels), Sigmoid(), Lin(in_channels, 1))
         self.proj = Seq(Lin(in_channels+1, out_channels), ReLU(), Lin(out_channels, out_channels))
 
-        self.w_cons = Param(torch.Tensor(in_channels, out_channels))
-        self.w_var = Param(torch.Tensor(in_channels, out_channels))
+        self.w_cons = Param(torch.Tensor(in_channels-2, out_channels-2))
+        self.w_vars = Param(torch.Tensor(in_channels-2, out_channels-2))
 
         self.root = Param(torch.Tensor(in_channels, out_channels))
         self.bias = Param(torch.Tensor(out_channels))
@@ -45,8 +45,8 @@ class MIPGNN(MessagePassing):
 
     def reset_parameters(self):
         size = self.in_channels
-        uniform(size, self.w_cons)
-        uniform(size, self.w_var)
+        uniform(size-1, self.w_cons)
+        uniform(size-1, self.w_vars)
         uniform(size, self.root)
         uniform(size, self.bias)
 
@@ -55,20 +55,38 @@ class MIPGNN(MessagePassing):
 
     def message(self, x_j, edge_index_j, edge_type, edge_feature):
         # Split data.
+        # Variable nodes.
         x_j_0 = x_j[edge_type == 0]
+        # Constraint nodes.
         x_j_1 = x_j[edge_type == 1]
-        #
-        # # TODO: Check direction of message.
-        # c = edge_feature[edge_index_j][edge_type == 1]
-        # var_assign = self.hidden_to_var(x_j_1)
-        # var_assign = var_assign * c
 
-        out_0 = torch.matmul(x_j_0, self.w_cons)
-        out_1 = torch.matmul(x_j_1, self.w_var)
-        zeros = torch.zeros(x_j.size(0), 1, )
-        #
+
+        ### Vars -> Cons.
+        #  x_j is variable nodes.
+        c = edge_feature[edge_index_j][edge_type == 0]
+        var_assign = self.hidden_to_var(x_j_0)
+        # Variable assignment * coeffient in contraint.
+        var_assign = var_assign * c
+        out_0 = torch.matmul(x_j_0[:, 0:-2], self.w_cons)
+        # Assign left side of constraint to last column.
+        out_0[:, -1] = var_assign.view([var_assign.size(0)])
+
+        ### Cons -> Vars.
+        c = edge_feature[edge_index_j][edge_type == 1]
+        out_1 = torch.matmul(x_j_1[:, 0:-2], self.w_vars)
+        # Computer contribution to violation of constraint.
+        b = x_j_1[:, -2]
+        r = c.view([b.size(0)])/b
+        r = r * x_j_1[:,-1]
+        out_1[:, -1] = r
+
+
+
+
+        exit()
+
         new_out = torch.zeros(x_j.size(0), self.out_channels, device=torch.device("cuda"))
-        #
+
         new_out[edge_type == 0] = out_0
         new_out[edge_type == 1] = out_1
 
@@ -91,8 +109,8 @@ class Net(torch.nn.Module):
     def __init__(self, dim):
         super(Net, self).__init__()
 
-        self.var_mlp = Seq(Lin(1, dim-1), ReLU(), Lin(dim-1, dim-1))
-        self.con_mlp = Seq(Lin(1, dim-1), ReLU(), Lin(dim-1, dim-1))
+        self.var_mlp = Seq(Lin(1, dim-2), ReLU(), Lin(dim-2, dim-2))
+        self.con_mlp = Seq(Lin(1, dim-2), ReLU(), Lin(dim-2, dim-2))
 
         self.conv1 = MIPGNN(dim, dim)
         self.conv2 = MIPGNN(dim, dim)
@@ -106,8 +124,12 @@ class Net(torch.nn.Module):
         self.fc4 = Lin(dim, 1)
 
     def forward(self, data):
-        n = torch.cat([self.var_mlp(data.var_node_features),data.var_node_features], dim=-1)
-        e = torch.cat([self.con_mlp(data.con_node_features),data.con_node_features], dim=-1)
+
+        ones = torch.ones(data.var_node_features.size(0), 1)
+        n = torch.cat([self.var_mlp(data.var_node_features),data.var_node_features,ones], dim=-1)
+        ones = torch.ones(data.con_node_features.size(0), 1)
+        e = torch.cat([self.con_mlp(data.con_node_features),data.con_node_features, ones], dim=-1)
+
 
         x = e.new_zeros((data.node_types.size(0), n.size(-1)))
         x = x.scatter_(0, data.assoc_var.view(-1, 1).expand_as(n), n)
