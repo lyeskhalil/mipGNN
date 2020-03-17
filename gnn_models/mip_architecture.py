@@ -105,11 +105,13 @@ class MIPGNN(MessagePassing):
         # Normalize aggregation.
         # TODO: Implement normalization!!!
 
-        t_1 = torch.matmul(x[assoc_var], self.root_vars)
-        t_2 = torch.matmul(x[assoc_con], self.root_vars)
+        t_1 = torch.matmul(x[assoc_con], self.root_vars)
+        t_2 = torch.matmul(x[assoc_var], self.root_vars)
 
-        s_1 = new_out[assoc_var, 0:-1] +  t_1
-        s_2 = new_out[assoc_con, 0:-1] + t_2
+
+        s_1 = new_out[assoc_con, 0:-1] + t_1
+        s_2 = new_out[assoc_var, 0:-1] +  t_2
+
 
         new_out[assoc_con, 0:-1] = s_1
         new_out[assoc_var, 0:-1] = s_2
