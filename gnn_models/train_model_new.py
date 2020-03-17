@@ -24,11 +24,11 @@ class GISR(InMemoryDataset):
 
     @property
     def raw_file_names(self):
-        return "ERNEW"
+        return "ER1"
 
     @property
     def processed_file_names(self):
-        return "ERNEW"
+        return "ER1"
 
     def download(self):
         pass
@@ -59,6 +59,7 @@ class GISR(InMemoryDataset):
 
             var_feat = []
             con_feat = []
+            rhss = []
             for i, (node, node_data) in enumerate(graph.nodes(data=True)):
 
                 # Node is a variable.
@@ -68,14 +69,16 @@ class GISR(InMemoryDataset):
                     assoc_var.append(i)
                     coeff = node_data['objcoeff']
 
-                    # TODO: Maybe scale this
-                    var_feat.append([coeff / 100.0])
+                    # TODO: Scaling meaingful?
+                    var_feat.append([coeff/ 100.0, graph.degree[i]])
+
                 # Node is constraint.
                 else:
                     node_type.append(1)
                     assoc_con.append(i)
                     rhs = node_data['rhs']
-                    con_feat.append([rhs])
+                    rhss.append(rhs)
+                    con_feat.append([rhs, graph.degree[i]])
 
             y = torch.from_numpy(np.array(y)).to(torch.float).to(torch.float)
             data.y = y
@@ -84,6 +87,7 @@ class GISR(InMemoryDataset):
             data.node_types = torch.from_numpy(np.array(node_type)).to(torch.long)
             data.assoc_var = torch.from_numpy(np.array(assoc_var)).to(torch.long)
             data.assoc_con = torch.from_numpy(np.array(assoc_con)).to(torch.long)
+            data.rhs = torch.from_numpy(np.array(rhss)).to(torch.float)
 
             edge_types = []
             edge_features = []
@@ -150,6 +154,7 @@ test_dataset = dataset[900:].shuffle()
 train_loader = DataLoader(train_dataset, batch_size=5, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=5, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=5, shuffle=True)
+
 
 print("### DATA LOADED.")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
