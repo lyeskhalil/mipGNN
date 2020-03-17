@@ -31,13 +31,14 @@ class MIPGNN(MessagePassing):
 
         self.in_channels = in_channels
         self.out_channels = out_channels
-        self.hidden_to_var = Seq(Lin(in_channels+1, in_channels), Sigmoid(), Lin(in_channels, 1))
+        self.hidden_to_var = Seq(Lin(in_channels, in_channels), Sigmoid(), Lin(in_channels, 1))
+        self.proj = Seq(Lin(in_channels+1, out_channels), ReLU(), Lin(out_channels, out_channels))
 
-        self.w_cons = Param(torch.Tensor(in_channels+1, out_channels+1))
-        self.w_var = Param(torch.Tensor(in_channels+1, out_channels+1))
+        self.w_cons = Param(torch.Tensor(in_channels, out_channels))
+        self.w_var = Param(torch.Tensor(in_channels, out_channels))
 
-        self.root = Param(torch.Tensor(in_channels+1, out_channels+1))
-        self.bias = Param(torch.Tensor(out_channels+1))
+        self.root = Param(torch.Tensor(in_channels, out_channels))
+        self.bias = Param(torch.Tensor(out_channels))
 
         self.reset_parameters()
 
@@ -56,18 +57,15 @@ class MIPGNN(MessagePassing):
         x_j_0 = x_j[edge_type == 0]
         x_j_1 = x_j[edge_type == 1]
 
-
-
-        out_0 = torch.matmul(x_j_0.unsqueeze(1), self.w_cons)
-        out_1 = torch.matmul(x_j_1, self.w_var)
-
         # TODO: Check direction of message.
         c = edge_feature[edge_index_j][edge_type == 1]
-        var_assign = self.hidden_to_var(out_1)
+        var_assign = self.hidden_to_var(x_j_1)
         var_assign = var_assign * c
 
-
+        out_0 = torch.matmul(x_j_0, self.w_cons)
+        out_1 = torch.matmul(x_j_1, self.w_var)
         zeros = torch.zeros(out_0.size(0), 1,device=torch.device("cuda"))
+
         out_0 = torch.cat([out_0, zeros], dim=-1)
         out_1 = torch.cat([out_1, var_assign], dim=-1)
         new_out = torch.Tensor(edge_type.size(0), self.out_channels+1).cuda()
@@ -78,36 +76,30 @@ class MIPGNN(MessagePassing):
         return new_out
 
     def update(self, aggr_out, x):
-
         # Compute violation of constraint.
-        aggr_out[:,-1] = x[:,-1]
+        aggr_out[:, -1] = aggr_out[:,-1] - x[:,-1]
+        aggr_out = self.proj(aggr_out)
 
         aggr_out = aggr_out + torch.matmul(x, self.root)
         aggr_out = aggr_out + self.bias
 
         return aggr_out
 
-    def __repr__(self):
-        return '{}({}, {}, num_relations={})'.format(self.__class__.__name__,
-                                                     self.in_channels,
-                                                     self.out_channels,
-                                                     self.num_relations)
-
 
 class Net(torch.nn.Module):
     def __init__(self, dim):
         super(Net, self).__init__()
 
-        self.var_mlp = Seq(Lin(1, dim), ReLU(), Lin(dim, dim))
-        self.con_mlp = Seq(Lin(1, dim), ReLU(), Lin(dim, dim))
+        self.var_mlp = Seq(Lin(1, dim-1), ReLU(), Lin(dim-1, dim-1))
+        self.con_mlp = Seq(Lin(1, dim-1), ReLU(), Lin(dim-1, dim-1))
 
         self.conv1 = MIPGNN(dim, dim)
         self.conv2 = MIPGNN(dim, dim)
         self.conv3 = MIPGNN(dim, dim)
-
+        self.conv4 = MIPGNN(dim, dim)
 
         # Final MLP for regression.
-        self.fc1 = Lin(5 * (dim+1), dim)
+        self.fc1 = Lin(5 * dim, dim)
         self.fc2 = Lin(dim, dim)
         self.fc3 = Lin(dim, dim)
         self.fc4 = Lin(dim, 1)
@@ -128,6 +120,7 @@ class Net(torch.nn.Module):
 
         x = torch.cat(xs[0:], dim=-1)
         x = x[data.assoc_var]
+
 
         x = F.relu(self.fc1(x))
         x = F.dropout(x, p=0.5, training=self.training)
