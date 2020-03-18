@@ -132,7 +132,8 @@ class Net(torch.nn.Module):
         self.fc1 = Lin(1 * dim, dim)
         self.fc2 = Lin(dim, dim)
         self.fc3 = Lin(dim, dim)
-        self.fc4 = Lin(dim, 1)
+        self.fc4 = Lin(dim, dim)
+        self.fc5 = Lin(dim, 1)
 
     def forward(self, data):
         if torch.cuda.is_available():
