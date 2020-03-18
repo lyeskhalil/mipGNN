@@ -9,6 +9,7 @@ from torch_geometric.nn.inits import uniform
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+
 class MIPGNN(MessagePassing):
 
     def __init__(self, in_channels, out_channels, **kwargs):
@@ -19,7 +20,7 @@ class MIPGNN(MessagePassing):
 
         # Maps variable embedding to a scalar variable assignmnet.
         # TODO: Sigmoid?
-        self.hidden_to_var = Seq(Lin(in_channels, in_channels-1), ReLU(), Lin(in_channels-1, 1))
+        self.hidden_to_var = Seq(Lin(in_channels, in_channels - 1), ReLU(), Lin(in_channels - 1, 1))
 
         self.w_cons = Param(torch.Tensor(in_channels - 1, out_channels - 1))
         self.w_vars = Param(torch.Tensor(in_channels - 1, out_channels - 1))
@@ -39,8 +40,6 @@ class MIPGNN(MessagePassing):
         uniform(size, self.bias)
 
     def forward(self, x, edge_index, edge_type, edge_feature, assoc_con, assoc_var, rhs, size=None):
-
-
         # Step 3: Compute normalization
         row, col = edge_index
         deg = degree(row, x.size(0), dtype=x.dtype)
@@ -65,24 +64,21 @@ class MIPGNN(MessagePassing):
         # Variable assignment * coeffient in constraint.
         var_assign = var_assign * c
         # TODO: Scale by coefficient?
-        out_0 =  norm.view(-1, 1)[edge_type==0] * torch.matmul(c * x_j_0[:, 0:-1], self.w_cons)
+        out_0 = norm.view(-1, 1)[edge_type == 0] * torch.matmul(c * x_j_0[:, 0:-1], self.w_cons)
         # Assign left side of constraint to last column.
         out_0 = torch.cat([out_0, var_assign], dim=-1)
 
         ### Cons -> Vars.
         c = edge_feature[edge_index_j][edge_type == 1]
         # Get violation of contraint.
-        violation = x_j_1[:,-1]
+        violation = x_j_1[:, -1]
         # TODO: This should be scaled. Multiplied by current a
         violation = c.view(-1) * violation
         # TODO: Scale by coefficient?
         out_1 = torch.matmul(c * x_j_1[:, 0:-1], self.w_vars)
-        out_1 = norm.view(-1, 1)[edge_type==1] *torch.cat([out_1, violation.view(-1, 1)], dim=-1)
-
-
+        out_1 = norm.view(-1, 1)[edge_type == 1] * torch.cat([out_1, violation.view(-1, 1)], dim=-1)
 
         new_out = torch.zeros(x_j.size(0), self.out_channels, device=device)
-
         new_out[edge_type == 0] = out_0
         new_out[edge_type == 1] = out_1
 
@@ -100,8 +96,6 @@ class MIPGNN(MessagePassing):
 
         # Normalize aggregation.
         # TODO: Implement normalization!!!
-
-
 
         t_1 = new_out[assoc_con] + torch.matmul(x[assoc_con], self.root_vars)
         t_2 = new_out[assoc_var] + torch.matmul(x[assoc_var], self.root_vars)
@@ -153,17 +147,23 @@ class Net(torch.nn.Module):
 
         xs = [x]
         xs.append(F.relu(
-            self.conv1(xs[-1], data.edge_index, data.edge_types, data.edge_features, data.assoc_con, data.assoc_var, data.rhs)))
+            self.conv1(xs[-1], data.edge_index, data.edge_types, data.edge_features, data.assoc_con, data.assoc_var,
+                       data.rhs)))
         xs.append(F.relu(
-            self.conv2(xs[-1], data.edge_index, data.edge_types, data.edge_features, data.assoc_con, data.assoc_var, data.rhs)))
+            self.conv2(xs[-1], data.edge_index, data.edge_types, data.edge_features, data.assoc_con, data.assoc_var,
+                       data.rhs)))
         xs.append(F.relu(
-            self.conv3(xs[-1], data.edge_index, data.edge_types, data.edge_features, data.assoc_con, data.assoc_var, data.rhs)))
+            self.conv3(xs[-1], data.edge_index, data.edge_types, data.edge_features, data.assoc_con, data.assoc_var,
+                       data.rhs)))
         xs.append(F.relu(
-            self.conv4(xs[-1], data.edge_index, data.edge_types, data.edge_features, data.assoc_con, data.assoc_var, data.rhs)))
+            self.conv4(xs[-1], data.edge_index, data.edge_types, data.edge_features, data.assoc_con, data.assoc_var,
+                       data.rhs)))
         xs.append(F.relu(
-            self.conv5(xs[-1], data.edge_index, data.edge_types, data.edge_features, data.assoc_con, data.assoc_var, data.rhs)))
+            self.conv5(xs[-1], data.edge_index, data.edge_types, data.edge_features, data.assoc_con, data.assoc_var,
+                       data.rhs)))
         xs.append(F.relu(
-            self.conv6(xs[-1], data.edge_index, data.edge_types, data.edge_features, data.assoc_con, data.assoc_var, data.rhs)))
+            self.conv6(xs[-1], data.edge_index, data.edge_types, data.edge_features, data.assoc_con, data.assoc_var,
+                       data.rhs)))
 
         x = torch.cat(xs[0:], dim=-1)
         x = x[data.assoc_var]
@@ -176,7 +176,7 @@ class Net(torch.nn.Module):
         # x = F.dropout(x, p=0.5, training=self.training)
 
         # TODO: Sigmoid meaningful?
-        #x = F.sigmoid(self.fc4(x))
+        # x = F.sigmoid(self.fc4(x))
         x = self.fc4(x)
 
         return x.squeeze(-1)
