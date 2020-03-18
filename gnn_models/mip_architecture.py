@@ -129,7 +129,7 @@ class Net(torch.nn.Module):
         self.conv6 = MIPGNN(dim, dim)
 
         # Final MLP for regression.
-        self.fc1 = Lin(7 * dim, dim)
+        self.fc1 = Lin(3 * dim, dim)
         self.fc2 = Lin(dim, dim)
         self.fc3 = Lin(dim, dim)
         self.fc4 = Lin(dim, 1)
@@ -157,18 +157,18 @@ class Net(torch.nn.Module):
         xs.append(F.relu(
             self.conv2(xs[-1], data.edge_index, data.edge_types, data.edge_features, data.assoc_con, data.assoc_var,
                        data.rhs)))
-        xs.append(F.relu(
-            self.conv3(xs[-1], data.edge_index, data.edge_types, data.edge_features, data.assoc_con, data.assoc_var,
-                       data.rhs)))
-        xs.append(F.relu(
-            self.conv4(xs[-1], data.edge_index, data.edge_types, data.edge_features, data.assoc_con, data.assoc_var,
-                       data.rhs)))
-        xs.append(F.relu(
-            self.conv5(xs[-1], data.edge_index, data.edge_types, data.edge_features, data.assoc_con, data.assoc_var,
-                       data.rhs)))
-        xs.append(F.relu(
-            self.conv6(xs[-1], data.edge_index, data.edge_types, data.edge_features, data.assoc_con, data.assoc_var,
-                       data.rhs)))
+        # xs.append(F.relu(
+        #     self.conv3(xs[-1], data.edge_index, data.edge_types, data.edge_features, data.assoc_con, data.assoc_var,
+        #                data.rhs)))
+        # xs.append(F.relu(
+        #     self.conv4(xs[-1], data.edge_index, data.edge_types, data.edge_features, data.assoc_con, data.assoc_var,
+        #                data.rhs)))
+        # xs.append(F.relu(
+        #     self.conv5(xs[-1], data.edge_index, data.edge_types, data.edge_features, data.assoc_con, data.assoc_var,
+        #                data.rhs)))
+        # xs.append(F.relu(
+        #     self.conv6(xs[-1], data.edge_index, data.edge_types, data.edge_features, data.assoc_con, data.assoc_var,
+        #                data.rhs)))
 
         x = torch.cat(xs[0:], dim=-1)
         x = x[data.assoc_var]
