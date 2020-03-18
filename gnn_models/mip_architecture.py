@@ -43,11 +43,9 @@ class MIPGNN(MessagePassing):
 
         # Step 3: Compute normalization
         row, col = edge_index
-        deg = degree(row, size[0], dtype=x.dtype)
+        deg = degree(row, x.size(0), dtype=x.dtype)
         deg_inv = deg.pow(-1.0)
         norm = deg_inv[row]
-
-
 
         return self.propagate(edge_index, size=size, x=x, edge_type=edge_type, edge_feature=edge_feature,
                               assoc_con=assoc_con, assoc_var=assoc_var, rhs=rhs, norm=norm)
@@ -67,7 +65,7 @@ class MIPGNN(MessagePassing):
         # Variable assignment * coeffient in constraint.
         var_assign = var_assign * c
         # TODO: Scale by coefficient?
-        out_0 =  norm * torch.matmul(c * x_j_0[:, 0:-1], self.w_cons)
+        out_0 =  norm.view(-1, 1)[edge_type==0] * torch.matmul(c * x_j_0[:, 0:-1], self.w_cons)
         # Assign left side of constraint to last column.
         out_0 = torch.cat([out_0, var_assign], dim=-1)
 
@@ -79,7 +77,9 @@ class MIPGNN(MessagePassing):
         violation = c.view(-1) * violation
         # TODO: Scale by coefficient?
         out_1 = torch.matmul(c * x_j_1[:, 0:-1], self.w_vars)
-        out_1 = norm * torch.cat([out_1, violation.view(-1, 1)], dim=-1)
+        out_1 = norm.view(-1, 1)[edge_type==1] *torch.cat([out_1, violation.view(-1, 1)], dim=-1)
+
+
 
         new_out = torch.zeros(x_j.size(0), self.out_channels, device=device)
 
