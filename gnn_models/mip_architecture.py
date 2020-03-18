@@ -20,7 +20,7 @@ class MIPGNN(MessagePassing):
 
         # Maps variable embedding to a scalar variable assignmnet.
         # TODO: Sigmoid?
-        self.hidden_to_var = Seq(Lin(in_channels, in_channels - 1), ReLU(), Lin(in_channels - 1, 1))
+        self.hidden_to_var = Seq(Lin(in_channels, in_channels - 1), Sigmoid(), Lin(in_channels - 1, 1))
 
         self.mlp_cons = Seq(Lin(in_channels-1, in_channels - 1), ReLU(), Lin(in_channels - 1, in_channels - 1))
         self.mlp_vars = Seq(Lin(in_channels-1, in_channels - 1), ReLU(), Lin(in_channels - 1, in_channels - 1))
