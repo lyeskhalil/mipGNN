@@ -171,7 +171,7 @@ class Net(torch.nn.Module):
                        data.rhs)))
 
         # x = torch.cat(xs[0:], dim=-1)
-        x = x[-1]
+        x = xs[-1]
         x = x[data.assoc_var]
 
         x = F.relu(self.fc1(x))
