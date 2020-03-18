@@ -128,9 +128,11 @@ class Net(torch.nn.Module):
         self.conv2 = MIPGNN(dim, dim)
         self.conv3 = MIPGNN(dim, dim)
         self.conv4 = MIPGNN(dim, dim)
+        self.conv5 = MIPGNN(dim, dim)
+        self.conv6 = MIPGNN(dim, dim)
 
         # Final MLP for regression.
-        self.fc1 = Lin(5 * dim, dim)
+        self.fc1 = Lin(7 * dim, dim)
         self.fc2 = Lin(dim, dim)
         self.fc3 = Lin(dim, dim)
         self.fc4 = Lin(dim, 1)
