@@ -46,7 +46,7 @@ class CONS(MessagePassing):
 
         return self.propagate(edge_index, size=size, x=x, edge_type=edge_type, edge_feature=edge_feature, rhs=rhs, norm=norm)
 
-    def message(self, x_j, edge_index_j, edge_type, edge_feature, norm):
+    def message(self, x_j, edge_index_j, edge_feature, norm):
 
         #  x_j is a variable node.
         c = edge_feature[edge_index_j]
@@ -61,7 +61,7 @@ class CONS(MessagePassing):
         out = torch.cat([out, var_assign], dim=-1)
 
 
-        return new_out
+        return out
 
     def update(self, aggr_out, x, assoc_con, assoc_var, rhs):
         new_out = torch.zeros(aggr_out.size(0), aggr_out.size(1), device=device)
@@ -74,7 +74,6 @@ class CONS(MessagePassing):
         # TODO: only apply update to nl part.
         t_1 = new_out + torch.matmul(x, self.root_vars)
 
-        out = torch.zeros(new_out.size(0), new_out.size(1), device=device)
         out = t_1
 
         new_out = out + self.bias
@@ -89,12 +88,7 @@ class Net(torch.nn.Module):
         self.var_mlp = Seq(Lin(2, dim - 3), ReLU(), Lin(dim - 3, dim - 3))
         self.con_mlp = Seq(Lin(2, dim - 3), ReLU(), Lin(dim - 3, dim - 3))
 
-        self.conv1 = MIPGNN(dim, dim)
-        self.conv2 = MIPGNN(dim, dim)
-        self.conv3 = MIPGNN(dim, dim)
-        self.conv4 = MIPGNN(dim, dim)
-        self.conv5 = MIPGNN(dim, dim)
-        self.conv6 = MIPGNN(dim, dim)
+        self.conv1 = CONS(dim, dim)
 
         # Final MLP for regression.
         self.fc1 = Lin(1 * dim, dim)
@@ -123,23 +117,9 @@ class Net(torch.nn.Module):
 
         xs = [x]
         xs.append(F.relu(
-            self.conv1(xs[-1], data.edge_index, data.edge_types, data.edge_features, data.assoc_con, data.assoc_var,
-                       data.rhs)))
-        xs.append(F.relu(
-            self.conv2(xs[-1], data.edge_index, data.edge_types, data.edge_features, data.assoc_con, data.assoc_var,
-                       data.rhs)))
-        xs.append(F.relu(
-            self.conv3(xs[-1], data.edge_index, data.edge_types, data.edge_features, data.assoc_con, data.assoc_var,
-                       data.rhs)))
-        xs.append(F.relu(
-            self.conv4(xs[-1], data.edge_index, data.edge_types, data.edge_features, data.assoc_con, data.assoc_var,
-                       data.rhs)))
-        xs.append(F.relu(
-            self.conv5(xs[-1], data.edge_index, data.edge_types, data.edge_features, data.assoc_con, data.assoc_var,
-                       data.rhs)))
-        xs.append(F.relu(
-            self.conv6(xs[-1], data.edge_index, data.edge_types, data.edge_features, data.assoc_con, data.assoc_var,
-                       data.rhs)))
+            self.conv1(xs[-1], data.edge_index_con,  data.edge_features_con,data.rhs, [data.edge_index_con.size(0), data.edge_features_con.size(1)])))
+
+        exit()
 
         # x = torch.cat(xs[0:], dim=-1)
         x = xs[-1]

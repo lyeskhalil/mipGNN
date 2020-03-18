@@ -26,11 +26,11 @@ class GISR(InMemoryDataset):
 
     @property
     def raw_file_names(self):
-        return "ERBIN"
+        return "EREBIN"
 
     @property
     def processed_file_names(self):
-        return "ERBIN"
+        return "ERSBIN"
 
     def download(self):
         pass
@@ -130,21 +130,121 @@ class GISR(InMemoryDataset):
 class MyData(Data):
     def __inc__(self, key, value):
         if key in ['edge_index_var']:
-            return torch.tensor([self.num_nodes_var, self.num_nodes_con])
+            return torch.tensor([self.edge_index_var.size(0), self.edge_index_var.size(1)])
         elif key in ['edge_index_con']:
-            return  torch.tensor([self.num_nodes_con, self.num_nodes_var])
+            return torch.tensor([self.edge_index_con.size(0), self.edge_index_con.size(1)])
         else:
             return 0
 
 class MyTransform(object):
     def __call__(self, data):
         new_data = MyData()
+        for key, item in data:
+            new_data[key] = item
         return new_data
+
 
 path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'DS')
 dataset = GISR(path, transform=MyTransform()).shuffle()
 dataset.data.y = torch.log(dataset.data.y + 1.0)
 print(len(dataset))
+
+
+
+train_dataset = dataset[0:800].shuffle()
+val_dataset = dataset[800:900].shuffle()
+test_dataset = dataset[900:].shuffle()
+
+train_loader = DataLoader(train_dataset, batch_size=5, shuffle=True)
+val_loader = DataLoader(val_dataset, batch_size=5, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=5, shuffle=True)
+
+
+
+
+print("### DATA LOADED.")
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+model = Net(dim=128).to(device)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+    optimizer, mode='min', factor=0.7, patience=5, min_lr=0.00001)
+
+print("### SETUP DONE.")
+
+class RMSELoss(torch.nn.Module):
+    def __init__(self, eps=1e-6):
+        super().__init__()
+        self.mse = torch.nn.MSELoss()
+        self.eps = eps
+
+    def forward(self, yhat, y):
+        loss = torch.sqrt(self.mse(yhat, y) + self.eps)
+        return loss
+
+def train():
+    model.train()
+    total_loss = 0
+    total_loss_mae = 0
+    loss = torch.nn.MSELoss()
+    mse = RMSELoss()
+    #mse = torch.nn.MSELoss()
+    mae = torch.nn.L1Loss()
+    #mse = torch.nn.SmoothL1Loss()
+
+
+    for data in train_loader:
+        optimizer.zero_grad()
+        data = data.to(device)
+        out = model(data)
+
+        loss = mse(out, data.y)
+        loss.backward()
+
+        total_loss += loss.item() * data.num_graphs
+        total_loss_mae += mae(out, data.y).item() * data.num_graphs
+
+        optimizer.step()
+
+    return total_loss_mae / len(train_loader.dataset), total_loss / len(train_loader.dataset)
+
+
+
+def test(loader):
+    model.eval()
+    error = 0
+    l1 = torch.nn.L1Loss()
+
+    for data in loader:
+        data = data.to(device)
+        out = model(data)
+
+        loss = l1(torch.exp(out) - 1.0, torch.exp(data.y) - 1.0)
+        error += loss.item() * data.num_graphs
+
+    return error / len(loader.dataset)
+
+
+best_val_error = None
+
+test_error = test(test_loader)
+print(test_error)
+
+for epoch in range(1, 500):
+    lr = scheduler.optimizer.param_groups[0]['lr']
+    mae, loss = train()
+
+    if epoch == 12:
+        for param_group in optimizer.param_groups:
+           param_group['lr'] = 0.5 * param_group['lr']
+
+    val_error = test(val_loader)
+
+    if best_val_error is None or val_error < best_val_error:
+        test_error = test(test_loader)
+
+    print('Epoch: {:03d}, LR: {:7f}, Loss: {:.7f}, Train MAE: {:.7f}, Test MAE: {:.7f}'.format(epoch, lr, loss, mae, test_error))
+
+# torch.save(model.state_dict(), "train_mip")
 
 
 
