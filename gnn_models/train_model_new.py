@@ -72,7 +72,7 @@ class GISR(InMemoryDataset):
                     coeff = node_data['objcoeff']
 
                     # TODO: Scaling meaingful?
-                    var_feat.append([coeff/ 100.0, graph.degree[i]])
+                    var_feat.append([coeff / 100.0, graph.degree[i]])
 
                 # Node is constraint.
                 else:

@@ -12,7 +12,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 class MIPGNN(MessagePassing):
 
     def __init__(self, in_channels, out_channels, **kwargs):
-        super(MIPGNN, self).__init__(aggr='mean', **kwargs)
+        super(MIPGNN, self).__init__(aggr='add', **kwargs)
 
         self.in_channels = in_channels
         self.out_channels = out_channels
@@ -39,10 +39,20 @@ class MIPGNN(MessagePassing):
         uniform(size, self.bias)
 
     def forward(self, x, edge_index, edge_type, edge_feature, assoc_con, assoc_var, rhs, size=None):
-        return self.propagate(edge_index, size=size, x=x, edge_type=edge_type, edge_feature=edge_feature,
-                              assoc_con=assoc_con, assoc_var=assoc_var, rhs=rhs)
 
-    def message(self, x_j, edge_index_j, edge_type, edge_feature):
+
+        # Step 3: Compute normalization
+        row, col = edge_index
+        deg = degree(row, size[0], dtype=x.dtype)
+        deg_inv = deg.pow(-1.0)
+        norm = deg_inv[row]
+
+
+
+        return self.propagate(edge_index, size=size, x=x, edge_type=edge_type, edge_feature=edge_feature,
+                              assoc_con=assoc_con, assoc_var=assoc_var, rhs=rhs, norm=norm)
+
+    def message(self, x_j, edge_index_j, edge_type, edge_feature, norm):
         # Split data.
         # Variable nodes.
         x_j_0 = x_j[edge_type == 0]
@@ -57,7 +67,7 @@ class MIPGNN(MessagePassing):
         # Variable assignment * coeffient in constraint.
         var_assign = var_assign * c
         # TODO: Scale by coefficient?
-        out_0 = torch.matmul(c * x_j_0[:, 0:-1], self.w_cons)
+        out_0 =  norm * torch.matmul(c * x_j_0[:, 0:-1], self.w_cons)
         # Assign left side of constraint to last column.
         out_0 = torch.cat([out_0, var_assign], dim=-1)
 
@@ -67,8 +77,9 @@ class MIPGNN(MessagePassing):
         violation = x_j_1[:,-1]
         # TODO: This should be scaled. Multiplied by current a
         violation = c.view(-1) * violation
-        out_1 = torch.matmul(x_j_1[:, 0:-1], self.w_vars)
-        out_1 = torch.cat([out_1, violation.view(-1, 1)], dim=-1)
+        # TODO: Scale by coefficient?
+        out_1 = torch.matmul(c * x_j_1[:, 0:-1], self.w_vars)
+        out_1 = norm * torch.cat([out_1, violation.view(-1, 1)], dim=-1)
 
         new_out = torch.zeros(x_j.size(0), self.out_channels, device=device)
 
@@ -158,7 +169,7 @@ class Net(torch.nn.Module):
         x = x[data.assoc_var]
 
         x = F.relu(self.fc1(x))
-        x = F.dropout(x, p=0.5, training=self.training)
+        # x = F.dropout(x, p=0.5, training=self.training)
         x = F.relu(self.fc2(x))
         # x = F.dropout(x, p=0.5, training=self.training)
         x = F.relu(self.fc3(x))
