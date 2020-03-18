@@ -136,11 +136,11 @@ class Net(torch.nn.Module):
 
     def forward(self, data):
         if torch.cuda.is_available():
-            ones_var = torch.ones(data.var_node_features.size(0), 1).cuda()
-            ones_con = torch.ones(data.con_node_features.size(0), 1).cuda()
+            ones_var = torch.zeros(data.var_node_features.size(0), 1).cuda()
+            ones_con = torch.zeros(data.con_node_features.size(0), 1).cuda()
         else:
-            ones_var = torch.ones(data.var_node_features.size(0), 1).cpu()
-            ones_con = torch.ones(data.con_node_features.size(0), 1).cpu()
+            ones_var = torch.zeros(data.var_node_features.size(0), 1).cpu()
+            ones_con = torch.zeros(data.con_node_features.size(0), 1).cpu()
 
         n = torch.cat([self.var_mlp(data.var_node_features), data.var_node_features, ones_var], dim=-1)
         e = torch.cat([self.con_mlp(data.con_node_features), data.con_node_features, ones_con], dim=-1)
