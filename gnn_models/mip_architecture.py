@@ -167,8 +167,6 @@ class Net(torch.nn.Module):
         xs.append(F.relu(
             self.conv6(xs[-1], data.edge_index, data.edge_types, data.edge_features, data.assoc_con, data.assoc_var, data.rhs)))
 
-
-
         x = torch.cat(xs[0:], dim=-1)
         x = x[data.assoc_var]
 
@@ -178,6 +176,8 @@ class Net(torch.nn.Module):
         # x = F.dropout(x, p=0.5, training=self.training)
         x = F.relu(self.fc3(x))
         # x = F.dropout(x, p=0.5, training=self.training)
-        x = self.fc4(x)
+
+        # TODO: Sigmoid meaningful?
+        x = F.sigmoid(self.fc4(x))
 
         return x.squeeze(-1)
