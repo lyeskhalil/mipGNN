@@ -67,21 +67,17 @@ class CONS(MessagePassing):
         new_out = torch.zeros(aggr_out.size(0), aggr_out.size(1), device=device)
 
         # Assign violation back to embedding of contraints.
-        t = aggr_out
-        new_out[assoc_con, -1] = t - rhs
-        new_out[assoc_con, 0:-1] = aggr_out[assoc_con, 0:-1]
+        t = aggr_out[:, -1]
+        new_out[:, -1] = t - rhs
+        new_out[:, 0:-1] = aggr_out[assoc_var, 0:-1]
 
-        new_out[assoc_var] = aggr_out[assoc_var]
-
-        # TODO: only apply updatde to nl part.
-        t_1 = new_out[assoc_con] + torch.matmul(x[assoc_con], self.root_vars)
-        t_2 = new_out[assoc_var] + torch.matmul(x[assoc_var], self.root_vars)
+        # TODO: only apply update to nl part.
+        t_1 = new_out + torch.matmul(x, self.root_vars)
 
         out = torch.zeros(new_out.size(0), new_out.size(1), device=device)
-        out[assoc_con] = t_1
-        out[assoc_var] = t_2
+        out = t_1
 
-        new_out = new_out + self.bias
+        new_out = out + self.bias
 
         return new_out
 

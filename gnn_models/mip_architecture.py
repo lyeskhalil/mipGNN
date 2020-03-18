@@ -95,7 +95,7 @@ class MIPGNN(MessagePassing):
         # Assign violation back to embedding of contraints.
         t = aggr_out[assoc_con, -1]
         new_out[assoc_con, -1] = t - rhs
-        new_out[assoc_var, 0:-1] = aggr_out[assoc_var, 0:-1]
+        new_out[assoc_con, 0:-1] = aggr_out[assoc_con, 0:-1]
 
         new_out[assoc_var] = aggr_out[assoc_var]
 
@@ -107,7 +107,7 @@ class MIPGNN(MessagePassing):
         out[assoc_con] = t_1
         out[assoc_var] = t_2
 
-        new_out = new_out + self.bias
+        new_out = out + self.bias
 
         return new_out
 
