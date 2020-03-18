@@ -175,7 +175,7 @@ def train():
     mse = RMSELoss()
     #mse = torch.nn.MSELoss()
     mae = torch.nn.L1Loss()
-    #mse = torch.nn.SmoothL1Loss()
+    mse = torch.nn.SmoothL1Loss()
 
 
     for data in train_loader:
