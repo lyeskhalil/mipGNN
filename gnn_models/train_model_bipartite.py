@@ -16,7 +16,7 @@ from torch_geometric.data import DataLoader
 
 torch.autograd.set_detect_anomaly(True)
 
-from gnn_models.mip_architecture import Net
+from gnn_models.mip_alternating_arch import Net
 
 class GISR(InMemoryDataset):
     def __init__(self, root, transform=None, pre_transform=None,
@@ -26,11 +26,11 @@ class GISR(InMemoryDataset):
 
     @property
     def raw_file_names(self):
-        return "ER"
+        return "ERBIN"
 
     @property
     def processed_file_names(self):
-        return "ERB"
+        return "ERBIN"
 
     def download(self):
         pass
@@ -57,12 +57,7 @@ class GISR(InMemoryDataset):
             con_node = {}
             var_i = 0
             con_i = 0
-
             y = []
-
-            assoc_var = []
-            assoc_con = []
-
             var_feat = []
             con_feat = []
             rhss = []
@@ -73,7 +68,6 @@ class GISR(InMemoryDataset):
                     var_i += 1
 
                     y.append(node_data['bias'])
-                    assoc_var.append(i)
                     coeff = node_data['objcoeff']
 
                     # TODO: Scaling meaingful?
@@ -84,11 +78,12 @@ class GISR(InMemoryDataset):
                     con_node[i] = con_i
                     con_i += 1
 
-                    assoc_con.append(i)
                     rhs = node_data['rhs']
                     rhss.append(rhs)
                     con_feat.append([rhs, graph.degree[i]])
 
+            num_nodes_var = var_i
+            num_nodes_con = con_i
             edge_list_var = []
             edge_list_con = []
             for i, (s, t, edge_data) in enumerate(graph.edges(data=True)):
@@ -117,9 +112,10 @@ class GISR(InMemoryDataset):
             data.edge_index_con = edge_index_con
             data.var_node_features = torch.from_numpy(np.array(var_feat)).to(torch.float)
             data.con_node_features = torch.from_numpy(np.array(con_feat)).to(torch.float)
-            data.assoc_var = torch.from_numpy(np.array(assoc_var)).to(torch.long)
-            data.assoc_con = torch.from_numpy(np.array(assoc_con)).to(torch.long)
             data.rhs = torch.from_numpy(np.array(rhss)).to(torch.float)
+
+            data.num_nodes_var = torch.LongTensor(num_nodes_var)
+            data.num_nodes_con = torch.LongTensor(num_nodes_con)
 
             data.edge_features_con = torch.from_numpy(np.array(edge_features_con)).to(torch.float)
             data.edge_features_var = torch.from_numpy(np.array(edge_features_var)).to(torch.float)
@@ -130,23 +126,26 @@ class GISR(InMemoryDataset):
         torch.save((data, slices), self.processed_paths[0])
 
 
+
 class MyData(Data):
     def __inc__(self, key, value):
-        return self.num_nodes if key in [
-            'edge_index', 'assoc_var', 'assoc_con'
-        ] else 0
-
+        if key in ['edge_index_var']:
+            return torch.tensor([self.num_nodes_var, self.num_nodes_con])
+        elif key in ['edge_index_con']:
+            return  torch.tensor([self.num_nodes_con, self.num_nodes_var])
+        else:
+            return 0
 
 class MyTransform(object):
     def __call__(self, data):
         new_data = MyData()
-        for key, item in data:
-            new_data[key] = item
-        new_data.num_nodes = data.node_types.size(0)
         return new_data
-
 
 path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'DS')
 dataset = GISR(path, transform=MyTransform()).shuffle()
 dataset.data.y = torch.log(dataset.data.y + 1.0)
 print(len(dataset))
+
+
+
+
