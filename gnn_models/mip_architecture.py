@@ -39,8 +39,8 @@ class MIPGNN(MessagePassing):
         self.w_cons = Param(torch.Tensor(in_channels - 1, out_channels - 1))
         self.w_vars = Param(torch.Tensor(in_channels - 1, out_channels - 1))
 
-        self.root_cons = Param(torch.Tensor(in_channels, out_channels-1))
-        self.root_vars = Param(torch.Tensor(in_channels, out_channels-1))
+        self.root_cons = Param(torch.Tensor(in_channels, out_channels))
+        self.root_vars = Param(torch.Tensor(in_channels, out_channels))
         self.bias = Param(torch.Tensor(out_channels))
 
         self.reset_parameters()
@@ -78,7 +78,7 @@ class MIPGNN(MessagePassing):
         c = edge_feature[edge_index_j][edge_type == 1]
         # Get violation of contraint.
         violation = x_j_1[:,-1]
-        # TODO: This should be scaled.
+        # TODO: This should be scaled. Multiplied by current a
         violation = c.view(-1) * violation
         out_1 = torch.matmul(x_j_1[:, 0:-1], self.w_vars)
         out_1 = torch.cat([out_1, violation.view(-1, 1)], dim=-1)
@@ -97,21 +97,22 @@ class MIPGNN(MessagePassing):
         t = aggr_out[assoc_con, -1]
         new_out[assoc_con, -1] = t - rhs
         new_out[assoc_con, 0:-1] = aggr_out[assoc_con, 0:-1]
+
         new_out[assoc_var] = aggr_out[assoc_var]
 
         # Normalize aggregation.
         # TODO: Implement normalization!!!
 
-        t_1 = new_out[assoc_con, 0:-1] + torch.matmul(x[assoc_con], self.root_vars)
-        t_2 = new_out[assoc_var, 0:-1] + torch.matmul(x[assoc_var], self.root_vars)
+
+
+        t_1 = new_out[assoc_con] + torch.matmul(x[assoc_con], self.root_vars)
+        t_2 = new_out[assoc_var] + torch.matmul(x[assoc_var], self.root_vars)
 
         out = torch.zeros(new_out.size(0), new_out.size(1), device=device)
-
-        out[assoc_con, 0:-1] = t_1
-        out[assoc_var, 0:-1] = t_2
+        out[assoc_con] = t_1
+        out[assoc_var] = t_2
 
         new_out = new_out + self.bias
-
 
         return new_out
 
