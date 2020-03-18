@@ -180,10 +180,11 @@ class Net(torch.nn.Module):
         x = F.relu(self.fc2(x))
         # x = F.dropout(x, p=0.5, training=self.training)
         x = F.relu(self.fc3(x))
+        x = F.relu(self.fc4(x))
         # x = F.dropout(x, p=0.5, training=self.training)
 
         # TODO: Sigmoid meaningful?
         # x = F.sigmoid(self.fc4(x))
-        x = self.fc4(x)
+        x = self.fc5(x)
 
         return x.squeeze(-1)
