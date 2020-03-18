@@ -131,7 +131,9 @@ class Net(torch.nn.Module):
         self.fc2 = Lin(dim, dim)
         self.fc3 = Lin(dim, dim)
         self.fc4 = Lin(dim, dim)
-        self.fc5 = Lin(dim, 1)
+        self.fc5 = Lin(dim, dim)
+
+        self.fc6 = Lin(dim, 1)
 
     def forward(self, data):
         if torch.cuda.is_available():
@@ -179,10 +181,11 @@ class Net(torch.nn.Module):
         # x = F.dropout(x, p=0.5, training=self.training)
         x = F.relu(self.fc3(x))
         x = F.relu(self.fc4(x))
+        x = F.relu(self.fc5(x))
         # x = F.dropout(x, p=0.5, training=self.training)
 
         # TODO: Sigmoid meaningful?
         #x = F.sigmoid(self.fc5(x))
-        x = self.fc5(x)
+        x = self.fc6(x)
 
         return x.squeeze(-1)
