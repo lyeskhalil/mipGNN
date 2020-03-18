@@ -184,7 +184,7 @@ class Net(torch.nn.Module):
         # x = F.dropout(x, p=0.5, training=self.training)
 
         # TODO: Sigmoid meaningful?
-        # x = F.sigmoid(self.fc4(x))
-        x = self.fc5(x)
+        x = F.sigmoid(self.fc5(x))
+        #x = self.fc5(x)
 
         return x.squeeze(-1)
