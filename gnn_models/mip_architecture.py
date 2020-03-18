@@ -157,18 +157,18 @@ class Net(torch.nn.Module):
         xs.append(F.relu(
             self.conv2(xs[-1], data.edge_index, data.edge_types, data.edge_features, data.assoc_con, data.assoc_var,
                        data.rhs)))
-        # xs.append(F.relu(
-        #     self.conv3(xs[-1], data.edge_index, data.edge_types, data.edge_features, data.assoc_con, data.assoc_var,
-        #                data.rhs)))
-        # xs.append(F.relu(
-        #     self.conv4(xs[-1], data.edge_index, data.edge_types, data.edge_features, data.assoc_con, data.assoc_var,
-        #                data.rhs)))
-        # xs.append(F.relu(
-        #     self.conv5(xs[-1], data.edge_index, data.edge_types, data.edge_features, data.assoc_con, data.assoc_var,
-        #                data.rhs)))
-        # xs.append(F.relu(
-        #     self.conv6(xs[-1], data.edge_index, data.edge_types, data.edge_features, data.assoc_con, data.assoc_var,
-        #                data.rhs)))
+        xs.append(F.relu(
+            self.conv3(xs[-1], data.edge_index, data.edge_types, data.edge_features, data.assoc_con, data.assoc_var,
+                       data.rhs)))
+        xs.append(F.relu(
+            self.conv4(xs[-1], data.edge_index, data.edge_types, data.edge_features, data.assoc_con, data.assoc_var,
+                       data.rhs)))
+        xs.append(F.relu(
+            self.conv5(xs[-1], data.edge_index, data.edge_types, data.edge_features, data.assoc_con, data.assoc_var,
+                       data.rhs)))
+        xs.append(F.relu(
+            self.conv6(xs[-1], data.edge_index, data.edge_types, data.edge_features, data.assoc_con, data.assoc_var,
+                       data.rhs)))
 
         x = torch.cat(xs[0:], dim=-1)
         x = x[data.assoc_var]
