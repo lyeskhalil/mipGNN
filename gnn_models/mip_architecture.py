@@ -1,26 +1,10 @@
-import sys
-
-sys.path.insert(0, '..')
-sys.path.insert(0, '../..')
-sys.path.insert(0, '.')
-
-import os
-import os.path as osp
-import numpy as np
-import networkx as nx
-
-from torch_geometric.data import (InMemoryDataset, Data)
-from torch_geometric.data import DataLoader
 import torch.nn.functional as F
 from torch.nn import Sequential as Seq, Linear as Lin, ReLU, Sigmoid
-from torch_geometric.nn import NNConv
 from torch_geometric.utils import degree
-
 
 import torch
 from torch.nn import Parameter as Param
 from torch_geometric.nn.conv import MessagePassing
-
 from torch_geometric.nn.inits import uniform
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -33,8 +17,9 @@ class MIPGNN(MessagePassing):
         self.in_channels = in_channels
         self.out_channels = out_channels
 
-        self.hidden_to_var = Seq(Lin(in_channels, in_channels-1), Sigmoid(), Lin(in_channels-1, 1))
-        self.proj = Seq(Lin(in_channels, out_channels-1), ReLU(), Lin(out_channels-1, out_channels-1))
+        # Maps variable embedding to a scalar variable assignmnet.
+        # TODO: Sigmoid?
+        self.hidden_to_var = Seq(Lin(in_channels, in_channels-1), ReLU(), Lin(in_channels-1, 1))
 
         self.w_cons = Param(torch.Tensor(in_channels - 1, out_channels - 1))
         self.w_vars = Param(torch.Tensor(in_channels - 1, out_channels - 1))
@@ -48,7 +33,7 @@ class MIPGNN(MessagePassing):
     def reset_parameters(self):
         size = self.in_channels
         uniform(size - 1, self.w_cons)
-        uniform(size, self.w_vars)
+        uniform(size - 1, self.w_vars)
         uniform(size, self.root_cons)
         uniform(size, self.root_vars)
         uniform(size, self.bias)
@@ -65,12 +50,14 @@ class MIPGNN(MessagePassing):
         x_j_1 = x_j[edge_type == 1]
 
         ### Vars -> Cons.
-        #  x_j is variable nodes.
+        #  x_j is a variable node.
         c = edge_feature[edge_index_j][edge_type == 0]
+        # Compute variable assignment.
         var_assign = self.hidden_to_var(x_j_0)
-        # Variable assignment * coeffient in contraint.
+        # Variable assignment * coeffient in constraint.
         var_assign = var_assign * c
-        out_0 = torch.matmul(x_j_0[:, 0:-1], self.w_cons)
+        # TODO: Scale by coefficient?
+        out_0 = torch.matmul(c * x_j_0[:, 0:-1], self.w_cons)
         # Assign left side of constraint to last column.
         out_0 = torch.cat([out_0, var_assign], dim=-1)
 
