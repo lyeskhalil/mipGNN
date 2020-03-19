@@ -14,7 +14,7 @@ from torch_geometric.data import (InMemoryDataset, Data)
 from torch_geometric.data import DataLoader
 from gnn_models.mip_alternating_arch import Net
 
-
+# Dataset and preprocessing.
 class GISR(InMemoryDataset):
     def __init__(self, root, transform=None, pre_transform=None,
                  pre_filter=None):
@@ -122,7 +122,6 @@ class GISR(InMemoryDataset):
         data, slices = self.collate(data_list)
         torch.save((data, slices), self.processed_paths[0])
 
-
 class MyData(Data):
     def __inc__(self, key, value):
         if key in ['edge_index_var']:
@@ -132,7 +131,6 @@ class MyData(Data):
         else:
             return 0
 
-
 class MyTransform(object):
     def __call__(self, data):
         new_data = MyData()
@@ -140,9 +138,10 @@ class MyTransform(object):
             new_data[key] = item
         return new_data
 
-
+# Prepare dadta
 path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'DS')
 dataset = GISR(path, transform=MyTransform()).shuffle()
+# TODO: log transform.
 dataset.data.y = torch.log(dataset.data.y + 1.0)
 print(len(dataset))
 
@@ -161,9 +160,7 @@ model = Net(dim=64).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
     optimizer, mode='min', factor=0.7, patience=5, min_lr=0.00001)
-
 print("### SETUP DONE.")
-
 
 class RMSELoss(torch.nn.Module):
     def __init__(self, eps=1e-6):
@@ -194,10 +191,11 @@ def train():
         loss = mse(out, data.y)
         loss.backward()
 
-        total_loss += loss.item() * data.y.size(0)
+        total_loss += loss.item()  * batch_size
         total_loss_mae += mae(out, data.y).item() * batch_size
 
         optimizer.step()
+
 
     return total_loss_mae / len(train_loader.dataset), total_loss / len(train_loader.dataset)
 
@@ -213,6 +211,10 @@ def test(loader):
         loss = l1(torch.exp(out) - 1.0, torch.exp(data.y) - 1.0)
 
         error += loss.item() * batch_size
+
+    print(len(loader.dataset))
+
+    exit()
 
     return error / len(loader.dataset)
 
