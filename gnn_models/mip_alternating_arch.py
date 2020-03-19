@@ -137,6 +137,12 @@ class Net(torch.nn.Module):
         self.v2c_4 = VARS_TO_CON(dim, dim)
         self.c2v_4 = CONS_TO_VAR(dim, dim)
 
+        self.v2c_5 = VARS_TO_CON(dim, dim)
+        self.c2v_5 = CONS_TO_VAR(dim, dim)
+
+        self.v2c_6 = VARS_TO_CON(dim, dim)
+        self.c2v_6 = CONS_TO_VAR(dim, dim)
+
         # Final MLP for regression.
         self.fc1 = Lin(1 * dim, dim)
         self.fc2 = Lin(dim, dim)
@@ -181,6 +187,18 @@ class Net(torch.nn.Module):
                                       (data.num_nodes_var.sum(), data.num_nodes_con.sum()))))
 
         vars.append(F.relu(self.c2v_4(cons[-1], vars[-1], data.edge_index_con, data.edge_features_con, data.rhs,
+                                      (data.num_nodes_con.sum(), data.num_nodes_var.sum()))))
+
+        cons.append(F.relu(self.v2c_5(vars[-1], cons[-1], data.edge_index_var, data.edge_features_var, data.rhs,
+                                      (data.num_nodes_var.sum(), data.num_nodes_con.sum()))))
+
+        vars.append(F.relu(self.c2v_5(cons[-1], vars[-1], data.edge_index_con, data.edge_features_con, data.rhs,
+                                      (data.num_nodes_con.sum(), data.num_nodes_var.sum()))))
+
+        cons.append(F.relu(self.v2c_6(vars[-1], cons[-1], data.edge_index_var, data.edge_features_var, data.rhs,
+                                      (data.num_nodes_var.sum(), data.num_nodes_con.sum()))))
+
+        vars.append(F.relu(self.c2v_6(cons[-1], vars[-1], data.edge_index_con, data.edge_features_con, data.rhs,
                                       (data.num_nodes_con.sum(), data.num_nodes_var.sum()))))
 
         # x = torch.cat(vars[0:], dim=-1)
