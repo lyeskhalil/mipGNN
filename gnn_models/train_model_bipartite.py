@@ -12,9 +12,6 @@ import networkx as nx
 import torch
 from torch_geometric.data import (InMemoryDataset, Data)
 from torch_geometric.data import DataLoader
-
-torch.autograd.set_detect_anomaly(True)
-
 from gnn_models.mip_alternating_arch import Net
 
 
@@ -26,11 +23,11 @@ class GISR(InMemoryDataset):
 
     @property
     def raw_file_names(self):
-        return "TEdkrdtrST"
+        return "TEST1"
 
     @property
     def processed_file_names(self):
-        return "TErdrSktdT"
+        return "TEST2"
 
     def download(self):
         pass
@@ -39,10 +36,9 @@ class GISR(InMemoryDataset):
         data_list = []
 
         path = '../gisp_generator/DATA/er_200/'
-
         total = len(os.listdir(path))
 
-        for num, filename in enumerate(os.listdir(path)[0:]):
+        for num, filename in enumerate(os.listdir(path)):
             print(filename, num, total)
 
             graph = nx.read_gpickle(path + filename)
@@ -55,11 +51,18 @@ class GISR(InMemoryDataset):
             # Compute map for new nodes in graph.
             var_node = {}
             con_node = {}
+
+            # Number of variables.
             var_i = 0
+            # Number of constraints.
             con_i = 0
+            # Targets
             y = []
+            # Features for variable nodes.
             var_feat = []
+            # Feature for constraints nodes.
             con_feat = []
+            # Contains right-hand sides of equations.
             rhss = []
             for i, (node, node_data) in enumerate(graph.nodes(data=True)):
                 # Node is a variable.
@@ -68,10 +71,8 @@ class GISR(InMemoryDataset):
                     var_i += 1
 
                     y.append(node_data['bias'])
-                    coeff = node_data['objcoeff']
-
                     # TODO: Scaling meaingful?
-                    var_feat.append([coeff / 100.0, graph.degree[i]])
+                    var_feat.append([node_data['objcoeff'] / 100.0, graph.degree[i]])
 
                 # Node is constraint.
                 else:
@@ -84,40 +85,37 @@ class GISR(InMemoryDataset):
 
             num_nodes_var = var_i
             num_nodes_con = con_i
+            # Edge list for var->con graphs.
             edge_list_var = []
+            # Edge list for con->var graphs.
             edge_list_con = []
-            for i, (s, t, edge_data) in enumerate(graph.edges(data=True)):
-                # Source node is con, target node is var.
-                if graph.nodes[s]['bipartite'] == 1:
-                    edge_list_con.append([con_node[s], var_node[t]])
-                else:
-                    edge_list_var.append([var_node[s], con_node[t]])
 
-            edge_index_var = torch.tensor(edge_list_var).t().contiguous()
-            edge_index_con = torch.tensor(edge_list_con).t().contiguous()
-
+            # TODO: Check this.
             edge_features_var = []
             edge_features_con = []
             for i, (s, t, edge_data) in enumerate(graph.edges(data=True)):
                 # Source node is con, target node is var.
                 if graph.nodes[s]['bipartite'] == 1:
+                    edge_list_con.append([con_node[s], var_node[t]])
                     edge_features_con.append([edge_data['coeff']])
                 else:
+                    edge_list_var.append([var_node[s], con_node[t]])
                     edge_features_var.append([edge_data['coeff']])
 
-            y = torch.from_numpy(np.array(y)).to(torch.float)
-            data.y = y
+            edge_index_var = torch.tensor(edge_list_var).t().contiguous()
+            edge_index_con = torch.tensor(edge_list_con).t().contiguous()
+
+            data.y = torch.from_numpy(np.array(y)).to(torch.float)
             data.edge_index_var = edge_index_var
             data.edge_index_con = edge_index_con
             data.var_node_features = torch.from_numpy(np.array(var_feat)).to(torch.float)
             data.con_node_features = torch.from_numpy(np.array(con_feat)).to(torch.float)
             data.rhs = torch.from_numpy(np.array(rhss)).to(torch.float)
+            data.edge_features_con = torch.from_numpy(np.array(edge_features_con)).to(torch.float)
+            data.edge_features_var = torch.from_numpy(np.array(edge_features_var)).to(torch.float)
 
             data.num_nodes_var = num_nodes_var
             data.num_nodes_con = num_nodes_con
-
-            data.edge_features_con = torch.from_numpy(np.array(edge_features_con)).to(torch.float)
-            data.edge_features_var = torch.from_numpy(np.array(edge_features_var)).to(torch.float)
 
             data_list.append(data)
 
@@ -148,9 +146,9 @@ dataset = GISR(path, transform=MyTransform()).shuffle()
 dataset.data.y = torch.log(dataset.data.y + 1.0)
 print(len(dataset))
 
-train_dataset = dataset[0:8].shuffle()
-val_dataset = dataset[8:].shuffle()
-test_dataset = dataset[8:].shuffle()
+train_dataset = dataset[0:900].shuffle()
+val_dataset = dataset[800:900].shuffle()
+test_dataset = dataset[900:].shuffle()
 
 batch_size = 5
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
