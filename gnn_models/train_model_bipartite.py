@@ -42,7 +42,7 @@ class GISR(InMemoryDataset):
 
         total = len(os.listdir(path))
 
-        for num, filename in enumerate(os.listdir(path)[0:10]):
+        for num, filename in enumerate(os.listdir(path)[0:]):
             print(filename, num, total)
 
             graph = nx.read_gpickle(path + filename)
