@@ -50,8 +50,7 @@ class GISR(InMemoryDataset):
             graph = nx.convert_node_labels_to_integers(graph)
             graph = graph.to_directed() if not nx.is_directed(graph) else graph
 
-            edge_index = torch.tensor(list(graph.edges)).t().contiguous()
-            data = Data(edge_index=edge_index)
+            data = Data()
 
             y = []
             node_type = []

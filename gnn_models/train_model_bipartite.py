@@ -26,11 +26,11 @@ class GISR(InMemoryDataset):
 
     @property
     def raw_file_names(self):
-        return "TEkrdrST"
+        return "TEdkrdrST"
 
     @property
     def processed_file_names(self):
-        return "TErrSkdT"
+        return "TErdrSkdT"
 
     def download(self):
         pass
@@ -101,12 +101,11 @@ class GISR(InMemoryDataset):
             for i, (s, t, edge_data) in enumerate(graph.edges(data=True)):
                 # Source node is con, target node is var.
                 if graph.nodes[s]['bipartite'] == 1:
-                    edge_features_var.append([edge_data['coeff']])
-                else:
                     edge_features_con.append([edge_data['coeff']])
+                else:
+                    edge_features_var.append([edge_data['coeff']])
 
-
-            y = torch.from_numpy(np.array(y)).to(torch.float).to(torch.float)
+            y = torch.from_numpy(np.array(y)).to(torch.float)
             data.y = y
             data.edge_index_var = edge_index_var
             data.edge_index_con = edge_index_con
@@ -128,9 +127,9 @@ class GISR(InMemoryDataset):
 class MyData(Data):
     def __inc__(self, key, value):
         if key in ['edge_index_var']:
-            return torch.tensor([self.num_nodes_var, self.num_nodes_con])
+            return torch.tensor([self.num_nodes_var, self.num_nodes_con]).view(2,1)
         elif key in ['edge_index_con']:
-            return torch.tensor([self.num_nodes_con, self.num_nodes_var])
+            return torch.tensor([self.num_nodes_con, self.num_nodes_var]).view(2,1)
         else:
             return 0
 
