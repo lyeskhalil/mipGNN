@@ -67,15 +67,15 @@ class VARS_TO_CON(MessagePassing):
 
         # Maps variable embedding to a scalar variable assignmnet.
         # TODO: Sigmoid?
-        self.hidden_to_var = Seq(Lin(in_channels, in_channels - 1), ReLU(), Lin(in_channels - 1, 1))
+        self.hidden_to_var = Seq(Lin(in_channels, in_channels - 1), ReLU(), Lin(in_channels - 1))
         self.mlp_var = Seq(Lin(in_channels, in_channels - 1), ReLU(), Lin(in_channels - 1, in_channels - 1))
-        self.root_cons = Param(torch.Tensor(in_channels, out_channels))
+        self.root_cons = Param(torch.Tensor(in_channels, out_channels-1))
         self.bias = Param(torch.Tensor(out_channels))
         self.reset_parameters()
 
     def reset_parameters(self):
         size = self.in_channels
-        uniform(size, self.root_cons)
+        uniform(size, self.root_cons-1)
         uniform(size, self.bias)
 
     def forward(self, x, old_cons, edge_index, edge_feature, rhs, size):
@@ -111,7 +111,9 @@ class VARS_TO_CON(MessagePassing):
         new_out[:, 0:-1] = aggr_out[:, 0:-1]
 
         # New contraint feauture
-        new_cons = new_out + torch.matmul(old_cons, self.root_cons)
+        new_cons = torch.zeros(aggr_out.size(0), aggr_out.size(1), device=device)
+        new_cons[:, 0:-1] = new_out[:, 0:-1] + torch.matmul(old_cons, self.root_cons)
+        exit()
 
         new_out = new_cons + self.bias
 
