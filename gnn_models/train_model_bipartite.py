@@ -196,7 +196,6 @@ def train():
 
         optimizer.step()
 
-
     return total_loss_mae / len(train_loader.dataset), total_loss / len(train_loader.dataset)
 
 
@@ -211,10 +210,6 @@ def test(loader):
         loss = l1(torch.exp(out) - 1.0, torch.exp(data.y) - 1.0)
 
         error += loss.item() * batch_size
-
-    print(len(loader.dataset))
-
-    exit()
 
     return error / len(loader.dataset)
 
