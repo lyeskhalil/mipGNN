@@ -163,23 +163,23 @@ class Net(torch.nn.Module):
         vars.append(F.relu(self.c2v_1(cons[-1], v, data.edge_index_con, data.edge_features_con, data.rhs,
                                       (data.num_nodes_con.sum(), data.num_nodes_var.sum()))))
 
-        cons.append(F.relu(self.v2c_2(vars[-1], cons[-1], data.edge_index_var, data.edge_features_var, data.rhs,
-                                      (data.num_nodes_var.sum(), data.num_nodes_con.sum()))))
-
-        vars.append(F.relu(self.c2v_2(cons[-1], vars[-1], data.edge_index_con, data.edge_features_con, data.rhs,
-                                      (data.num_nodes_con.sum(), data.num_nodes_var.sum()))))
-
-        cons.append(F.relu(self.v2c_3(vars[-1], cons[-1], data.edge_index_var, data.edge_features_var, data.rhs,
-                                      (data.num_nodes_var.sum(), data.num_nodes_con.sum()))))
-
-        vars.append(F.relu(self.c2v_3(cons[-1], vars[-1], data.edge_index_con, data.edge_features_con, data.rhs,
-                                      (data.num_nodes_con.sum(), data.num_nodes_var.sum()))))
-
-        cons.append(F.relu(self.v2c_4(vars[-1], cons[-1], data.edge_index_var, data.edge_features_var, data.rhs,
-                                      (data.num_nodes_var.sum(), data.num_nodes_con.sum()))))
-
-        vars.append(F.relu(self.c2v_4(cons[-1], vars[-1], data.edge_index_con, data.edge_features_con, data.rhs,
-                                      (data.num_nodes_con.sum(), data.num_nodes_var.sum()))))
+        # cons.append(F.relu(self.v2c_2(vars[-1], cons[-1], data.edge_index_var, data.edge_features_var, data.rhs,
+        #                               (data.num_nodes_var.sum(), data.num_nodes_con.sum()))))
+        #
+        # vars.append(F.relu(self.c2v_2(cons[-1], vars[-1], data.edge_index_con, data.edge_features_con, data.rhs,
+        #                               (data.num_nodes_con.sum(), data.num_nodes_var.sum()))))
+        #
+        # cons.append(F.relu(self.v2c_3(vars[-1], cons[-1], data.edge_index_var, data.edge_features_var, data.rhs,
+        #                               (data.num_nodes_var.sum(), data.num_nodes_con.sum()))))
+        #
+        # vars.append(F.relu(self.c2v_3(cons[-1], vars[-1], data.edge_index_con, data.edge_features_con, data.rhs,
+        #                               (data.num_nodes_con.sum(), data.num_nodes_var.sum()))))
+        #
+        # cons.append(F.relu(self.v2c_4(vars[-1], cons[-1], data.edge_index_var, data.edge_features_var, data.rhs,
+        #                               (data.num_nodes_var.sum(), data.num_nodes_con.sum()))))
+        #
+        # vars.append(F.relu(self.c2v_4(cons[-1], vars[-1], data.edge_index_con, data.edge_features_con, data.rhs,
+        #                               (data.num_nodes_con.sum(), data.num_nodes_var.sum()))))
 
         # x = torch.cat(vars[0:], dim=-1)
         x = vars[-1]
