@@ -9,45 +9,86 @@ from torch_geometric.nn.inits import uniform, normal
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-
-class CONS(MessagePassing):
+class CONS_TO_VAR(MessagePassing):
 
     def __init__(self, in_channels, out_channels, **kwargs):
-        super(CONS, self).__init__(aggr='add', **kwargs)
+        super(CONS_TO_VAR, self).__init__(aggr='add', **kwargs)
+        self.in_channels = in_channels
+        self.out_channels = out_channels
 
+        # Maps variable embedding to a scalar variable assignmnet.
+        # TODO: Sigmoid?
+        self.mlp_cons = Seq(Lin(in_channels, in_channels - 1), ReLU(), Lin(in_channels - 1, in_channels - 1))
+        self.w_cons = Param(torch.Tensor(in_channels - 1, out_channels - 1))
+        self.root_vars = Param(torch.Tensor(in_channels, out_channels))
+        self.bias = Param(torch.Tensor(out_channels))
+        self.reset_parameters()
+
+    def reset_parameters(self):
+        size = self.in_channels
+        uniform(size - 1, self.w_cons)
+        uniform(size, self.root_vars)
+        uniform(size, self.bias)
+
+    def forward(self, x, old_vars, edge_index, edge_feature, rhs, size):
+        row, _ = edge_index
+        deg = degree(row, x.size(0), dtype=x.dtype)
+        deg_inv = deg.pow(-1.0)
+        norm = deg_inv[row]
+
+        return self.propagate(edge_index, size=size, x=x, old_vars=old_vars, edge_feature=edge_feature, rhs=rhs, norm=norm)
+
+    def message(self, x_j, edge_index_j, edge_feature, norm, size):
+        c = edge_feature[edge_index_j]
+        # Get violation of contraint.
+        violation = x_j[:, -1]
+        # TODO: This should be scaled.
+        violation = c.view(-1) * violation
+        # TODO: Scale by coefficient?
+        out = self.mlp_cons(x_j)
+        out = norm.view(-1, 1) * torch.cat([out, violation.view(-1, 1)], dim=-1)
+
+        return out
+
+    def update(self, aggr_out, x, old_vars, rhs, size):
+        # New variable feauture
+        new_vars = aggr_out + torch.matmul(old_vars, self.root_vars)
+        new_out = new_vars + self.bias
+
+        return new_out
+
+
+class VARS_TO_CON(MessagePassing):
+
+    def __init__(self, in_channels, out_channels, **kwargs):
+        super(VARS_TO_CON, self).__init__(aggr='add', **kwargs)
         self.in_channels = in_channels
         self.out_channels = out_channels
 
         # Maps variable embedding to a scalar variable assignmnet.
         # TODO: Sigmoid?
         self.hidden_to_var = Seq(Lin(in_channels, in_channels - 1), ReLU(), Lin(in_channels - 1, 1))
-
-        self.mlp_cons = Seq(Lin(in_channels, in_channels - 1), ReLU(), Lin(in_channels - 1, in_channels - 1))
-
-        self.w_cons = Param(torch.Tensor(in_channels - 1, out_channels - 1))
+        self.mlp_var = Seq(Lin(in_channels, in_channels - 1), ReLU(), Lin(in_channels - 1, in_channels - 1))
+        self.w_vars = Param(torch.Tensor(in_channels - 1, out_channels - 1))
         self.root_cons = Param(torch.Tensor(in_channels, out_channels))
-
         self.bias = Param(torch.Tensor(out_channels))
-
         self.reset_parameters()
 
     def reset_parameters(self):
         size = self.in_channels
-        uniform(size - 1, self.w_cons)
+        uniform(size - 1, self.w_vars)
         uniform(size, self.root_cons)
         uniform(size, self.bias)
 
-    def forward(self, x, edge_index, edge_feature, rhs, size):
-        # Step 3: Compute normalization
+    def forward(self, x, old_cons, edge_index, edge_feature, rhs, size):
         row, _ = edge_index
         deg = degree(row, x.size(0), dtype=x.dtype)
         deg_inv = deg.pow(-1.0)
         norm = deg_inv[row]
 
-        return self.propagate(edge_index, size=size, x=x, edge_feature=edge_feature, rhs=rhs, norm=norm)
+        return self.propagate(edge_index, size=size, x=x, old_vars=old_cons, edge_feature=edge_feature, rhs=rhs, norm=norm)
 
     def message(self, x_j, edge_index_j, edge_feature, norm, size):
-
         #  x_j is a variable node.
         c = edge_feature[edge_index_j]
         # Compute variable assignment.
@@ -56,38 +97,24 @@ class CONS(MessagePassing):
         var_assign = var_assign * c
         # TODO: Scale by coefficient?
         # out_0 = norm.view(-1, 1)[edge_type == 0] * torch.matmul(x_j_0[:, 0:-1], self.w_cons)
-        out = norm.view(-1, 1) * self.mlp_cons(x_j)
-        # Assign left side of constraint to last column.
+        out = norm.view(-1, 1) * self.mlp_var(x_j)
         out = torch.cat([out, var_assign], dim=-1)
-
 
         return out
 
-    def update(self, aggr_out, x, rhs, size):
-        new_out = torch.zeros(aggr_out.size(0), aggr_out.size(1), device=device)
+    def update(self, aggr_out, x, old_cons, rhs, size):
 
-        print("dffd")
-        print(aggr_out.size())
-        print(rhs.size())
+        new_out = torch.zeros(aggr_out.size(0), aggr_out.size(1), device=device)
 
         # Assign violation back to embedding of contraints.
         t = aggr_out[:, -1]
-        new_out[:, -1] = t# - rhs
+        new_out[:, -1] = t - rhs
         new_out[:, 0:-1] = aggr_out[:, 0:-1]
 
 
-
-        print(x.size())
-        print(aggr_out.size())
-        print(new_out.size())
-
-
-        # TODO: only apply update to nl part.
-        #t_1 = new_out + torch.matmul(x, self.root_cons)
-
-        #out = t_1
-
-        #new_out = out + self.bias
+        # New contraint feauture
+        new_cons = new_out + torch.matmul(old_cons, self.root_cons)
+        new_out = new_cons + self.bias
 
         return new_out
 
@@ -99,7 +126,7 @@ class Net(torch.nn.Module):
         self.var_mlp = Seq(Lin(2, dim - 3), ReLU(), Lin(dim - 3, dim - 3))
         self.con_mlp = Seq(Lin(2, dim - 3), ReLU(), Lin(dim - 3, dim - 3))
 
-        self.conv1 = CONS(dim, dim)
+        self.conv1 = CONS_TO_VAR(dim, dim)
 
         # Final MLP for regression.
         self.fc1 = Lin(1 * dim, dim)
@@ -118,16 +145,15 @@ class Net(torch.nn.Module):
             ones_var = torch.zeros(data.var_node_features.size(0), 1).cpu()
             ones_con = torch.zeros(data.con_node_features.size(0), 1).cpu()
 
-        n = torch.cat([self.var_mlp(data.var_node_features), data.var_node_features, ones_var], dim=-1)
+        v = torch.cat([self.var_mlp(data.var_node_features), data.var_node_features, ones_var], dim=-1)
         c = torch.cat([self.con_mlp(data.con_node_features), data.con_node_features, ones_con], dim=-1)
 
         xs = [c]
 
+        xs.append(F.relu(self.conv1(xs[-1], v, data.edge_index_con,  data.edge_features_con, data.rhs, [data.num_nodes_con, data.num_nodes_var])))
 
 
-        xs.append(F.relu(
-
-            self.conv1(xs[-1], data.edge_index_con,  data.edge_features_con, data.rhs, [data.num_nodes_con, data.num_nodes_var])))
+        print(xs[-1].size())
 
         exit()
 

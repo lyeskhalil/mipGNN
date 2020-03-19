@@ -26,11 +26,11 @@ class GISR(InMemoryDataset):
 
     @property
     def raw_file_names(self):
-        return "EREBIrdNf"
+        return "TEST"
 
     @property
     def processed_file_names(self):
-        return "ERSBIrNdf"
+        return "TEST"
 
     def download(self):
         pass
@@ -150,19 +150,13 @@ dataset.data.y = torch.log(dataset.data.y + 1.0)
 print(len(dataset))
 
 
-
-
-
 train_dataset = dataset[0:8].shuffle()
 val_dataset = dataset[8:9].shuffle()
 test_dataset = dataset[9:].shuffle()
 
-train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True)
-val_loader = DataLoader(val_dataset, batch_size=1, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=1, shuffle=True)
-
-
-
+train_loader = DataLoader(train_dataset, batch_size=5, shuffle=True)
+val_loader = DataLoader(val_dataset, batch_size=5, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=5, shuffle=True)
 
 print("### DATA LOADED.")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
