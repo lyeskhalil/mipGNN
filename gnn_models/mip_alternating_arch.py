@@ -9,7 +9,7 @@ from torch_geometric.nn.inits import uniform, normal
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-
+# Compute new variable features.
 class CONS_TO_VAR(MessagePassing):
     def __init__(self, in_channels, out_channels, **kwargs):
         super(CONS_TO_VAR, self).__init__(aggr='add', **kwargs)
