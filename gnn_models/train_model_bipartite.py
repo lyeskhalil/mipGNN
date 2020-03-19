@@ -213,17 +213,13 @@ def test(loader):
 
     return error / len(loader.dataset)
 
-
 best_val_error = None
-
-# test_error = test(test_loader)
-# print(test_error)
 
 for epoch in range(1, 500):
     lr = scheduler.optimizer.param_groups[0]['lr']
     mae, loss = train()
 
-    if epoch == 12:
+    if epoch == 50:
         for param_group in optimizer.param_groups:
             param_group['lr'] = 0.5 * param_group['lr']
 
