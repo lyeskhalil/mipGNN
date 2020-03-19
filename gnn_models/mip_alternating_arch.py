@@ -38,10 +38,12 @@ class CONS_TO_VAR(MessagePassing):
                               norm=norm)
 
     def message(self, x_j, edge_index_j, edge_feature, norm, size):
+        # TODO: Check
         c = edge_feature[edge_index_j]
         # Get violation of contraint.
         violation = x_j[:, -1]
         # TODO: This should be scaled.
+        # TODO: Incooperate current value of variable
         violation = c.view(-1) * violation
         # TODO: Scale by coefficient?
         out = self.mlp_cons(x_j)
@@ -51,14 +53,13 @@ class CONS_TO_VAR(MessagePassing):
 
     def update(self, aggr_out, x, old_vars, rhs, size):
         # New variable feauture
+        # TODO: only apply to 1:d-1
         new_vars = aggr_out + torch.matmul(old_vars, self.root_vars)
         new_out = new_vars + self.bias
 
         return new_out
 
-
 class VARS_TO_CON(MessagePassing):
-
     def __init__(self, in_channels, out_channels, **kwargs):
         super(VARS_TO_CON, self).__init__(aggr='add', **kwargs)
         self.in_channels = in_channels
@@ -88,6 +89,7 @@ class VARS_TO_CON(MessagePassing):
 
     def message(self, x_j, edge_index_j, edge_feature, norm, size):
         #  x_j is a variable node.
+        # TODO: Check this.
         c = edge_feature[edge_index_j]
         # Compute variable assignment.
         var_assign = self.hidden_to_var(x_j)
