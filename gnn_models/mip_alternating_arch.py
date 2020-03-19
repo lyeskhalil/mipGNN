@@ -9,6 +9,7 @@ from torch_geometric.nn.inits import uniform, normal
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+
 class CONS_TO_VAR(MessagePassing):
     def __init__(self, in_channels, out_channels, **kwargs):
         super(CONS_TO_VAR, self).__init__(aggr='add', **kwargs)
@@ -33,7 +34,8 @@ class CONS_TO_VAR(MessagePassing):
         deg_inv = deg.pow(-1.0)
         norm = deg_inv[row]
 
-        return self.propagate(edge_index, size=size, x=x, old_vars=old_vars, edge_feature=edge_feature, rhs=rhs, norm=norm)
+        return self.propagate(edge_index, size=size, x=x, old_vars=old_vars, edge_feature=edge_feature, rhs=rhs,
+                              norm=norm)
 
     def message(self, x_j, edge_index_j, edge_feature, norm, size):
         c = edge_feature[edge_index_j]
@@ -81,9 +83,8 @@ class VARS_TO_CON(MessagePassing):
         deg_inv = deg.pow(-1.0)
         norm = deg_inv[row]
 
-
-
-        return self.propagate(edge_index, size=size, x=x, old_cons=old_cons, edge_feature=edge_feature, rhs=rhs, norm=norm)
+        return self.propagate(edge_index, size=size, x=x, old_cons=old_cons, edge_feature=edge_feature, rhs=rhs,
+                              norm=norm)
 
     def message(self, x_j, edge_index_j, edge_feature, norm, size):
         #  x_j is a variable node.
@@ -107,13 +108,10 @@ class VARS_TO_CON(MessagePassing):
         new_out[:, -1] = t - rhs
         new_out[:, 0:-1] = aggr_out[:, 0:-1]
 
-
         # New contraint feauture
         new_cons = new_out + torch.matmul(old_cons, self.root_cons)
 
-
         new_out = new_cons + self.bias
-
 
         return new_out
 
@@ -140,9 +138,9 @@ class Net(torch.nn.Module):
         # Final MLP for regression.
         self.fc1 = Lin(1 * dim, dim)
         self.fc2 = Lin(dim, dim)
-        self.fc3 = Lin(dim, dim)
-        self.fc4 = Lin(dim, dim)
-        self.fc5 = Lin(dim, dim)
+        # self.fc3 = Lin(dim, dim)
+        # self.fc4 = Lin(dim, dim)
+        # self.fc5 = Lin(dim, dim)
 
         self.fc6 = Lin(dim, 1)
 
@@ -157,51 +155,46 @@ class Net(torch.nn.Module):
         v = torch.cat([self.var_mlp(data.var_node_features), data.var_node_features, ones_var], dim=-1)
         c = torch.cat([self.con_mlp(data.con_node_features), data.con_node_features, ones_con], dim=-1)
 
-
         vars = []
         cons = []
         cons.append(F.relu(self.v2c_1(v, c, data.edge_index_var, data.edge_features_var, data.rhs,
-                                     (data.num_nodes_var.sum(), data.num_nodes_con.sum()))))
+                                      (data.num_nodes_var.sum(), data.num_nodes_con.sum()))))
 
         vars.append(F.relu(self.c2v_1(cons[-1], v, data.edge_index_con, data.edge_features_con, data.rhs,
                                       (data.num_nodes_con.sum(), data.num_nodes_var.sum()))))
 
         cons.append(F.relu(self.v2c_2(vars[-1], cons[-1], data.edge_index_var, data.edge_features_var, data.rhs,
-                                     (data.num_nodes_var.sum(), data.num_nodes_con.sum()))))
+                                      (data.num_nodes_var.sum(), data.num_nodes_con.sum()))))
 
         vars.append(F.relu(self.c2v_2(cons[-1], vars[-1], data.edge_index_con, data.edge_features_con, data.rhs,
                                       (data.num_nodes_con.sum(), data.num_nodes_var.sum()))))
 
         cons.append(F.relu(self.v2c_3(vars[-1], cons[-1], data.edge_index_var, data.edge_features_var, data.rhs,
-                                     (data.num_nodes_var.sum(), data.num_nodes_con.sum()))))
+                                      (data.num_nodes_var.sum(), data.num_nodes_con.sum()))))
 
         vars.append(F.relu(self.c2v_3(cons[-1], vars[-1], data.edge_index_con, data.edge_features_con, data.rhs,
                                       (data.num_nodes_con.sum(), data.num_nodes_var.sum()))))
 
         cons.append(F.relu(self.v2c_4(vars[-1], cons[-1], data.edge_index_var, data.edge_features_var, data.rhs,
-                                     (data.num_nodes_var.sum(), data.num_nodes_con.sum()))))
+                                      (data.num_nodes_var.sum(), data.num_nodes_con.sum()))))
 
         vars.append(F.relu(self.c2v_4(cons[-1], vars[-1], data.edge_index_con, data.edge_features_con, data.rhs,
                                       (data.num_nodes_con.sum(), data.num_nodes_var.sum()))))
 
-
-
         # x = torch.cat(vars[0:], dim=-1)
         x = vars[-1]
-
-
 
         x = F.relu(self.fc1(x))
         # x = F.dropout(x, p=0.5, training=self.training)
         x = F.relu(self.fc2(x))
         # x = F.dropout(x, p=0.5, training=self.training)
-        x = F.relu(self.fc3(x))
-        x = F.relu(self.fc4(x))
-        x = F.relu(self.fc5(x))
+        # x = F.relu(self.fc3(x))
+        # x = F.relu(self.fc4(x))
+        # x = F.relu(self.fc5(x))
         # x = F.dropout(x, p=0.5, training=self.training)
 
         # TODO: Sigmoid meaningful?
-        #x = F.sigmoid(self.fc5(x))
+        # x = F.sigmoid(self.fc5(x))
         x = self.fc6(x)
 
         return x.squeeze(-1)

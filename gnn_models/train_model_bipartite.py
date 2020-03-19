@@ -9,7 +9,6 @@ import os.path as osp
 import numpy as np
 import networkx as nx
 
-
 import torch
 from torch_geometric.data import (InMemoryDataset, Data)
 from torch_geometric.data import DataLoader
@@ -17,6 +16,7 @@ from torch_geometric.data import DataLoader
 torch.autograd.set_detect_anomaly(True)
 
 from gnn_models.mip_alternating_arch import Net
+
 
 class GISR(InMemoryDataset):
     def __init__(self, root, transform=None, pre_transform=None,
@@ -124,14 +124,16 @@ class GISR(InMemoryDataset):
         data, slices = self.collate(data_list)
         torch.save((data, slices), self.processed_paths[0])
 
+
 class MyData(Data):
     def __inc__(self, key, value):
         if key in ['edge_index_var']:
-            return torch.tensor([self.num_nodes_var, self.num_nodes_con]).view(2,1)
+            return torch.tensor([self.num_nodes_var, self.num_nodes_con]).view(2, 1)
         elif key in ['edge_index_con']:
-            return torch.tensor([self.num_nodes_con, self.num_nodes_var]).view(2,1)
+            return torch.tensor([self.num_nodes_con, self.num_nodes_var]).view(2, 1)
         else:
             return 0
+
 
 class MyTransform(object):
     def __call__(self, data):
@@ -139,6 +141,7 @@ class MyTransform(object):
         for key, item in data:
             new_data[key] = item
         return new_data
+
 
 path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'DS')
 dataset = GISR(path, transform=MyTransform()).shuffle()
@@ -163,6 +166,7 @@ scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
 
 print("### SETUP DONE.")
 
+
 class RMSELoss(torch.nn.Module):
     def __init__(self, eps=1e-6):
         super().__init__()
@@ -173,15 +177,16 @@ class RMSELoss(torch.nn.Module):
         loss = torch.sqrt(self.mse(yhat, y) + self.eps)
         return loss
 
+
 def train():
     model.train()
     total_loss = 0
     total_loss_mae = 0
     loss = torch.nn.MSELoss()
     mse = RMSELoss()
-    #mse = torch.nn.MSELoss()
+    # mse = torch.nn.MSELoss()
     mae = torch.nn.L1Loss()
-    #mse = torch.nn.SmoothL1Loss()
+    # mse = torch.nn.SmoothL1Loss()
 
     for data in train_loader:
         optimizer.zero_grad()
@@ -190,7 +195,6 @@ def train():
 
         loss = mse(out, data.y)
         loss.backward()
-
 
         total_loss += loss.item() * data.y.size(0)
         total_loss_mae += mae(out, data.y).item() * batch_size
@@ -212,14 +216,13 @@ def test(loader):
 
         error += loss.item() * batch_size
 
-
     return error / len(loader.dataset)
 
 
 best_val_error = None
 
-#test_error = test(test_loader)
-#print(test_error)
+# test_error = test(test_loader)
+# print(test_error)
 
 for epoch in range(1, 500):
     lr = scheduler.optimizer.param_groups[0]['lr']
@@ -227,17 +230,14 @@ for epoch in range(1, 500):
 
     if epoch == 12:
         for param_group in optimizer.param_groups:
-           param_group['lr'] = 0.5 * param_group['lr']
+            param_group['lr'] = 0.5 * param_group['lr']
 
     val_error = test(val_loader)
 
     if best_val_error is None or val_error < best_val_error:
         test_error = test(test_loader)
 
-    print('Epoch: {:03d}, LR: {:7f}, Loss: {:.7f}, Train MAE: {:.7f}, Test MAE: {:.7f}'.format(epoch, lr, loss, mae, test_error))
+    print('Epoch: {:03d}, LR: {:7f}, Loss: {:.7f}, Train MAE: {:.7f}, Test MAE: {:.7f}'.format(epoch, lr, loss, mae,
+                                                                                               test_error))
 
 # torch.save(model.state_dict(), "train_mip")
-
-
-
-
