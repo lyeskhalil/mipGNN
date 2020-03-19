@@ -14,6 +14,7 @@ from torch_geometric.data import (InMemoryDataset, Data)
 from torch_geometric.data import DataLoader
 from gnn_models.mip_alternating_arch import Net
 
+
 # Dataset and preprocessing.
 class GISR(InMemoryDataset):
     def __init__(self, root, transform=None, pre_transform=None,
@@ -122,6 +123,7 @@ class GISR(InMemoryDataset):
         data, slices = self.collate(data_list)
         torch.save((data, slices), self.processed_paths[0])
 
+
 class MyData(Data):
     def __inc__(self, key, value):
         if key in ['edge_index_var']:
@@ -131,12 +133,14 @@ class MyData(Data):
         else:
             return 0
 
+
 class MyTransform(object):
     def __call__(self, data):
         new_data = MyData()
         for key, item in data:
             new_data[key] = item
         return new_data
+
 
 # Prepare dadta
 path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'DS')
@@ -162,6 +166,7 @@ scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
     optimizer, mode='min', factor=0.7, patience=5, min_lr=0.00001)
 print("### SETUP DONE.")
 
+
 class RMSELoss(torch.nn.Module):
     def __init__(self, eps=1e-6):
         super().__init__()
@@ -178,10 +183,10 @@ def train():
     total_loss = 0
     total_loss_mae = 0
     loss = torch.nn.MSELoss()
-    #mse = RMSELoss()
+    rmse = RMSELoss()
     mse = torch.nn.MSELoss()
     mae = torch.nn.L1Loss()
-    #mse = torch.nn.SmoothL1Loss()
+    # mse = torch.nn.SmoothL1Loss()
 
     for data in train_loader:
         optimizer.zero_grad()
@@ -191,7 +196,7 @@ def train():
         loss = mse(out, data.y)
         loss.backward()
 
-        total_loss += loss.item()  * batch_size
+        total_loss += loss.item() * batch_size
         total_loss_mae += mae(out, data.y).item() * batch_size
 
         optimizer.step()
@@ -212,6 +217,7 @@ def test(loader):
         error += loss.item() * batch_size
 
     return error / len(loader.dataset)
+
 
 best_val_error = None
 
