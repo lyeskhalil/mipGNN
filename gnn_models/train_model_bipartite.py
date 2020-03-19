@@ -178,10 +178,10 @@ def train():
     total_loss = 0
     total_loss_mae = 0
     loss = torch.nn.MSELoss()
-    mse = RMSELoss()
-    # mse = torch.nn.MSELoss()
+    #mse = RMSELoss()
+    mse = torch.nn.MSELoss()
     mae = torch.nn.L1Loss()
-    mse = torch.nn.SmoothL1Loss()
+    #mse = torch.nn.SmoothL1Loss()
 
     for data in train_loader:
         optimizer.zero_grad()
