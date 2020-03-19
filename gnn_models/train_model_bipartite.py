@@ -26,11 +26,11 @@ class GISR(InMemoryDataset):
 
     @property
     def raw_file_names(self):
-        return "TEdkrdrST"
+        return "TEdkrdtrST"
 
     @property
     def processed_file_names(self):
-        return "TErdrSkdT"
+        return "TErdrSktdT"
 
     def download(self):
         pass
