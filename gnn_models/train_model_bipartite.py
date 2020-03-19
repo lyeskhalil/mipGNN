@@ -26,11 +26,11 @@ class GISR(InMemoryDataset):
 
     @property
     def raw_file_names(self):
-        return "EREBIN"
+        return "EREBIrdNf"
 
     @property
     def processed_file_names(self):
-        return "ERSBIN"
+        return "ERSBIrNdf"
 
     def download(self):
         pass
@@ -42,7 +42,7 @@ class GISR(InMemoryDataset):
 
         total = len(os.listdir(path))
 
-        for num, filename in enumerate(os.listdir(path)):
+        for num, filename in enumerate(os.listdir(path)[0:10]):
             print(filename, num, total)
 
             graph = nx.read_gpickle(path + filename)
@@ -89,12 +89,12 @@ class GISR(InMemoryDataset):
             for i, (s, t, edge_data) in enumerate(graph.edges(data=True)):
                 # Source node is con, target node is var.
                 if graph.nodes[s]['bipartite'] == 1:
-                    edge_list_var.append([con_node[s],var_node[t]])
+                    edge_list_con.append([con_node[s], var_node[t]])
                 else:
-                    edge_list_con.append([var_node[s],con_node[t]])
+                    edge_list_var.append([var_node[s], con_node[t]])
 
-            edge_index_var = torch.tensor(list(edge_list_var)).t().contiguous()
-            edge_index_con = torch.tensor(list(edge_list_con)).t().contiguous()
+            edge_index_var = torch.tensor(edge_list_var).t().contiguous()
+            edge_index_con = torch.tensor(edge_list_con).t().contiguous()
 
             edge_features_var = []
             edge_features_con = []
@@ -114,8 +114,8 @@ class GISR(InMemoryDataset):
             data.con_node_features = torch.from_numpy(np.array(con_feat)).to(torch.float)
             data.rhs = torch.from_numpy(np.array(rhss)).to(torch.float)
 
-            data.num_nodes_var = torch.LongTensor(num_nodes_var)
-            data.num_nodes_con = torch.LongTensor(num_nodes_con)
+            data.num_nodes_var = num_nodes_var
+            data.num_nodes_con = num_nodes_con
 
             data.edge_features_con = torch.from_numpy(np.array(edge_features_con)).to(torch.float)
             data.edge_features_var = torch.from_numpy(np.array(edge_features_var)).to(torch.float)
@@ -130,9 +130,9 @@ class GISR(InMemoryDataset):
 class MyData(Data):
     def __inc__(self, key, value):
         if key in ['edge_index_var']:
-            return torch.tensor([self.edge_index_var.size(0), self.edge_index_var.size(1)])
+            return torch.tensor([self.num_nodes_var, self.num_nodes_con])
         elif key in ['edge_index_con']:
-            return torch.tensor([self.edge_index_con.size(0), self.edge_index_con.size(1)])
+            return torch.tensor([self.num_nodes_con, self.num_nodes_var])
         else:
             return 0
 
@@ -151,20 +151,22 @@ print(len(dataset))
 
 
 
-train_dataset = dataset[0:800].shuffle()
-val_dataset = dataset[800:900].shuffle()
-test_dataset = dataset[900:].shuffle()
 
-train_loader = DataLoader(train_dataset, batch_size=5, shuffle=True)
-val_loader = DataLoader(val_dataset, batch_size=5, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=5, shuffle=True)
+
+train_dataset = dataset[0:8].shuffle()
+val_dataset = dataset[8:9].shuffle()
+test_dataset = dataset[9:].shuffle()
+
+train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True)
+val_loader = DataLoader(val_dataset, batch_size=1, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=1, shuffle=True)
 
 
 
 
 print("### DATA LOADED.")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = Net(dim=128).to(device)
+model = Net(dim=64).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
     optimizer, mode='min', factor=0.7, patience=5, min_lr=0.00001)

@@ -37,16 +37,16 @@ class CONS(MessagePassing):
         uniform(size, self.root_cons)
         uniform(size, self.bias)
 
-    def forward(self, x, edge_index, edge_type, edge_feature, rhs, size):
+    def forward(self, x, edge_index, edge_feature, rhs, size):
         # Step 3: Compute normalization
-        row, col = edge_index
+        row, _ = edge_index
         deg = degree(row, x.size(0), dtype=x.dtype)
         deg_inv = deg.pow(-1.0)
         norm = deg_inv[row]
 
-        return self.propagate(edge_index, size=size, x=x, edge_type=edge_type, edge_feature=edge_feature, rhs=rhs, norm=norm)
+        return self.propagate(edge_index, size=size, x=x, edge_feature=edge_feature, rhs=rhs, norm=norm)
 
-    def message(self, x_j, edge_index_j, edge_feature, norm):
+    def message(self, x_j, edge_index_j, edge_feature, norm, size):
 
         #  x_j is a variable node.
         c = edge_feature[edge_index_j]
@@ -63,20 +63,31 @@ class CONS(MessagePassing):
 
         return out
 
-    def update(self, aggr_out, x, assoc_con, assoc_var, rhs):
+    def update(self, aggr_out, x, rhs, size):
         new_out = torch.zeros(aggr_out.size(0), aggr_out.size(1), device=device)
+
+        print("dffd")
+        print(aggr_out.size())
+        print(rhs.size())
 
         # Assign violation back to embedding of contraints.
         t = aggr_out[:, -1]
-        new_out[:, -1] = t - rhs
-        new_out[:, 0:-1] = aggr_out[assoc_var, 0:-1]
+        new_out[:, -1] = t# - rhs
+        new_out[:, 0:-1] = aggr_out[:, 0:-1]
+
+
+
+        print(x.size())
+        print(aggr_out.size())
+        print(new_out.size())
+
 
         # TODO: only apply update to nl part.
-        t_1 = new_out + torch.matmul(x, self.root_vars)
+        #t_1 = new_out + torch.matmul(x, self.root_cons)
 
-        out = t_1
+        #out = t_1
 
-        new_out = out + self.bias
+        #new_out = out + self.bias
 
         return new_out
 
@@ -108,16 +119,15 @@ class Net(torch.nn.Module):
             ones_con = torch.zeros(data.con_node_features.size(0), 1).cpu()
 
         n = torch.cat([self.var_mlp(data.var_node_features), data.var_node_features, ones_var], dim=-1)
-        e = torch.cat([self.con_mlp(data.con_node_features), data.con_node_features, ones_con], dim=-1)
+        c = torch.cat([self.con_mlp(data.con_node_features), data.con_node_features, ones_con], dim=-1)
 
-        # Merge node features together.
-        x = e.new_zeros((data.node_types.size(0), n.size(-1)))
-        x = x.scatter_(0, data.assoc_var.view(-1, 1).expand_as(n), n)
-        x = x.scatter_(0, data.assoc_con.view(-1, 1).expand_as(e), e)
+        xs = [c]
 
-        xs = [x]
+
+
         xs.append(F.relu(
-            self.conv1(xs[-1], data.edge_index_con,  data.edge_features_con,data.rhs, [data.edge_index_con.size(0), data.edge_features_con.size(1)])))
+
+            self.conv1(xs[-1], data.edge_index_con,  data.edge_features_con, data.rhs, [data.num_nodes_con, data.num_nodes_var])))
 
         exit()
 
