@@ -144,10 +144,7 @@ class RMSELoss(torch.nn.Module):
         return loss
 
 
-path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'DS')
-dataset = GISR(path, transform=MyTransform()).shuffle()
-dataset.data.y = torch.log(dataset.data.y + 1.0)
-print(len(dataset))
+
 
 train_dataset = dataset[0:800].shuffle()
 val_dataset = dataset[800:900].shuffle()

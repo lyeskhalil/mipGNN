@@ -26,11 +26,11 @@ class GISR(InMemoryDataset):
 
     @property
     def raw_file_names(self):
-        return "TEST"
+        return "TEkrdrST"
 
     @property
     def processed_file_names(self):
-        return "TEST"
+        return "TErrSkdT"
 
     def download(self):
         pass
@@ -125,8 +125,6 @@ class GISR(InMemoryDataset):
         data, slices = self.collate(data_list)
         torch.save((data, slices), self.processed_paths[0])
 
-
-
 class MyData(Data):
     def __inc__(self, key, value):
         if key in ['edge_index_var']:
@@ -143,20 +141,19 @@ class MyTransform(object):
             new_data[key] = item
         return new_data
 
-
 path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'DS')
 dataset = GISR(path, transform=MyTransform()).shuffle()
 dataset.data.y = torch.log(dataset.data.y + 1.0)
 print(len(dataset))
 
-
 train_dataset = dataset[0:8].shuffle()
-val_dataset = dataset[8:9].shuffle()
-test_dataset = dataset[9:].shuffle()
+val_dataset = dataset[8:].shuffle()
+test_dataset = dataset[8:].shuffle()
 
-train_loader = DataLoader(train_dataset, batch_size=5, shuffle=True)
-val_loader = DataLoader(val_dataset, batch_size=5, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=5, shuffle=True)
+batch_size = 5
+train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
 print("### DATA LOADED.")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -187,7 +184,6 @@ def train():
     mae = torch.nn.L1Loss()
     #mse = torch.nn.SmoothL1Loss()
 
-
     for data in train_loader:
         optimizer.zero_grad()
         data = data.to(device)
@@ -196,13 +192,13 @@ def train():
         loss = mse(out, data.y)
         loss.backward()
 
-        total_loss += loss.item() * data.num_graphs
-        total_loss_mae += mae(out, data.y).item() * data.num_graphs
+
+        total_loss += loss.item() * data.y.size(0)
+        total_loss_mae += mae(out, data.y).item() * batch_size
 
         optimizer.step()
 
     return total_loss_mae / len(train_loader.dataset), total_loss / len(train_loader.dataset)
-
 
 
 def test(loader):
@@ -213,17 +209,18 @@ def test(loader):
     for data in loader:
         data = data.to(device)
         out = model(data)
-
         loss = l1(torch.exp(out) - 1.0, torch.exp(data.y) - 1.0)
-        error += loss.item() * data.num_graphs
+
+        error += loss.item() * batch_size
+
 
     return error / len(loader.dataset)
 
 
 best_val_error = None
 
-test_error = test(test_loader)
-print(test_error)
+#test_error = test(test_loader)
+#print(test_error)
 
 for epoch in range(1, 500):
     lr = scheduler.optimizer.param_groups[0]['lr']
