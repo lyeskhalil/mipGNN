@@ -19,14 +19,14 @@ class CONS_TO_VAR(MessagePassing):
         # Maps variable embedding to a scalar variable assignmnet.
         # TODO: Sigmoid?
         self.mlp_cons = Seq(Lin(in_channels, in_channels - 1), ReLU(), Lin(in_channels - 1, in_channels - 1))
-        self.root_vars = Param(torch.Tensor(in_channels, out_channels))
-        self.bias = Param(torch.Tensor(out_channels))
+        self.root_vars = Param(torch.Tensor(in_channels, out_channels-1))
+        self.bias = Param(torch.Tensor(out_channels-1))
         self.reset_parameters()
 
     def reset_parameters(self):
         size = self.in_channels
         uniform(size, self.root_vars)
-        uniform(size, self.bias)
+        uniform(size-1, self.bias)
 
     def forward(self, x, old_vars, edge_index, edge_feature, rhs, size):
         row, _ = edge_index
@@ -54,9 +54,22 @@ class CONS_TO_VAR(MessagePassing):
     def update(self, aggr_out, x, old_vars, rhs, size):
         # New variable feauture
         # TODO: only apply to 1:d-1
-        new_vars = aggr_out + torch.matmul(old_vars, self.root_vars)
-        new_out = new_vars + self.bias
 
+        new_out = torch.zeros(aggr_out.size(0), aggr_out.size(1), device=device)
+
+        # Assign violation back to embedding of contraints.
+        new_out[:, -1] = aggr_out[:, -1]
+        new_out[:, 0:-1] = aggr_out[:, 0:-1]
+
+        # New contraint feauture
+        new_cons = torch.zeros(aggr_out.size(0), aggr_out.size(1), device=device)
+        new_cons[:, 0:-1] = new_out[:, 0:-1] + torch.matmul(old_vars, self.root_vars)
+        new_out[:, 0:-1] = new_cons[:, 0:-1] + self.bias
+
+
+        # new_vars = aggr_out + torch.matmul(old_vars, self.root_vars)
+        # new_out = new_vars + self.bias
+        #
         return new_out
 
 class VARS_TO_CON(MessagePassing):
@@ -67,16 +80,16 @@ class VARS_TO_CON(MessagePassing):
 
         # Maps variable embedding to a scalar variable assignmnet.
         # TODO: Sigmoid?
-        self.hidden_to_var = Seq(Lin(in_channels, in_channels - 1), ReLU(), Lin(in_channels - 1))
+        self.hidden_to_var = Seq(Lin(in_channels, in_channels - 1), ReLU(), Lin(in_channels - 1,1))
         self.mlp_var = Seq(Lin(in_channels, in_channels - 1), ReLU(), Lin(in_channels - 1, in_channels - 1))
         self.root_cons = Param(torch.Tensor(in_channels, out_channels-1))
-        self.bias = Param(torch.Tensor(out_channels))
+        self.bias = Param(torch.Tensor(out_channels-1))
         self.reset_parameters()
 
     def reset_parameters(self):
         size = self.in_channels
-        uniform(size, self.root_cons-1)
-        uniform(size, self.bias)
+        uniform(size, self.root_cons)
+        uniform(size-1, self.bias)
 
     def forward(self, x, old_cons, edge_index, edge_feature, rhs, size):
         row, _ = edge_index
@@ -113,9 +126,7 @@ class VARS_TO_CON(MessagePassing):
         # New contraint feauture
         new_cons = torch.zeros(aggr_out.size(0), aggr_out.size(1), device=device)
         new_cons[:, 0:-1] = new_out[:, 0:-1] + torch.matmul(old_cons, self.root_cons)
-        exit()
-
-        new_out = new_cons + self.bias
+        new_out[:, 0:-1] = new_cons[:, 0:-1] + self.bias
 
         return new_out
 
