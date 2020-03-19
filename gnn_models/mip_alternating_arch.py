@@ -57,8 +57,7 @@ class CONS_TO_VAR(MessagePassing):
         new_vars = aggr_out + torch.matmul(old_vars, self.root_vars)
         new_out = new_vars + self.bias
 
-        return aggr_out
-        #return new_out
+        return new_out
 
 class VARS_TO_CON(MessagePassing):
     def __init__(self, in_channels, out_channels, **kwargs):
@@ -112,9 +111,9 @@ class VARS_TO_CON(MessagePassing):
         new_out[:, 0:-1] = aggr_out[:, 0:-1]
 
         # New contraint feauture
-        #new_cons = new_out + torch.matmul(old_cons, self.root_cons)
+        new_cons = new_out + torch.matmul(old_cons, self.root_cons)
 
-        #new_out = new_cons + self.bias
+        new_out = new_cons + self.bias
 
         return new_out
 
