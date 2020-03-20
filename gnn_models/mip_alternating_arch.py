@@ -46,6 +46,11 @@ class CONS_TO_VAR(MessagePassing):
         # Get violation of contraint.
         violation = x_j[:, -1]
         violation = c.view(-1) / asums_j * hidden_to_var(x_i).view(-1) * violation
+
+        #### TODO: revert
+        violation = torch.zeros(violation.size(0), violation.size(1))
+
+
         # TODO: Scale by coefficient?
         # TODO: Revert
         out = self.mlp_cons(c * torch.cat([x_j[:, 0:-1], violation.view(-1, 1)], dim=-1))
@@ -105,6 +110,10 @@ class VARS_TO_CON(MessagePassing):
         var_assign = hidden_to_var(x_j)
         # Variable assignment * coeffient in constraint.
         var_assign = var_assign * c
+
+
+        #### TODO: revert
+        var_assign = torch.zeros(var_assign.size(0), var_assign.size(1))
 
         # TODO: Scale by coefficient?
         # TODO: Revert
