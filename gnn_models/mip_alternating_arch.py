@@ -54,22 +54,14 @@ class CONS_TO_VAR(MessagePassing):
     def update(self, aggr_out, x, old_vars, rhs, size):
         # New variable feauture
         # TODO: only apply to 1:d-1
-
         new_out = torch.zeros(aggr_out.size(0), aggr_out.size(1), device=device)
 
-        # Assign violation back to embedding of contraints.
-        new_out[:, -1] = aggr_out[:, -1]
-        new_out[:, 0:-1] = aggr_out[:, 0:-1]
-
-        # New contraint feauture
         new_cons = torch.zeros(aggr_out.size(0), aggr_out.size(1), device=device)
-        new_cons[:, 0:-1] = new_out[:, 0:-1] + torch.matmul(old_vars, self.root_vars)
+        new_cons[:, 0:-1] = aggr_out[:, 0:-1] + torch.matmul(old_vars, self.root_vars)
+
+        new_out[:, -1] = aggr_out[:, -1]
         new_out[:, 0:-1] = new_cons[:, 0:-1] + self.bias
 
-
-        # new_vars = aggr_out + torch.matmul(old_vars, self.root_vars)
-        # new_out = new_vars + self.bias
-        #
         return new_out
 
 class VARS_TO_CON(MessagePassing):
