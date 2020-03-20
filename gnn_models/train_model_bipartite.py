@@ -14,6 +14,7 @@ from torch_geometric.data import (InMemoryDataset, Data)
 from torch_geometric.data import DataLoader
 from gnn_models.mip_alternating_arch import Net
 
+torch.autograd.set_detect_anomaly(True)
 
 # Dataset and preprocessing.
 class GISR(InMemoryDataset):

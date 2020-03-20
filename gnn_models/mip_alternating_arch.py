@@ -8,7 +8,7 @@ from torch_geometric.nn.conv import MessagePassing
 from torch_geometric.nn.inits import uniform, normal
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
+torch.autograd.set_detect_anomaly(True)
 
 # Compute new variable features.
 class CONS_TO_VAR(MessagePassing):
@@ -46,7 +46,9 @@ class CONS_TO_VAR(MessagePassing):
         violation = x_j[:, -1]
         violation = c.view(-1) / asums_j * hidden_to_var(x_i).view(-1) * violation
         # TODO: Scale by coefficient?
-        out = self.mlp_cons(c * x_j)
+        # TODO: Revert
+        out = self.mlp_cons(c *  torch.cat([x_j[:,0:-1], violation.view(-1, 1)], dim=-1))
+        # out = self.mlp_cons(c * x_j)
         out = norm.view(-1, 1) * torch.cat([out, violation.view(-1, 1)], dim=-1)
 
         return out
@@ -102,8 +104,12 @@ class VARS_TO_CON(MessagePassing):
         var_assign = hidden_to_var(x_j)
         # Variable assignment * coeffient in constraint.
         var_assign = var_assign * c
+
         # TODO: Scale by coefficient?
-        out = norm.view(-1, 1) * self.mlp_var(c * x_j)
+        # TODO: Revert
+        #out = norm.view(-1, 1) * self.mlp_var(c * x_j)
+
+        out = norm.view(-1, 1) * self.mlp_var(c * torch.cat([x_j[:,0:-1], var_assign], dim=-1))
         out = torch.cat([out, var_assign], dim=-1)
 
         return out
