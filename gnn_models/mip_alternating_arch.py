@@ -30,22 +30,21 @@ class CONS_TO_VAR(MessagePassing):
 
     def forward(self, x, old_vars, edge_index, edge_feature, rhs, asums,  size):
         row, _ = edge_index
-        deg = degree(row, x.size(0), dtype=x.dtype)
+        deg = degree(row, x[0].size(0), dtype=x[0].dtype)
         deg_inv = deg.pow(-1.0)
         norm = deg_inv[row]
 
         return self.propagate(edge_index, size=size, x=x, old_vars=old_vars, asums=asums,  edge_feature=edge_feature, rhs=rhs,
                               norm=norm)
 
-    def message(self, x_j, edge_index_j, edge_feature, norm, size, asums, x):
+    def message(self, x_j, x_i, edge_index_j, edge_feature, norm, size, asums, x):
         # TODO: Check
         c = edge_feature[edge_index_j]
         # Get violation of contraint.
         violation = x_j[:, -1]
 
 
-        print(x[edge_index_j].size(), violation.size())
-        exit()
+
 
         # TODO: Incooperate current value of variable
         # TODO: Check use of edge_index_j
@@ -90,7 +89,7 @@ class VARS_TO_CON(MessagePassing):
 
     def forward(self, x, old_cons, edge_index, edge_feature, rhs, size):
         row, _ = edge_index
-        deg = degree(row, x.size(0), dtype=x.dtype)
+        deg = degree(row, x[0].size(0), dtype=x[0].dtype)
         deg_inv = deg.pow(-1.0)
         norm = deg_inv[row]
 
@@ -178,7 +177,7 @@ class Net(torch.nn.Module):
         cons.append(F.relu(self.v2c_1((v, c), c, data.edge_index_var, data.edge_features_var, data.rhs,
                                       (data.num_nodes_var.sum(), data.num_nodes_con.sum()))))
 
-        vars.append(F.relu(self.c2v_1((cons[-1],vars[-1]), v, data.edge_index_con, data.edge_features_con, data.rhs, data.asums,
+        vars.append(F.relu(self.c2v_1((cons[-1],v), v, data.edge_index_con, data.edge_features_con, data.rhs, data.asums,
                                       (data.num_nodes_con.sum(), data.num_nodes_var.sum()))))
 
         cons.append(F.relu(self.v2c_2((vars[-1], cons[-1]), cons[-1], data.edge_index_var, data.edge_features_var, data.rhs,
