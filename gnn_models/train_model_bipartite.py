@@ -160,7 +160,7 @@ test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
 print("### DATA LOADED.")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = Net(dim=256).to(device)
+model = Net(dim=512).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
     optimizer, mode='min', factor=0.7, patience=5, min_lr=0.00001)
@@ -221,7 +221,7 @@ def test(loader):
 
 best_val_error = None
 
-for epoch in range(1, 100):
+for epoch in range(1, 200):
     lr = scheduler.optimizer.param_groups[0]['lr']
     mae, loss = train()
 
