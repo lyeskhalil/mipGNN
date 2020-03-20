@@ -37,14 +37,13 @@ class CONS_TO_VAR(MessagePassing):
         return self.propagate(hidden_to_var=hidden_to_var, edge_index=edge_index, size=size, x=x, old_vars=old_vars, asums=asums,  edge_feature=edge_feature, rhs=rhs,
                               norm=norm)
 
-    def message(self, hidden_to_var, x_j, x_i, edge_index_j, edge_feature, norm, size, asums, x):
+    def message(self, hidden_to_var, x_j, x_i, edge_index_j, edge_feature, norm, size, x, asums_j):
         # TODO: Check
         c = edge_feature[edge_index_j]
         # Get violation of contraint.
         violation = x_j[:, -1]
 
-        # TODO: Check use of edge_index_j
-        violation = c.view(-1)/asums[edge_index_j] * violation * hidden_to_var(x_i).view(-1)
+        violation = c.view(-1)/asums_j * violation * hidden_to_var(x_i).view(-1)
         # TODO: Scale by coefficient?
         out = self.mlp_cons(x_j)
         out = norm.view(-1, 1) * torch.cat([out, violation.view(-1, 1)], dim=-1)
