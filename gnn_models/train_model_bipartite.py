@@ -225,7 +225,7 @@ for epoch in range(1, 100):
     lr = scheduler.optimizer.param_groups[0]['lr']
     mae, loss = train()
 
-    if epoch == 50:
+    if epoch == 10:
         for param_group in optimizer.param_groups:
             param_group['lr'] = 0.5 * param_group['lr']
 
