@@ -128,8 +128,10 @@ class VARS_TO_CON(MessagePassing):
         new_out = torch.zeros(aggr_out.size(0), aggr_out.size(1), device=device)
 
         # Assign violation back to embedding of contraints.
-        t = aggr_out[:, -1]
-        new_out[:, -1] = t - rhs
+
+        #### TODO Revert
+        # t = aggr_out[:, -1]
+        # new_out[:, -1] = t - rhs
         new_out[:, 0:-1] = aggr_out[:, 0:-1]
 
         # New contraint feauture
