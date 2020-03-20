@@ -49,7 +49,7 @@ class CONS_TO_VAR(MessagePassing):
         violation = c.view(-1) / asums_j * hidden_to_var(x_i).view(-1) * violation
 
         #### TODO: revert
-        violation = torch.zeros(violation.size(0)).cuda()
+        # violation = torch.zeros(violation.size(0)).cuda()
 
 
         # TODO: Scale by coefficient?
@@ -114,7 +114,7 @@ class VARS_TO_CON(MessagePassing):
 
 
         #### TODO: revert
-        var_assign = torch.zeros(var_assign.size(0), var_assign.size(1)).cuda()
+        # var_assign = torch.zeros(var_assign.size(0), var_assign.size(1)).cuda()
 
         # TODO: Scale by coefficient?
         # TODO: Revert
@@ -131,8 +131,8 @@ class VARS_TO_CON(MessagePassing):
         # Assign violation back to embedding of contraints.
 
         #### TODO Revert
-        # t = aggr_out[:, -1]
-        # new_out[:, -1] = t - rhs
+        t = aggr_out[:, -1]
+        new_out[:, -1] = t - rhs
         new_out[:, 0:-1] = aggr_out[:, 0:-1]
 
         # New contraint feauture
