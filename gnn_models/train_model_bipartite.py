@@ -24,11 +24,11 @@ class GISR(InMemoryDataset):
 
     @property
     def raw_file_names(self):
-        return "TEST1"
+        return "TEST11"
 
     @property
     def processed_file_names(self):
-        return "TEST2"
+        return "TEST22"
 
     def download(self):
         pass
@@ -65,6 +65,7 @@ class GISR(InMemoryDataset):
             con_feat = []
             # Contains right-hand sides of equations.
             rhss = []
+            a_sum = []
             for i, (node, node_data) in enumerate(graph.nodes(data=True)):
                 # Node is a variable.
                 if node_data['bipartite'] == 0:
@@ -77,6 +78,12 @@ class GISR(InMemoryDataset):
 
                 # Node is constraint.
                 else:
+
+                    a = []
+                    for e in graph.edges(node,data=True):
+                        a.append(graph[e[0]][e[1]]['coeff'])
+                    a_sum.append(sum(a))
+
                     con_node[i] = con_i
                     con_i += 1
 
@@ -114,6 +121,7 @@ class GISR(InMemoryDataset):
             data.rhs = torch.from_numpy(np.array(rhss)).to(torch.float)
             data.edge_features_con = torch.from_numpy(np.array(edge_features_con)).to(torch.float)
             data.edge_features_var = torch.from_numpy(np.array(edge_features_var)).to(torch.float)
+            data.asums = torch.from_numpy(np.array(a_sum)).to(torch.float)
 
             data.num_nodes_var = num_nodes_var
             data.num_nodes_con = num_nodes_con
@@ -160,7 +168,7 @@ test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
 print("### DATA LOADED.")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = Net(dim=64).to(device)
+model = Net(dim=256).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
     optimizer, mode='min', factor=0.7, patience=5, min_lr=0.00001)
