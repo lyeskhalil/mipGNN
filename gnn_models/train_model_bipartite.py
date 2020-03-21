@@ -162,17 +162,17 @@ train_dataset = dataset[0:900].shuffle()
 val_dataset = dataset[800:900].shuffle()
 test_dataset = dataset[900:].shuffle()
 
-batch_size = 5
+batch_size = 15
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
 print("### DATA LOADED.")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = Net(dim=256).to(device)
+model = Net(dim=64).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-    optimizer, mode='min', factor=0.7, patience=30, min_lr=0.00001)
+    optimizer, mode='min', factor=0.7, patience=3, min_lr=0.00001)
 print("### SETUP DONE.")
 
 
