@@ -150,6 +150,8 @@ class Net(torch.nn.Module):
         self.var_mlp = Seq(Lin(2, dim - 3), ReLU(), Lin(dim - 3, dim - 3))
         self.con_mlp = Seq(Lin(2, dim - 3), ReLU(), Lin(dim - 3, dim - 3))
 
+
+        ### TODO: Sigmoid meaningful?
         self.hidden_to_var_1 = Seq(Lin(dim, dim - 1), Sigmoid(), Lin(dim - 1, 1))
         self.v2c_1 = VARS_TO_CON(dim, dim)
         self.c2v_1 = CONS_TO_VAR(dim, dim)
