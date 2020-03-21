@@ -152,23 +152,23 @@ class Net(torch.nn.Module):
 
 
         ### TODO: Sigmoid meaningful?
-        self.hidden_to_var_1 = Seq(Lin(dim, dim - 1), Sigmoid(), Lin(dim - 1, 1))
+        self.hidden_to_var_1 = Seq(Lin(dim, dim - 1), ReLU(), Lin(dim - 1, 1))
         self.v2c_1 = VARS_TO_CON(dim, dim)
         self.c2v_1 = CONS_TO_VAR(dim, dim)
 
-        self.hidden_to_var_2 = Seq(Lin(dim, dim - 1), Sigmoid(), Lin(dim - 1, 1))
+        self.hidden_to_var_2 = Seq(Lin(dim, dim - 1), ReLU(), Lin(dim - 1, 1))
         self.v2c_2 = VARS_TO_CON(dim, dim)
         self.c2v_2 = CONS_TO_VAR(dim, dim)
 
-        self.hidden_to_var_3 = Seq(Lin(dim, dim - 1), Sigmoid(), Lin(dim - 1, 1))
+        self.hidden_to_var_3 = Seq(Lin(dim, dim - 1), ReLU(), Lin(dim - 1, 1))
         self.v2c_3 = VARS_TO_CON(dim, dim)
         self.c2v_3 = CONS_TO_VAR(dim, dim)
 
-        self.hidden_to_var_4 = Seq(Lin(dim, dim - 1), Sigmoid(), Lin(dim - 1, 1))
+        self.hidden_to_var_4 = Seq(Lin(dim, dim - 1), ReLU(), Lin(dim - 1, 1))
         self.v2c_4 = VARS_TO_CON(dim, dim)
         self.c2v_4 = CONS_TO_VAR(dim, dim)
 
-        self.hidden_to_var_5 = Seq(Lin(dim, dim - 1), Sigmoid(), Lin(dim - 1, 1))
+        self.hidden_to_var_5 = Seq(Lin(dim, dim - 1), ReLU(), Lin(dim - 1, 1))
         self.v2c_5 = VARS_TO_CON(dim, dim)
         self.c2v_5 = CONS_TO_VAR(dim, dim)
 
