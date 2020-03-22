@@ -194,8 +194,9 @@ class Net(torch.nn.Module):
         rand_var = torch.empty(data.var_node_features.size(0), 64).uniform_(0, 1).cuda()
         rand_con = torch.empty(data.con_node_features.size(0), 64).uniform_(0, 1).cuda()
 
+        # TODO: nd features for vars
         if torch.cuda.is_available():
-            ones_var = torch.zeros(data.var_node_features.size(0), 1).cuda()
+            ones_var = torch.empty(data.var_node_features.size(0), 1).normal_(0,1).cuda()
             ones_con = torch.zeros(data.con_node_features.size(0), 1).cuda()
         else:
             ones_var = torch.zeros(data.var_node_features.size(0), 1).cpu()
