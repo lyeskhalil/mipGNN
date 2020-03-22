@@ -45,22 +45,18 @@ class CONS_TO_VAR(MessagePassing):
         c = edge_feature[edge_index_j]
         # Get violation of contraint.
         violation = x_j[:, -1]
-        violation = hidden_to_var(x_i).view(-1) * violation * c
-
+        violation = hidden_to_var(x_i).view(-1) * violation * c.view(-1)
         #### TODO: FIX numerical problems here
         # violation = c.view(-1) / asums_j * hidden_to_var(x_i).view(-1) * violation
-
         #### TODO: revert
         # violation = torch.zeros(violation.size(0)).cuda()
 
-
         # TODO: Scale by coefficient?
-        # TODO: Revert
-
         out = self.mlp_cons(x_j)
 
+
         # out = self.mlp_cons(c * x_j)
-        out = norm.view(-1, 1) * torch.cat([out, violation.view(-1, 1)], dim=-1)
+        out = norm.view(-1, 1) * torch.cat([out, violation.view(out.size(0), 1)], dim=-1)
 
         return out
 
@@ -155,8 +151,9 @@ class Net(torch.nn.Module):
         super(Net, self).__init__()
 
         # TODO: Revert
-        self.var_mlp = Seq(Lin(2+64, dim - 1), ReLU(), Lin(dim - 3, dim - 3))
-        self.con_mlp = Seq(Lin(2+64, dim - 1), ReLU(), Lin(dim - 3, dim - 3))
+
+        self.var_mlp = Seq(Lin(2+64, dim - 1), ReLU(), Lin(dim - 1, dim - 1))
+        self.con_mlp = Seq(Lin(2+64, dim - 1), ReLU(), Lin(dim - 1, dim - 1))
 
         ### TODO: Sigmoid meaningful?
         self.hidden_to_var_1 = Seq(Lin(dim, dim - 1), ReLU(), Lin(dim - 1, 1))
@@ -204,13 +201,16 @@ class Net(torch.nn.Module):
             ones_var = torch.zeros(data.var_node_features.size(0), 1).cpu()
             ones_con = torch.zeros(data.con_node_features.size(0), 1).cpu()
 
+
         # TODO: Revert
-        v = torch.cat([self.con_mlp(data.var_node_features), rand_var], dim=-1)
-        c = torch.cat([self.var_mlp(data.var_node_features), rand_con], dim=-1)
+        v = self.con_mlp(torch.cat([data.var_node_features, rand_var], dim=-1))
+        c = self.var_mlp(torch.cat([data.con_node_features, rand_con], dim=-1))
+
 
         ## TODO: Revert
         v = torch.cat([v, ones_var], dim=-1)
         c = torch.cat([c, ones_con], dim=-1)
+
 
         vars = []
         cons = []
