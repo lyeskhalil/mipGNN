@@ -150,7 +150,7 @@ class Net(torch.nn.Module):
         self.var_mlp = Seq(Lin(2, dim - 3), ReLU(), Lin(dim - 3, dim - 3))
         self.con_mlp = Seq(Lin(2, dim - 3), ReLU(), Lin(dim - 3, dim - 3))
 
-        dim += 10
+        dim += 32
         ### TODO: Sigmoid meaningful?
         self.hidden_to_var_1 = Seq(Lin(dim, dim - 1), ReLU(), Lin(dim - 1, 1))
         self.v2c_1 = VARS_TO_CON(dim, dim)
@@ -187,8 +187,8 @@ class Net(torch.nn.Module):
     def forward(self, data):
 
         # TODO: Revert
-        rand_var = torch.empty(data.var_node_features.size(0), 10).uniform_(0, 1).cuda()
-        rand_con = torch.empty(data.con_node_features.size(0), 10).uniform_(0, 1).cuda()
+        rand_var = torch.empty(data.var_node_features.size(0), 32).uniform_(0, 1).cuda()
+        rand_con = torch.empty(data.con_node_features.size(0), 32).uniform_(0, 1).cuda()
 
         if torch.cuda.is_available():
             ones_var = torch.zeros(data.var_node_features.size(0), 1).cuda()
