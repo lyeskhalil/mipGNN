@@ -155,10 +155,9 @@ class Net(torch.nn.Module):
         super(Net, self).__init__()
 
         # TODO: Revert
-        self.var_mlp = Seq(Lin(2, dim - 3), ReLU(), Lin(dim - 3, dim - 3))
-        self.con_mlp = Seq(Lin(2, dim - 3), ReLU(), Lin(dim - 3, dim - 3))
+        self.var_mlp = Seq(Lin(2+64, dim - 1), ReLU(), Lin(dim - 3, dim - 3))
+        self.con_mlp = Seq(Lin(2+64, dim - 1), ReLU(), Lin(dim - 3, dim - 3))
 
-        dim += 64
         ### TODO: Sigmoid meaningful?
         self.hidden_to_var_1 = Seq(Lin(dim, dim - 1), ReLU(), Lin(dim - 1, 1))
         self.v2c_1 = VARS_TO_CON(dim, dim)
@@ -204,16 +203,14 @@ class Net(torch.nn.Module):
         else:
             ones_var = torch.zeros(data.var_node_features.size(0), 1).cpu()
             ones_con = torch.zeros(data.con_node_features.size(0), 1).cpu()
+
         # TODO: Revert
+        v = torch.cat([self.con_mlp(data.var_node_features), rand_var], dim=-1)
+        c = torch.cat([self.var_mlp(data.var_node_features), rand_con], dim=-1)
 
-
-        #print(rand_var.size(), ones_var.size(), data.var_node_features.size(),self.var_mlp(data.var_node_features).size())
-
-
-        v = torch.cat([rand_var, self.var_mlp(data.var_node_features), data.var_node_features, ones_var], dim=-1)
-        c = torch.cat([rand_con, self.con_mlp(data.con_node_features), data.con_node_features, ones_con], dim=-1)
-
-
+        ## TODO: Revert
+        v = torch.cat([v, ones_var], dim=-1)
+        c = torch.cat([c, ones_con], dim=-1)
 
         vars = []
         cons = []
