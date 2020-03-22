@@ -151,7 +151,6 @@ class Net(torch.nn.Module):
         super(Net, self).__init__()
 
         # TODO: Revert
-
         self.var_mlp = Seq(Lin(2+64, dim - 1), ReLU(), Lin(dim - 1, dim - 1))
         self.con_mlp = Seq(Lin(2+64, dim - 1), ReLU(), Lin(dim - 1, dim - 1))
 
@@ -195,6 +194,7 @@ class Net(torch.nn.Module):
         rand_con = torch.empty(data.con_node_features.size(0), 64).uniform_(0, 1).cuda()
 
         # TODO: nd features for vars
+        # TODO: Revert
         if torch.cuda.is_available():
             ones_var = torch.empty(data.var_node_features.size(0), 1).normal_(0,1).cuda()
             ones_con = torch.zeros(data.con_node_features.size(0), 1).cuda()
@@ -202,16 +202,13 @@ class Net(torch.nn.Module):
             ones_var = torch.zeros(data.var_node_features.size(0), 1).cpu()
             ones_con = torch.zeros(data.con_node_features.size(0), 1).cpu()
 
-
         # TODO: Revert
         v = self.con_mlp(torch.cat([data.var_node_features, rand_var], dim=-1))
         c = self.var_mlp(torch.cat([data.con_node_features, rand_con], dim=-1))
 
-
         ## TODO: Revert
         v = torch.cat([v, ones_var], dim=-1)
         c = torch.cat([c, ones_con], dim=-1)
-
 
         vars = []
         cons = []
