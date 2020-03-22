@@ -44,9 +44,14 @@ class CONS_TO_VAR(MessagePassing):
         c = edge_feature[edge_index_j]
         # Get violation of contraint.
         violation = x_j[:, -1]
+
+
+        # Check this
+        #print(violation)
+
         violation = hidden_to_var(x_i).view(-1) * violation * c.view(-1)
         #### TODO: FIX numerical problems here
-        # violation = c.view(-1) / (asums_j+0.01) * hidden_to_var(x_i).view(-1) * violation
+        # violation = c.view(-1) / (asums_j) * hidden_to_var(x_i).view(-1) * violation
         #### TODO: revert
         # violation = torch.zeros(violation.size(0)).cuda()
 
@@ -68,6 +73,8 @@ class CONS_TO_VAR(MessagePassing):
 
         new_out[:, -1] = aggr_out[:, -1]
         new_out[:, 0:-1] = new_cons[:, 0:-1] + self.bias
+
+        print(new_out[0])
 
         return new_out
 
@@ -111,7 +118,7 @@ class VARS_TO_CON(MessagePassing):
         var_assign = var_assign * c
 
         #### TODO: revert
-        # var_assign = torch.zeros(var_assign.size(0), var_assign.size(1)).cuda()
+       ## var_assign = torch.zeros(var_assign.size(0), var_assign.size(1)).cuda()
 
         # TODO: Scale by coefficient?
         # TODO: Revert
@@ -137,6 +144,7 @@ class VARS_TO_CON(MessagePassing):
         new_cons[:, 0:-1] = new_out[:, 0:-1] + torch.matmul(old_cons, self.root_cons)
         new_out[:, 0:-1] = new_cons[:, 0:-1] + self.bias
 
+        #print(new_out[0])
         return new_out
 
 
@@ -185,8 +193,8 @@ class Net(torch.nn.Module):
         ### TODO: Try random features
         # TODO: Revert
         # TODO: Uniform?
-        rand_var = torch.empty(data.var_node_features.size(0), 64).uniform_(0, 1).cuda()
-        rand_con = torch.empty(data.con_node_features.size(0), 64).uniform_(0, 1).cuda()
+        rand_var = torch.empty(data.var_node_features.size(0), 64).uniform_(0, 1).cpu()
+        rand_con = torch.empty(data.con_node_features.size(0), 64).uniform_(0, 1).cpu()
 
         # TODO: nd features for vars
         # TODO: Revert
@@ -211,10 +219,15 @@ class Net(torch.nn.Module):
             F.relu(self.v2c_1(self.hidden_to_var_1, (v, c), c, data.edge_index_var, data.edge_features_var, data.rhs,
                               (data.num_nodes_var.sum(), data.num_nodes_con.sum()))))
 
+
+
         vars.append(F.relu(
             self.c2v_1(self.hidden_to_var_1, (cons[-1], v), v, data.edge_index_con, data.edge_features_con, data.rhs,
                        data.asums,
                        (data.num_nodes_con.sum(), data.num_nodes_var.sum()))))
+
+        print(vars[-1][0])
+        exit()
 
         cons.append(F.relu(self.v2c_2(self.hidden_to_var_2, (vars[-1], cons[-1]), cons[-1], data.edge_index_var,
                                       data.edge_features_var, data.rhs,
