@@ -45,7 +45,6 @@ class CONS_TO_VAR(MessagePassing):
         # Get violation of contraint.
         violation = x_j[:, -1]
 
-
         # Check this
         #print(violation)
 
