@@ -53,7 +53,9 @@ class CONS_TO_VAR(MessagePassing):
 
         # TODO: Scale by coefficient?
         # TODO: Revert
-        out = self.mlp_cons(self.mlp_cons(x_j))
+
+        out = self.mlp_cons(x_j)
+
         # out = self.mlp_cons(c * x_j)
         out = norm.view(-1, 1) * torch.cat([out, violation.view(-1, 1)], dim=-1)
 
@@ -118,6 +120,9 @@ class VARS_TO_CON(MessagePassing):
         # TODO: Scale by coefficient?
         # TODO: Revert
         # out = norm.view(-1, 1) * self.mlp_var(c * x_j)
+
+
+
 
         out = norm.view(-1, 1) * self.mlp_var(x_j)
         out = torch.cat([out, var_assign], dim=-1)
@@ -187,8 +192,8 @@ class Net(torch.nn.Module):
     def forward(self, data):
         ### TODO: Try random features
         # TODO: Revert
-        rand_var = torch.empty(data.var_node_features.size(0), 64).uniform_(0, 1).cuda()
-        rand_con = torch.empty(data.con_node_features.size(0), 64).uniform_(0, 1).cuda()
+        rand_var = torch.empty(data.var_node_features.size(0), 64).uniform_(0, 1).cpu()
+        rand_con = torch.empty(data.con_node_features.size(0), 64).uniform_(0, 1).cpu()
 
         if torch.cuda.is_available():
             ones_var = torch.zeros(data.var_node_features.size(0), 1).cuda()
