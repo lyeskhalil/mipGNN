@@ -45,9 +45,10 @@ class CONS_TO_VAR(MessagePassing):
         c = edge_feature[edge_index_j]
         # Get violation of contraint.
         violation = x_j[:, -1]
+        violation =  hidden_to_var(x_i).view(-1) * violation
 
         #### TODO: FIX numerical problems here
-        #violation = c.view(-1) / asums_j * hidden_to_var(x_i).view(-1) * violation
+        # violation = c.view(-1) / asums_j * hidden_to_var(x_i).view(-1) * violation
 
         #### TODO: revert
         # violation = torch.zeros(violation.size(0)).cuda()
