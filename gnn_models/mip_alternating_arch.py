@@ -190,14 +190,14 @@ class Net(torch.nn.Module):
     def forward(self, data):
         ### TODO: Try random features
         # TODO: Revert
-        rand_var = torch.empty(data.var_node_features.size(0), 64).uniform_(0, 1).cuda()
-        rand_con = torch.empty(data.con_node_features.size(0), 64).uniform_(0, 1).cuda()
+        rand_var = torch.empty(data.var_node_features.size(0), 64).normal_(0, 1).cuda()
+        rand_con = torch.empty(data.con_node_features.size(0), 64).normal_(0, 1).cuda()
 
         # TODO: nd features for vars
         # TODO: Revert
         if torch.cuda.is_available():
             ones_var = torch.empty(data.var_node_features.size(0), 1).normal_(0,1).cuda()
-            ones_con = torch.zeros(data.con_node_features.size(0), 1).cuda()
+            ones_con = torch.empty(data.con_node_features.size(0), 1).normal_(0,1).cuda()
         else:
             ones_var = torch.zeros(data.var_node_features.size(0), 1).cpu()
             ones_con = torch.zeros(data.con_node_features.size(0), 1).cpu()
