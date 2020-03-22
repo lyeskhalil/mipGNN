@@ -116,7 +116,7 @@ class VARS_TO_CON(MessagePassing):
         var_assign = var_assign * c
 
         #### TODO: revert
-       ## var_assign = torch.zeros(var_assign.size(0), var_assign.size(1)).cuda()
+        ## var_assign = torch.zeros(var_assign.size(0), var_assign.size(1)).cuda()
 
         # TODO: Scale by coefficient?
         # TODO: Revert
@@ -124,8 +124,6 @@ class VARS_TO_CON(MessagePassing):
 
         out = norm.view(-1, 1) * self.mlp_var(c * x_j)
         out = torch.cat([out, var_assign], dim=-1)
-
-
 
         return out
 
