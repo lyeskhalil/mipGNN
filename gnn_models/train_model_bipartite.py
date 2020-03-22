@@ -36,7 +36,7 @@ class GISR(InMemoryDataset):
     def process(self):
         data_list = []
 
-        path = '../gisp_generator/DATA/er_200_10l/'
+        path = '../gisp_generator/DATA/er_200_10/'
         total = len(os.listdir(path))
 
         for num, filename in enumerate(os.listdir(path)):
@@ -157,9 +157,9 @@ dataset = GISR(path, transform=MyTransform()).shuffle()
 dataset.data.y = torch.log(dataset.data.y + 1.0)
 print(len(dataset))
 
-train_dataset = dataset[0:900].shuffle()
-val_dataset = dataset[800:900].shuffle()
-test_dataset = dataset[900:].shuffle()
+train_dataset = dataset[0:9000].shuffle()
+val_dataset = dataset[8000:9000].shuffle()
+test_dataset = dataset[9000:].shuffle()
 
 batch_size = 5
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
