@@ -66,15 +66,15 @@ class CONS_TO_VAR(MessagePassing):
     def update(self, aggr_out, x, old_vars, rhs, size):
         # New variable feauture
         # TODO: only apply to 1:d-1
-        new_out = torch.zeros(aggr_out.size(0), aggr_out.size(1), device=device)
+        new_out = torch.empty(aggr_out.size(0), aggr_out.size(1), device=device)
 
-        new_cons = torch.zeros(aggr_out.size(0), aggr_out.size(1), device=device)
+        new_cons = torch.empty(aggr_out.size(0), aggr_out.size(1), device=device)
         new_cons[:, 0:-1] = aggr_out[:, 0:-1] + torch.matmul(old_vars, self.root_vars)
 
         new_out[:, -1] = aggr_out[:, -1]
         new_out[:, 0:-1] = new_cons[:, 0:-1] + self.bias
 
-        print(new_out[0])
+
 
         return new_out
 
@@ -127,10 +127,12 @@ class VARS_TO_CON(MessagePassing):
         out = norm.view(-1, 1) * self.mlp_var(x_j)
         out = torch.cat([out, var_assign], dim=-1)
 
+
+
         return out
 
     def update(self, aggr_out, x, old_cons, rhs, size):
-        new_out = torch.zeros(aggr_out.size(0), aggr_out.size(1), device=device)
+        new_out = torch.empty(aggr_out.size(0), aggr_out.size(1), device=device)
 
         # Assign violation back to embedding of contraints.
 
@@ -140,11 +142,13 @@ class VARS_TO_CON(MessagePassing):
         new_out[:, 0:-1] = aggr_out[:, 0:-1]
 
         # New contraint feauture
-        new_cons = torch.zeros(aggr_out.size(0), aggr_out.size(1), device=device)
+        new_cons = torch.empty(aggr_out.size(0), aggr_out.size(1), device=device)
         new_cons[:, 0:-1] = new_out[:, 0:-1] + torch.matmul(old_cons, self.root_cons)
         new_out[:, 0:-1] = new_cons[:, 0:-1] + self.bias
 
         #print(new_out[0])
+        #print(new_out[-1])
+
         return new_out
 
 
@@ -193,11 +197,17 @@ class Net(torch.nn.Module):
         ### TODO: Try random features
         # TODO: Revert
         # TODO: Uniform?
-        rand_var = torch.empty(data.var_node_features.size(0), 64).uniform_(0, 1).cpu()
-        rand_con = torch.empty(data.con_node_features.size(0), 64).uniform_(0, 1).cpu()
+        if torch.cuda.is_available():
+            rand_var = torch.empty(data.var_node_features.size(0), 64).uniform_(0, 1).cuda()
+            rand_con = torch.empty(data.con_node_features.size(0), 64).uniform_(0, 1).cuda()
+        else:
+            rand_var = torch.empty(data.var_node_features.size(0), 64).uniform_(0, 1).cpu()
+            rand_con = torch.empty(data.con_node_features.size(0), 64).uniform_(0, 1).cpu()
 
         # TODO: nd features for vars
         # TODO: Revert
+
+
         if torch.cuda.is_available():
             ones_var = torch.empty(data.var_node_features.size(0), 1).normal_(0, 1).cuda()
             ones_con = torch.empty(data.con_node_features.size(0), 1).normal_(0, 1).cuda()
@@ -219,15 +229,15 @@ class Net(torch.nn.Module):
             F.relu(self.v2c_1(self.hidden_to_var_1, (v, c), c, data.edge_index_var, data.edge_features_var, data.rhs,
                               (data.num_nodes_var.sum(), data.num_nodes_con.sum()))))
 
-
+        # print(cons[-1][-1])
+        # exit()
 
         vars.append(F.relu(
             self.c2v_1(self.hidden_to_var_1, (cons[-1], v), v, data.edge_index_con, data.edge_features_con, data.rhs,
                        data.asums,
                        (data.num_nodes_con.sum(), data.num_nodes_var.sum()))))
 
-        print(vars[-1][0])
-        exit()
+
 
         cons.append(F.relu(self.v2c_2(self.hidden_to_var_2, (vars[-1], cons[-1]), cons[-1], data.edge_index_var,
                                       data.edge_features_var, data.rhs,
