@@ -8,7 +8,6 @@ from torch_geometric.nn.conv import MessagePassing
 from torch_geometric.nn.inits import uniform, normal
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-torch.autograd.set_detect_anomaly(True)
 
 
 
