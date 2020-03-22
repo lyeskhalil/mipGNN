@@ -6,8 +6,10 @@ sys.path.insert(0, '.')
 
 import torch
 import torch.nn.functional as F
-from torch.nn import Sequential as Seq, Linear as Lin, ReLU
+from torch.nn import Sequential as Seq, Linear as Lin, ReLU, Sigmoid
 from torch_geometric.nn import NNConv
+
+
 
 
 class Net(torch.nn.Module):
@@ -47,6 +49,7 @@ class Net(torch.nn.Module):
         x = x[data.assoc_var]
 
         x = F.relu(self.fc1(x))
+        x = F.dropout(x, p=0.5, training=self.training)
         x = self.fc4(x)
 
         return x.squeeze(-1)

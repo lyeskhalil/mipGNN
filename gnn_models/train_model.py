@@ -9,12 +9,14 @@ import os.path as osp
 import torch
 import numpy as np
 import networkx as nx
+import matplotlib.pyplot as plt
+
 
 from torch_geometric.data import (InMemoryDataset, Data)
 from torch_geometric.data import DataLoader
 import torch_geometric
-from gnn_models import simple_edge_architecture as arch
-#from gnn_models import mpnn_architecture as arch
+# from gnn_models import dummy_architecture as arch
+from gnn_models import mpnn_architecture as arch
 
 
 class GISDS(InMemoryDataset):
@@ -25,11 +27,11 @@ class GISDS(InMemoryDataset):
 
     @property
     def raw_file_names(self):
-        return "GIdrteeedddddrrrredg sDS"
+        return "ERS"
 
     @property
     def processed_file_names(self):
-        return "GrddteeddeddrrrrrIdgSsDS"
+        return "ERS"
 
     def download(self):
         pass
@@ -37,7 +39,7 @@ class GISDS(InMemoryDataset):
     def process(self):
         data_list = []
 
-        path = '../gisp_generator/DATA/test/'
+        path = '../gisp_generator/DATA/er_200/'
 
         total = len(os.listdir(path))
 
@@ -67,7 +69,9 @@ class GISDS(InMemoryDataset):
                     node_type.append(0)
                     assoc_var.append(i)
                     coeff = node_data['objcoeff']
-                    var_feat.append([coeff, graph.degree[i]])
+
+                    # TODO: Maybe scale this
+                    var_feat.append([coeff/100.0, graph.degree[i]])
                 # Node is constraint.
                 else:
                     node_type.append(1)
@@ -92,7 +96,6 @@ class GISDS(InMemoryDataset):
                 else:
                     edge_types.append([1, edge_data['coeff']])
 
-
             data.edge_types = torch.from_numpy(np.array(edge_types)).to(torch.float)
             data_list.append(data)
 
@@ -116,35 +119,51 @@ class MyTransform(object):
         return new_data
 
 
+class RMSELoss(torch.nn.Module):
+    def __init__(self, eps=1e-6):
+        super().__init__()
+        self.mse = torch.nn.MSELoss()
+        self.eps = eps
+
+    def forward(self, yhat, y):
+        loss = torch.sqrt(self.mse(yhat, y) + self.eps)
+        return loss
+
 path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'DS')
-dataset = GISDS(path, transform=MyTransform())
+dataset = GISDS(path, transform=MyTransform()).shuffle()
+dataset.data.y = torch.log(dataset.data.y + 1.0)
 print(len(dataset))
 
-train_dataset = dataset[0:2].shuffle()
-val_dataset = dataset[0:2].shuffle()
-test_dataset = dataset[0:2].shuffle()
+# print(dataset.data.y.mean())
+# plt.hist(dataset.data.y.cpu().numpy(), np.arange(10,0.1))
+# plt.show()
+# exit()
+
+train_dataset = dataset[0:800].shuffle()
+val_dataset = dataset[800:900].shuffle()
+test_dataset = dataset[900:].shuffle()
 
 train_loader = DataLoader(train_dataset, batch_size=5, shuffle=True)
-val_loader = DataLoader(val_dataset, batch_size=5, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=5, shuffle=True)
+val_loader = DataLoader(val_dataset, batch_size=50, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=50, shuffle=True)
 
 print("### DATA LOADED.")
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = arch.Net(dim=32).to(device)
-optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+model = arch.Net(dim=64).to(device)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
     optimizer, mode='min', factor=0.7, patience=5, min_lr=0.00001)
 
 print("### SETUP DONE.")
 
-
 def train():
     model.train()
-    error = 0
     total_loss = 0
+    total_loss_mae = 0
     mse = torch.nn.MSELoss()
-    # l1 = torch.nn.L1Loss()
+    mse = RMSELoss()
+    mae = torch.nn.L1Loss()
 
     for data in train_loader:
         optimizer.zero_grad()
@@ -155,26 +174,24 @@ def train():
         loss.backward()
 
         total_loss += loss.item() * data.num_graphs
-        error += loss.item() * data.num_graphs
+        total_loss_mae += mae(out, data.y).item() * data.num_graphs
+
         optimizer.step()
 
-    return total_loss / len(train_loader.dataset), error / len(train_loader.dataset)
+    return total_loss_mae / len(train_loader.dataset), total_loss / len(train_loader.dataset)
+
 
 
 def test(loader):
     model.eval()
     error = 0
-
     l1 = torch.nn.L1Loss()
-    i = 0
+
     for data in loader:
         data = data.to(device)
         out = model(data)
-
-        loss = l1(out, data.y)
-
+        loss = l1(torch.exp(out) - 1.0, torch.exp(data.y) - 1.0)
         error += loss.item() * data.num_graphs
-        i += 1
 
     return error / len(loader.dataset)
 
@@ -184,16 +201,15 @@ best_val_error = None
 test_error = test(test_loader)
 print(test_error)
 
-for epoch in range(1, 100):
+for epoch in range(1, 500):
     lr = scheduler.optimizer.param_groups[0]['lr']
-    loss, l1 = train()
+    mae, loss = train()
 
     val_error = test(val_loader)
 
     if best_val_error is None or val_error < best_val_error:
         test_error = test(test_loader)
 
-    print('Epoch: {:03d}, LR: {:7f}, Loss: {:.7f}, '
-          'Train MAE: {:.7f} , Test MAE: {:.7f}'.format(epoch, lr, loss, l1, test_error))
+    print('Epoch: {:03d}, LR: {:7f}, Loss: {:.7f}, Train MAE: {:.7f}, Test MAE: {:.7f}'.format(epoch, lr, loss, mae, test_error))
 
 # torch.save(model.state_dict(), "train_mip")
