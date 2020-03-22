@@ -152,8 +152,8 @@ class Net(torch.nn.Module):
         super(Net, self).__init__()
 
         # TODO: Revert
-        self.var_mlp = Seq(Lin(2 + 64, dim - 1), ReLU(), Lin(dim - 1, dim - 1))
-        self.con_mlp = Seq(Lin(2 + 64, dim - 1), ReLU(), Lin(dim - 1, dim - 1))
+        self.var_mlp = Seq(Lin(2 + 16, dim - 1), ReLU(), Lin(dim - 1, dim - 1))
+        self.con_mlp = Seq(Lin(2 + 16, dim - 1), ReLU(), Lin(dim - 1, dim - 1))
 
         ### TODO: Sigmoid meaningful?
         self.hidden_to_var_1 = Seq(Lin(dim, dim - 1), ReLU(), Lin(dim - 1, 1))
@@ -193,11 +193,11 @@ class Net(torch.nn.Module):
         # TODO: Revert
         # TODO: Uniform?
         if torch.cuda.is_available():
-            rand_var = torch.empty(data.var_node_features.size(0), 64).uniform_(0, 1).cuda()
-            rand_con = torch.empty(data.con_node_features.size(0), 64).uniform_(0, 1).cuda()
+            rand_var = torch.empty(data.var_node_features.size(0), 16).uniform_(0, 1).cuda()
+            rand_con = torch.empty(data.con_node_features.size(0), 16).uniform_(0, 1).cuda()
         else:
-            rand_var = torch.empty(data.var_node_features.size(0), 64).uniform_(0, 1).cpu()
-            rand_con = torch.empty(data.con_node_features.size(0), 64).uniform_(0, 1).cpu()
+            rand_var = torch.empty(data.var_node_features.size(0), 16).uniform_(0, 1).cpu()
+            rand_con = torch.empty(data.con_node_features.size(0), 16).uniform_(0, 1).cpu()
 
         # TODO: nd features for vars
         # TODO: Revert
