@@ -47,6 +47,8 @@ class CONS_TO_VAR(MessagePassing):
         violation = x_j[:, -1]
         violation = c.view(-1) / asums_j * hidden_to_var(x_i).view(-1) * violation
 
+        print(violation)
+
         #### TODO: revert
         # violation = torch.zeros(violation.size(0)).cuda()
 
