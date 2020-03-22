@@ -56,7 +56,7 @@ class CONS_TO_VAR(MessagePassing):
         # violation = torch.zeros(violation.size(0)).cuda()
 
         # TODO: Scale by coefficient?
-        out = self.mlp_cons(x_j)
+        out = self.mlp_cons(c * x_j)
 
         # out = self.mlp_cons(c * x_j)
         out = norm.view(-1, 1) * torch.cat([out, violation.view(out.size(0), 1)], dim=-1)
@@ -122,7 +122,7 @@ class VARS_TO_CON(MessagePassing):
         # TODO: Revert
         # out = norm.view(-1, 1) * self.mlp_var(c * x_j)
 
-        out = norm.view(-1, 1) * self.mlp_var(x_j)
+        out = norm.view(-1, 1) * self.mlp_var(c * x_j)
         out = torch.cat([out, var_assign], dim=-1)
 
 
