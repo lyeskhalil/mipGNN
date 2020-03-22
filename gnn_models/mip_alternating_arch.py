@@ -10,7 +10,6 @@ from torch_geometric.nn.inits import uniform, normal
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
-
 # Compute new variable features.
 class CONS_TO_VAR(MessagePassing):
     def __init__(self, in_channels, out_channels, **kwargs):
@@ -47,13 +46,12 @@ class CONS_TO_VAR(MessagePassing):
         violation = x_j[:, -1]
         violation = hidden_to_var(x_i).view(-1) * violation * c.view(-1)
         #### TODO: FIX numerical problems here
-        #violation = c.view(-1) / (asums_j+0.01) * hidden_to_var(x_i).view(-1) * violation
+        # violation = c.view(-1) / (asums_j+0.01) * hidden_to_var(x_i).view(-1) * violation
         #### TODO: revert
         # violation = torch.zeros(violation.size(0)).cuda()
 
         # TODO: Scale by coefficient?
         out = self.mlp_cons(x_j)
-
 
         # out = self.mlp_cons(c * x_j)
         out = norm.view(-1, 1) * torch.cat([out, violation.view(out.size(0), 1)], dim=-1)
@@ -112,16 +110,12 @@ class VARS_TO_CON(MessagePassing):
         # Variable assignment * coeffient in constraint.
         var_assign = var_assign * c
 
-
         #### TODO: revert
         # var_assign = torch.zeros(var_assign.size(0), var_assign.size(1)).cuda()
 
         # TODO: Scale by coefficient?
         # TODO: Revert
         # out = norm.view(-1, 1) * self.mlp_var(c * x_j)
-
-
-
 
         out = norm.view(-1, 1) * self.mlp_var(x_j)
         out = torch.cat([out, var_assign], dim=-1)
@@ -151,8 +145,8 @@ class Net(torch.nn.Module):
         super(Net, self).__init__()
 
         # TODO: Revert
-        self.var_mlp = Seq(Lin(2+64, dim - 1), ReLU(), Lin(dim - 1, dim - 1))
-        self.con_mlp = Seq(Lin(2+64, dim - 1), ReLU(), Lin(dim - 1, dim - 1))
+        self.var_mlp = Seq(Lin(2 + 64, dim - 1), ReLU(), Lin(dim - 1, dim - 1))
+        self.con_mlp = Seq(Lin(2 + 64, dim - 1), ReLU(), Lin(dim - 1, dim - 1))
 
         ### TODO: Sigmoid meaningful?
         self.hidden_to_var_1 = Seq(Lin(dim, dim - 1), ReLU(), Lin(dim - 1, 1))
@@ -190,14 +184,15 @@ class Net(torch.nn.Module):
     def forward(self, data):
         ### TODO: Try random features
         # TODO: Revert
-        rand_var = torch.empty(data.var_node_features.size(0), 64).normal_(0, 1).cuda()
-        rand_con = torch.empty(data.con_node_features.size(0), 64).normal_(0, 1).cuda()
+        # TODO: Uniform?
+        rand_var = torch.empty(data.var_node_features.size(0), 64).uniform_(0, 1).cuda()
+        rand_con = torch.empty(data.con_node_features.size(0), 64).uniform_(0, 1).cuda()
 
         # TODO: nd features for vars
         # TODO: Revert
         if torch.cuda.is_available():
-            ones_var = torch.empty(data.var_node_features.size(0), 1).normal_(0,1).cuda()
-            ones_con = torch.empty(data.con_node_features.size(0), 1).normal_(0,1).cuda()
+            ones_var = torch.empty(data.var_node_features.size(0), 1).normal_(0, 1).cuda()
+            ones_con = torch.empty(data.con_node_features.size(0), 1).normal_(0, 1).cuda()
         else:
             ones_var = torch.zeros(data.var_node_features.size(0), 1).cpu()
             ones_con = torch.zeros(data.con_node_features.size(0), 1).cpu()
