@@ -201,14 +201,14 @@ def train():
     rmse = RMSELoss()
     mse = torch.nn.MSELoss()
     mae = torch.nn.L1Loss()
-    # mse = torch.nn.SmoothL1Loss()
+    sm = torch.nn.SmoothL1Loss()
 
     for data in train_loader:
         optimizer.zero_grad()
         data = data.to(device)
         out = model(data)
 
-        loss = mse(out, data.y)
+        loss = rmse(out, data.y)
         loss.backward()
 
         total_loss += loss.item() * batch_size
