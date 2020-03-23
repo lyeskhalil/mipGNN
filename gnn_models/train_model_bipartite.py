@@ -42,6 +42,7 @@ class GISR(InMemoryDataset):
         for num, filename in enumerate(os.listdir(path)):
             print(filename, num, total)
 
+            # Get graph.
             graph = nx.read_gpickle(path + filename)
 
             # Make graph directed.
@@ -49,7 +50,7 @@ class GISR(InMemoryDataset):
             graph = graph.to_directed() if not nx.is_directed(graph) else graph
             data = Data()
 
-            # Compute map for new nodes in graph.
+            #  Map for new nodes in graph.
             var_node = {}
             con_node = {}
 
@@ -63,8 +64,9 @@ class GISR(InMemoryDataset):
             var_feat = []
             # Feature for constraints nodes.
             con_feat = []
-            # Contains right-hand sides of equations.
+            # Right-hand sides of equations.
             rhss = []
+            # Sums over coefficients.
             a_sum = []
             for i, (node, node_data) in enumerate(graph.nodes(data=True)):
                 # Node is a variable.
@@ -78,7 +80,6 @@ class GISR(InMemoryDataset):
 
                 # Node is constraint.
                 else:
-
                     a = []
                     for e in graph.edges(node, data=True):
                         a.append(graph[e[0]][e[1]]['coeff'])
@@ -98,7 +99,6 @@ class GISR(InMemoryDataset):
             # Edge list for con->var graphs.
             edge_list_con = []
 
-            # TODO: Check this.
             edge_features_var = []
             edge_features_con = []
             for i, (s, t, edge_data) in enumerate(graph.edges(data=True)):
@@ -113,16 +113,15 @@ class GISR(InMemoryDataset):
             edge_index_var = torch.tensor(edge_list_var).t().contiguous()
             edge_index_con = torch.tensor(edge_list_con).t().contiguous()
 
-            data.y = torch.from_numpy(np.array(y)).to(torch.float)
             data.edge_index_var = edge_index_var
             data.edge_index_con = edge_index_con
+            data.y = torch.from_numpy(np.array(y)).to(torch.float)
             data.var_node_features = torch.from_numpy(np.array(var_feat)).to(torch.float)
             data.con_node_features = torch.from_numpy(np.array(con_feat)).to(torch.float)
             data.rhs = torch.from_numpy(np.array(rhss)).to(torch.float)
             data.edge_features_con = torch.from_numpy(np.array(edge_features_con)).to(torch.float)
             data.edge_features_var = torch.from_numpy(np.array(edge_features_var)).to(torch.float)
             data.asums = torch.from_numpy(np.array(a_sum)).to(torch.float)
-
             data.num_nodes_var = num_nodes_var
             data.num_nodes_con = num_nodes_con
 
@@ -150,13 +149,14 @@ class MyTransform(object):
         return new_data
 
 
-# Prepare dadta
+# Prepare data.
 path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'DS')
 dataset = GISR(path, transform=MyTransform()).shuffle()
 
 # TODO: log transform.
 print(dataset.data.y.mean())
-dataset.data.y = torch.log(dataset.data.y + 1.0)
+eps = 1.0
+dataset.data.y = torch.log(dataset.data.y + eps)
 print(dataset.data.y.mean())
 
 print(len(dataset))
@@ -209,7 +209,7 @@ def train():
         loss.backward()
 
         total_loss += loss.item() * batch_size
-        total_loss_mae += mae(out, data.y).item() * batch_size
+        total_loss_mae += mae(torch.exp(out) - eps, torch.exp(data.y) - eps).item() * batch_size
 
         optimizer.step()
 
@@ -219,12 +219,12 @@ def train():
 def test(loader):
     model.eval()
     error = 0
-    l1 = torch.nn.L1Loss()
+    mae = torch.nn.L1Loss()
 
     for data in loader:
         data = data.to(device)
         out = model(data)
-        loss = l1(torch.exp(out) - 1.0, torch.exp(data.y) - 1.0)
+        loss = mae(torch.exp(out) - eps, torch.exp(data.y) - eps)
 
         error += loss.item() * batch_size
 
