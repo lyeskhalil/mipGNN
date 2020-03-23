@@ -173,7 +173,7 @@ test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 print("### DATA LOADED.")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = Net(dim=128).to(device)
-optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
     optimizer, mode='min', factor=0.7, patience=3, min_lr=0.00001)
 print("### SETUP DONE.")
@@ -188,7 +188,6 @@ class RMSELoss(torch.nn.Module):
     def forward(self, yhat, y):
         loss = torch.sqrt(self.mse(yhat, y) + self.eps)
         return loss
-
 
 def train():
     model.train()
@@ -238,7 +237,7 @@ for epoch in range(1, 500):
     lr = scheduler.optimizer.param_groups[0]['lr']
     mae, loss = train()
 
-    if epoch == 50:
+    if epoch == 20:
         for param_group in optimizer.param_groups:
             param_group['lr'] = 0.1 * param_group['lr']
 
