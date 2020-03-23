@@ -165,9 +165,9 @@ if log:
 
 print(len(dataset))
 
-train_dataset = dataset[0:100].shuffle()
-val_dataset = dataset[100:120].shuffle()
-test_dataset = dataset[120:140].shuffle()
+train_dataset = dataset[0:1000].shuffle()
+val_dataset = dataset[1000:1200].shuffle()
+test_dataset = dataset[1200:1400].shuffle()
 
 batch_size = 20
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
@@ -259,7 +259,7 @@ for epoch in range(1, 500):
     if best_val_error is None or val_error < best_val_error:
         test_error = test(test_loader)
 
-    print('Epoch: {:03d}, LR: {:7f}, Loss: {:.7f}, Train MAE: {:.7f}, Test MAE: {:.7f}'.format(epoch, lr, loss, mae,
+    print('Epoch: {:03d}, LR: {:7f}, Loss: {:.7f}, Train MAE: {:.7f}, Vak MAE: {:.7f}, Test MAE: {:.7f}'.format(epoch, lr, loss, mae, val_error,
                                                                                                test_error))
 
 # torch.save(model.state_dict(), "train_mip")
