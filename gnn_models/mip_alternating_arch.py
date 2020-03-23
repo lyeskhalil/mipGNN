@@ -44,6 +44,7 @@ class CONS_TO_VAR(MessagePassing):
         # TODO: FIX numerical problems here
         #violation = c.view(-1) / (asums_j) * hidden_to_var(x_i).view(-1) * violation
 
+
         # TODO: Scale by coefficient?
         out = self.mlp_cons(c * x_j)
 
@@ -126,27 +127,27 @@ class Net(torch.nn.Module):
         self.con_mlp = Seq(Lin(2, dim - 1), ReLU(), Lin(dim - 1, dim - 1))
 
         ### TODO: Sigmoid meaningful?
-        self.hidden_to_var_1 = Seq(Lin(dim, dim - 1), ReLU(), Lin(dim - 1, 1))
+        self.hidden_to_var_1 = Seq(Lin(dim, dim - 1), Sigmoid(), Lin(dim - 1, 1))
         self.v2c_1 = VARS_TO_CON(dim, dim)
         self.c2v_1 = CONS_TO_VAR(dim, dim)
 
-        self.hidden_to_var_2 = Seq(Lin(dim, dim - 1), ReLU(), Lin(dim - 1, 1))
+        self.hidden_to_var_2 = Seq(Lin(dim, dim - 1), Sigmoid(), Lin(dim - 1, 1))
         self.v2c_2 = VARS_TO_CON(dim, dim)
         self.c2v_2 = CONS_TO_VAR(dim, dim)
 
-        self.hidden_to_var_3 = Seq(Lin(dim, dim - 1), ReLU(), Lin(dim - 1, 1))
+        self.hidden_to_var_3 = Seq(Lin(dim, dim - 1), Sigmoid(), Lin(dim - 1, 1))
         self.v2c_3 = VARS_TO_CON(dim, dim)
         self.c2v_3 = CONS_TO_VAR(dim, dim)
 
-        self.hidden_to_var_4 = Seq(Lin(dim, dim - 1), ReLU(), Lin(dim - 1, 1))
+        self.hidden_to_var_4 = Seq(Lin(dim, dim - 1), Sigmoid(), Lin(dim - 1, 1))
         self.v2c_4 = VARS_TO_CON(dim, dim)
         self.c2v_4 = CONS_TO_VAR(dim, dim)
 
-        self.hidden_to_var_5 = Seq(Lin(dim, dim - 1), ReLU(), Lin(dim - 1, 1))
+        self.hidden_to_var_5 = Seq(Lin(dim, dim - 1), Sigmoid(), Lin(dim - 1, 1))
         self.v2c_5 = VARS_TO_CON(dim, dim)
         self.c2v_5 = CONS_TO_VAR(dim, dim)
 
-        self.hidden_to_var_6 = Seq(Lin(dim, dim - 1), ReLU(), Lin(dim - 1, 1))
+        self.hidden_to_var_6 = Seq(Lin(dim, dim - 1), Sigmoid(), Lin(dim - 1, 1))
         self.v2c_6 = VARS_TO_CON(dim, dim)
         self.c2v_6 = CONS_TO_VAR(dim, dim)
 
