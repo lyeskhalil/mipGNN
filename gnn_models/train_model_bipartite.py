@@ -168,7 +168,7 @@ print(len(dataset))
 
 train_dataset = dataset[0:100].shuffle()
 val_dataset = dataset[100:120].shuffle()
-test_dataset = dataset[120:].shuffle()
+test_dataset = dataset[120:140].shuffle()
 
 batch_size = 20
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
