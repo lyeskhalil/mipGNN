@@ -80,7 +80,7 @@ class GISR(InMemoryDataset):
                 else:
 
                     a = []
-                    for e in graph.edges(node,data=True):
+                    for e in graph.edges(node, data=True):
                         a.append(graph[e[0]][e[1]]['coeff'])
                     a_sum.append(sum(a))
 
@@ -153,8 +153,8 @@ class MyTransform(object):
 # Prepare dadta
 path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'DS')
 dataset = GISR(path, transform=MyTransform()).shuffle()
-# TODO: log transform.
 
+# TODO: log transform.
 print(dataset.data.y.mean())
 dataset.data.y = torch.log(dataset.data.y + 1.0)
 print(dataset.data.y.mean())
@@ -232,6 +232,7 @@ def test(loader):
 
 
 best_val_error = None
+print(test(test_loader))
 
 for epoch in range(1, 500):
     lr = scheduler.optimizer.param_groups[0]['lr']
@@ -242,7 +243,6 @@ for epoch in range(1, 500):
             param_group['lr'] = 0.1 * param_group['lr']
 
     val_error = test(val_loader)
-
     if best_val_error is None or val_error < best_val_error:
         test_error = test(test_loader)
 

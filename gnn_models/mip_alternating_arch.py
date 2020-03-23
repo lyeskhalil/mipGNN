@@ -25,16 +25,15 @@ class CONS_TO_VAR(MessagePassing):
         uniform(size, self.root_vars)
         uniform(size - 1, self.bias)
 
-    def forward(self, hidden_to_var, x, old_vars, edge_index, edge_feature, rhs, asums, size):
+    def forward(self, hidden_to_var, x, old_vars, edge_index, edge_feature, asums, size):
         # Compute normalization by degree.
         row, _ = edge_index
         deg = degree(row, x[0].size(0), dtype=x[0].dtype)
         deg_inv = deg.pow(-1.0)
         norm = deg_inv[row]
 
-        return self.propagate(hidden_to_var=hidden_to_var, edge_index=edge_index, size=size, x=x, old_vars=old_vars,
-                              asums=asums, edge_feature=edge_feature, rhs=rhs,
-                              norm=norm)
+        return self.propagate(hidden_to_var=hidden_to_var, x=x, edge_index=edge_index, size=size, old_vars=old_vars,
+                              asums=asums, edge_feature=edge_feature, norm=norm)
 
     def message(self, hidden_to_var, x_j, x_i, edge_index_j, edge_feature, norm, size, asums_j):
         # Get coefficients of variable in constraint.
@@ -53,7 +52,7 @@ class CONS_TO_VAR(MessagePassing):
 
         return out
 
-    def update(self, aggr_out, old_vars, rhs, size):
+    def update(self, aggr_out, old_vars, size):
         new_out = torch.empty(aggr_out.size(0), aggr_out.size(1), device=device)
 
         new_cons = torch.empty(aggr_out.size(0), aggr_out.size(1), device=device)
@@ -63,6 +62,7 @@ class CONS_TO_VAR(MessagePassing):
         new_out[:, 0:-1] = F.relu(new_cons[:, 0:-1] + self.bias)
 
         return new_out
+
 
 # Compute new variable features.
 class VARS_TO_CON(MessagePassing):
@@ -86,7 +86,7 @@ class VARS_TO_CON(MessagePassing):
         deg_inv = deg.pow(-1.0)
         norm = deg_inv[row]
 
-        return self.propagate(hidden_to_var=hidden_to_var, edge_index=edge_index, size=size, old_cons=old_cons,
+        return self.propagate(hidden_to_var=hidden_to_var, x=x, edge_index=edge_index, size=size, old_cons=old_cons,
                               edge_feature=edge_feature, rhs=rhs,
                               norm=norm)
 
@@ -122,9 +122,8 @@ class Net(torch.nn.Module):
     def __init__(self, dim):
         super(Net, self).__init__()
 
-        # TODO: Revert
-        self.var_mlp = Seq(Lin(2 + 16, dim - 1), ReLU(), Lin(dim - 1, dim - 1))
-        self.con_mlp = Seq(Lin(2 + 16, dim - 1), ReLU(), Lin(dim - 1, dim - 1))
+        self.var_mlp = Seq(Lin(2, dim - 1), ReLU(), Lin(dim - 1, dim - 1))
+        self.con_mlp = Seq(Lin(2, dim - 1), ReLU(), Lin(dim - 1, dim - 1))
 
         ### TODO: Sigmoid meaningful?
         self.hidden_to_var_1 = Seq(Lin(dim, dim - 1), ReLU(), Lin(dim - 1, 1))
@@ -160,18 +159,13 @@ class Net(torch.nn.Module):
         self.fc6 = Lin(dim, 1)
 
     def forward(self, data):
-        ### TODO: Try random features
-        # TODO: Revert
-        # TODO: Uniform?
-        if torch.cuda.is_available():
-            rand_var = torch.empty(data.var_node_features.size(0), 16).uniform_(0, 1).cuda()
-            rand_con = torch.empty(data.con_node_features.size(0), 16).uniform_(0, 1).cuda()
-        else:
-            rand_var = torch.empty(data.var_node_features.size(0), 16).uniform_(0, 1).cpu()
-            rand_con = torch.empty(data.con_node_features.size(0), 16).uniform_(0, 1).cpu()
+        # if torch.cuda.is_available():
+        #     rand_var = torch.empty(data.var_node_features.size(0), 16).uniform_(0, 1).cuda()
+        #     rand_con = torch.empty(data.con_node_features.size(0), 16).uniform_(0, 1).cuda()
+        # else:
+        #     rand_var = torch.empty(data.var_node_features.size(0), 16).uniform_(0, 1).cpu()
+        #     rand_con = torch.empty(data.con_node_features.size(0), 16).uniform_(0, 1).cpu()
 
-        # TODO: nd features for vars
-        # TODO: Revert
         if torch.cuda.is_available():
             ones_var = torch.empty(data.var_node_features.size(0), 1).normal_(0, 1).cuda()
             ones_con = torch.empty(data.con_node_features.size(0), 1).normal_(0, 1).cuda()
@@ -179,34 +173,31 @@ class Net(torch.nn.Module):
             ones_var = torch.zeros(data.var_node_features.size(0), 1).cpu()
             ones_con = torch.zeros(data.con_node_features.size(0), 1).cpu()
 
-        # TODO: Revert
-        v = self.con_mlp(torch.cat([data.var_node_features, rand_var], dim=-1))
-        c = self.var_mlp(torch.cat([data.con_node_features, rand_con], dim=-1))
+        # v = self.con_mlp(torch.cat([data.var_node_features], dim=-1))
+        # c = self.var_mlp(torch.cat([data.con_node_features], dim=-1))
 
-        ## TODO: Revert
+        v = self.con_mlp(data.var_node_features)
+        c = self.var_mlp(data.con_node_features)
         v = torch.cat([v, ones_var], dim=-1)
         c = torch.cat([c, ones_con], dim=-1)
 
         vars = []
         cons = []
 
-        ##### TODO: fix problem with relu
-
         cons.append(
             self.v2c_1(self.hidden_to_var_1, (v, c), c, data.edge_index_var, data.edge_features_var, data.rhs,
                        (data.num_nodes_var.sum(), data.num_nodes_con.sum())))
 
         vars.append(
-            self.c2v_1(self.hidden_to_var_1, (cons[-1], v), v, data.edge_index_con, data.edge_features_con, data.rhs,
-                       data.asums,
-                       (data.num_nodes_con.sum(), data.num_nodes_var.sum())))
+            self.c2v_1(self.hidden_to_var_1, (cons[-1], v), v, data.edge_index_con, data.edge_features_con,
+                       data.asums, (data.num_nodes_con.sum(), data.num_nodes_var.sum())))
 
         cons.append(self.v2c_2(self.hidden_to_var_2, (vars[-1], cons[-1]), cons[-1], data.edge_index_var,
                                data.edge_features_var, data.rhs,
                                (data.num_nodes_var.sum(), data.num_nodes_con.sum())))
 
         vars.append(self.c2v_2(self.hidden_to_var_2, (cons[-1], vars[-1]), vars[-1], data.edge_index_con,
-                               data.edge_features_con, data.rhs, data.asums,
+                               data.edge_features_con, data.asums,
                                (data.num_nodes_con.sum(), data.num_nodes_var.sum())))
 
         cons.append(self.v2c_3(self.hidden_to_var_3, (vars[-1], cons[-1]), cons[-1], data.edge_index_var,
@@ -214,47 +205,41 @@ class Net(torch.nn.Module):
                                (data.num_nodes_var.sum(), data.num_nodes_con.sum())))
 
         vars.append(self.c2v_3(self.hidden_to_var_3, (cons[-1], vars[-1]), vars[-1], data.edge_index_con,
-                               data.edge_features_con, data.rhs, data.asums,
+                               data.edge_features_con, data.asums,
                                (data.num_nodes_con.sum(), data.num_nodes_var.sum())))
 
-        cons.append(self.v2c_4(self.hidden_to_var_4, (vars[-1], cons[-1]), cons[-1], data.edge_index_var,
-                               data.edge_features_var, data.rhs,
-                               (data.num_nodes_var.sum(), data.num_nodes_con.sum())))
+        # cons.append(self.v2c_4(self.hidden_to_var_4, (vars[-1], cons[-1]), cons[-1], data.edge_index_var,
+        #                        data.edge_features_var, data.rhs,
+        #                        (data.num_nodes_var.sum(), data.num_nodes_con.sum())))
+        #
+        # vars.append(self.c2v_4(self.hidden_to_var_4, (cons[-1], vars[-1]), vars[-1], data.edge_index_con,
+        #                        data.edge_features_con, data.asums,
+        #                        (data.num_nodes_con.sum(), data.num_nodes_var.sum())))
+        #
+        # cons.append(self.v2c_5(self.hidden_to_var_5, (vars[-1], cons[-1]), cons[-1], data.edge_index_var,
+        #                        data.edge_features_var, data.rhs,
+        #                        (data.num_nodes_var.sum(), data.num_nodes_con.sum())))
+        #
+        # vars.append(self.c2v_5(self.hidden_to_var_5, (cons[-1], vars[-1]), vars[-1], data.edge_index_con,
+        #                        data.edge_features_con, data.asums,
+        #                        (data.num_nodes_con.sum(), data.num_nodes_var.sum())))
+        #
+        # cons.append(self.v2c_6(self.hidden_to_var_6, (vars[-1], cons[-1]), cons[-1], data.edge_index_var,
+        #                        data.edge_features_var, data.rhs,
+        #                        (data.num_nodes_var.sum(), data.num_nodes_con.sum())))
+        #
+        # vars.append(self.c2v_6(self.hidden_to_var_6, (cons[-1], vars[-1]), vars[-1], data.edge_index_con,
+        #                        data.edge_features_con, data.asums,
+        #                        (data.num_nodes_con.sum(), data.num_nodes_var.sum())))
 
-        vars.append(self.c2v_4(self.hidden_to_var_4, (cons[-1], vars[-1]), vars[-1], data.edge_index_con,
-                               data.edge_features_con, data.rhs, data.asums,
-                               (data.num_nodes_con.sum(), data.num_nodes_var.sum())))
-
-        cons.append(self.v2c_5(self.hidden_to_var_5, (vars[-1], cons[-1]), cons[-1], data.edge_index_var,
-                               data.edge_features_var, data.rhs,
-                               (data.num_nodes_var.sum(), data.num_nodes_con.sum())))
-
-        vars.append(self.c2v_5(self.hidden_to_var_5, (cons[-1], vars[-1]), vars[-1], data.edge_index_con,
-                               data.edge_features_con, data.rhs, data.asums,
-                               (data.num_nodes_con.sum(), data.num_nodes_var.sum())))
-
-        cons.append(self.v2c_6(self.hidden_to_var_6, (vars[-1], cons[-1]), cons[-1], data.edge_index_var,
-                               data.edge_features_var, data.rhs,
-                               (data.num_nodes_var.sum(), data.num_nodes_con.sum())))
-
-        vars.append(self.c2v_6(self.hidden_to_var_6, (cons[-1], vars[-1]), vars[-1], data.edge_index_con,
-                               data.edge_features_con, data.rhs, data.asums,
-                               (data.num_nodes_con.sum(), data.num_nodes_var.sum())))
-
-        # x = torch.cat(vars[0:], dim=-1)
         x = vars[-1]
-
         x = F.relu(self.fc1(x))
         # x = F.dropout(x, p=0.5, training=self.training)
         x = F.relu(self.fc2(x))
-        # x = F.dropout(x, p=0.5, training=self.training)
-        x = F.relu(self.fc3(x))
-        x = F.relu(self.fc4(x))
-        x = F.relu(self.fc5(x))
-        # x = F.dropout(x, p=0.5, training=self.training)
-
-        # TODO: Sigmoid meaningful?
-        # x = F.sigmoid(self.fc5(x))
+        # x = F.relu(self.fc3(x))
+        # x = F.relu(self.fc4(x))
+        # x = F.relu(self.fc5(x))
+        # x = F.sigmoid(self.fc6(x))
         x = self.fc6(x)
 
         return x.squeeze(-1)
