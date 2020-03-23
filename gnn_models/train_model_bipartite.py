@@ -228,6 +228,7 @@ def test(loader):
     for data in loader:
         data = data.to(device)
         out = model(data)
+        loss = 0.0
         if log:
             loss = mae(torch.exp(out) - eps, torch.exp(data.y) - eps)
         else:
