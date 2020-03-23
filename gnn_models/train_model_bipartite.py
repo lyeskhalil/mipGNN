@@ -160,7 +160,7 @@ log = True
 print(dataset.data.y.mean())
 
 if log:
-    eps = .01
+    eps = 1.
     dataset.data.y = torch.log(dataset.data.y + eps)
     print(dataset.data.y.mean())
 
