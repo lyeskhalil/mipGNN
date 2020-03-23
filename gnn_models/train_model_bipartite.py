@@ -172,7 +172,7 @@ test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
 print("### DATA LOADED.")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = Net(dim=32).to(device)
+model = Net(dim=256).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
     optimizer, mode='min', factor=0.7, patience=3, min_lr=0.00001)
