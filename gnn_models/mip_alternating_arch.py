@@ -58,6 +58,7 @@ class CONS_TO_VAR(MessagePassing):
         new_cons = torch.empty(aggr_out.size(0), aggr_out.size(1), device=device)
         new_cons[:, 0:-1] = aggr_out[:, 0:-1] + torch.matmul(old_vars, self.root_vars)
 
+        # TODO: MLP
         new_out[:, -1] = aggr_out[:, -1]
         new_out[:, 0:-1] = F.relu(new_cons[:, 0:-1] + self.bias)
 
@@ -109,6 +110,8 @@ class VARS_TO_CON(MessagePassing):
         # Assign violation back to embedding of contraints.
         left = aggr_out[:, -1]
         new_out[:, -1] = left - rhs
+
+        # TODO: MLP
 
         # New constraint feauture.
         new_cons = torch.empty(aggr_out.size(0), aggr_out.size(1), device=device)
