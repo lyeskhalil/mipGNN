@@ -225,7 +225,8 @@ def test(loader):
         out = model(data)
         loss = mae(torch.exp(out) - eps, torch.exp(data.y) - eps)
 
-        print(torch.exp(out) - eps, torch.exp(data.y) - eps)
+        print(torch.exp(out) - eps)
+        print(torch.exp(data.y) - eps)
 
         error += loss.item() * batch_size
 
