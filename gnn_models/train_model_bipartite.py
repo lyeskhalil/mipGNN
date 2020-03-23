@@ -232,7 +232,7 @@ def test(loader):
         if log:
             loss = mae(torch.exp(out) - eps, torch.exp(data.y) - eps)
         else:
-            loss = mae(out, data.y
+            loss = mae(out, data.y)
         error += loss.item() * batch_size
 
     return error / len(loader.dataset)
