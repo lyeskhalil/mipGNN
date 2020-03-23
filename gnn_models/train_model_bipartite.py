@@ -161,9 +161,9 @@ print(dataset.data.y.mean())
 
 print(len(dataset))
 
-train_dataset = dataset[0:90].shuffle()
-val_dataset = dataset[80:90].shuffle()
-test_dataset = dataset[90:100].shuffle()
+train_dataset = dataset[0:8000].shuffle()
+val_dataset = dataset[8000:9000].shuffle()
+test_dataset = dataset[9000:].shuffle()
 
 batch_size = 20
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
