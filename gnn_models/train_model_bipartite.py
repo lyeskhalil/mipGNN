@@ -155,7 +155,7 @@ dataset = GISR(path, transform=MyTransform()).shuffle()
 
 # TODO: log transform.
 print(dataset.data.y.mean())
-eps = 1.0
+eps = .1
 dataset.data.y = torch.log(dataset.data.y + eps)
 print(dataset.data.y.mean())
 
