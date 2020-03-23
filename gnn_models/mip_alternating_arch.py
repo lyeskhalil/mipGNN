@@ -142,13 +142,6 @@ class Net(torch.nn.Module):
         self.v2c_4 = VARS_TO_CON(dim, dim)
         self.c2v_4 = CONS_TO_VAR(dim, dim)
 
-        self.hidden_to_var_5 = Seq(Lin(dim, dim - 1), Sigmoid(), Lin(dim - 1, 1))
-        self.v2c_5 = VARS_TO_CON(dim, dim)
-        self.c2v_5 = CONS_TO_VAR(dim, dim)
-
-        self.hidden_to_var_6 = Seq(Lin(dim, dim - 1), Sigmoid(), Lin(dim - 1, 1))
-        self.v2c_6 = VARS_TO_CON(dim, dim)
-        self.c2v_6 = CONS_TO_VAR(dim, dim)
 
         # Final MLP for regression.
         self.fc1 = Lin(1 * dim, dim)

@@ -152,18 +152,23 @@ class MyTransform(object):
 # Prepare data.
 path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'DS')
 dataset = GISR(path, transform=MyTransform()).shuffle()
+log = True
+
 
 # TODO: log transform.
+
 print(dataset.data.y.mean())
-eps = .01
-dataset.data.y = torch.log(dataset.data.y + eps)
-print(dataset.data.y.mean())
+
+if log:
+    eps = .01
+    dataset.data.y = torch.log(dataset.data.y + eps)
+    print(dataset.data.y.mean())
 
 print(len(dataset))
 
-train_dataset = dataset[0:8000].shuffle()
-val_dataset = dataset[8000:9000].shuffle()
-test_dataset = dataset[9000:].shuffle()
+train_dataset = dataset[0:100].shuffle()
+val_dataset = dataset[100:120].shuffle()
+test_dataset = dataset[120:].shuffle()
 
 batch_size = 20
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
@@ -223,7 +228,10 @@ def test(loader):
     for data in loader:
         data = data.to(device)
         out = model(data)
-        loss = mae(torch.exp(out) - eps, torch.exp(data.y) - eps)
+        if log:
+            loss = mae(torch.exp(out) - eps, torch.exp(data.y) - eps)
+        else:
+            loss = mae(out, data.y
         error += loss.item() * batch_size
 
     return error / len(loader.dataset)
