@@ -26,6 +26,10 @@ class CONS_TO_VAR(MessagePassing):
         uniform(size - 1, self.bias)
 
     def forward(self, hidden_to_var, x, old_vars, edge_index, edge_feature, asums, size):
+
+
+        print(size)
+
         # Compute normalization by degree.
         row, _ = edge_index
         deg = degree(row, x[0].size(0), dtype=x[0].dtype)
