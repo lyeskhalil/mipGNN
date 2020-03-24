@@ -159,9 +159,9 @@ dataset = GISR(path, transform=MyTransform()).shuffle()
 len(dataset)
 
 
-train_dataset = dataset[0:80].shuffle()
-val_dataset = dataset[80:90].shuffle()
-test_dataset = dataset[90:100].shuffle()
+train_dataset = dataset[0:8000].shuffle()
+val_dataset = dataset[8000:9000].shuffle()
+test_dataset = dataset[9000:10000].shuffle()
 
 
 
