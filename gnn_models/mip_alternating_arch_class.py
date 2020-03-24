@@ -28,9 +28,6 @@ class CONS_TO_VAR(MessagePassing):
     def forward(self, hidden_to_var, x, old_vars, edge_index, edge_feature, asums, size):
 
 
-        print(size)
-        print("sdweetwdgr")
-
         # Compute normalization by degree.
         row, _ = edge_index
         deg = degree(row, x[0].size(0), dtype=x[0].dtype)
@@ -87,14 +84,19 @@ class VARS_TO_CON(MessagePassing):
         uniform(size - 1, self.bias)
 
     def forward(self, hidden_to_var, x, old_cons, edge_index, edge_feature, rhs, size):
+
+
+        print(size)
+        print("sdweetwdgr")
+
+
         row, _ = edge_index
         deg = degree(row, x[0].size(0), dtype=x[0].dtype)
         deg_inv = deg.pow(-1.0)
         norm = deg_inv[row]
 
         return self.propagate(hidden_to_var=hidden_to_var, x=x, edge_index=edge_index, size=size, old_cons=old_cons,
-                              edge_feature=edge_feature, rhs=rhs,
-                              norm=norm)
+                              edge_feature=edge_feature, rhs=rhs, norm=norm)
 
     def message(self, hidden_to_var, x_j, x_i, edge_index_j, edge_feature, norm, size):
         c = edge_feature[edge_index_j]
@@ -186,6 +188,7 @@ class Net(torch.nn.Module):
         cons = []
 
         print((data.num_nodes_var.sum(), data.num_nodes_con.sum()))
+
 
         cons.append(
             self.v2c_1(self.hidden_to_var_1, (v, c), c, data.edge_index_var, data.edge_features_var, data.rhs,
