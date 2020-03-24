@@ -86,8 +86,6 @@ class VARS_TO_CON(MessagePassing):
     def forward(self, hidden_to_var, x, old_cons, edge_index, edge_feature, rhs, size):
 
 
-        print(size)
-        print("sdweetwdgr")
 
 
         row, _ = edge_index
