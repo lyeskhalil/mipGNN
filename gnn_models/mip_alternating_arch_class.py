@@ -29,6 +29,7 @@ class CONS_TO_VAR(MessagePassing):
 
 
         print(size)
+        print("sdweetwdgr")
 
         # Compute normalization by degree.
         row, _ = edge_index
