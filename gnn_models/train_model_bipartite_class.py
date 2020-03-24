@@ -25,11 +25,11 @@ class GISR(InMemoryDataset):
 
     @property
     def raw_file_names(self):
-        return "tesrssedrsst"
+        return "tedsrssedrsst"
 
     @property
     def processed_file_names(self):
-        return "tessrdderfdssst"
+        return "tessrddderfdssst"
 
     def download(self):
         pass
@@ -40,7 +40,7 @@ class GISR(InMemoryDataset):
         path = '../gisp_generator/DATA/er_200_10k/'
         total = len(os.listdir(path))
 
-        for num, filename in enumerate(os.listdir(path)[0:]):
+        for num, filename in enumerate(os.listdir(path)[0:100]):
             print(filename, num, total)
 
             # Get graph.
@@ -160,9 +160,9 @@ dataset = GISR(path, transform=MyTransform()).shuffle()
 len(dataset)
 
 
-train_dataset = dataset[0:8000].shuffle()
-val_dataset = dataset[8000:9000].shuffle()
-test_dataset = dataset[9000:10000].shuffle()
+train_dataset = dataset[0:80].shuffle()
+val_dataset = dataset[80:90].shuffle()
+test_dataset = dataset[90:100].shuffle()
 
 print(1-test_dataset.data.y.sum().item()/test_dataset.data.y.size(-1))
 
