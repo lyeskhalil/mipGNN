@@ -160,9 +160,9 @@ dataset = GISR(path, transform=MyTransform()).shuffle()
 len(dataset)
 
 
-train_dataset = dataset[0:80].shuffle()
-val_dataset = dataset[80:90].shuffle()
-test_dataset = dataset[90:100].shuffle()
+train_dataset = dataset[0:800].shuffle()
+val_dataset = dataset[800:900].shuffle()
+test_dataset = dataset[900:1000].shuffle()
 
 print(1-test_dataset.data.y.sum().item()/test_dataset.data.y.size(-1))
 
