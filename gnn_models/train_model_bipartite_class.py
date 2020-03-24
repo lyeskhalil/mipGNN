@@ -163,7 +163,7 @@ train_dataset = dataset[0:8000].shuffle()
 val_dataset = dataset[8000:9000].shuffle()
 test_dataset = dataset[9000:10000].shuffle()
 
-
+print(1-test_dataset.data.y.sum().item()/test_dataset.data.y.size(-1))
 
 batch_size = 20
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
@@ -214,6 +214,10 @@ def test(loader):
 
 
 for epoch in range(1, 101):
+    if epoch == 10:
+        for param_group in optimizer.param_groups:
+            param_group['lr'] = 0.1 * param_group['lr']
+
     train_loss = train(epoch)
     train_acc = test(train_loader)
     test_acc = test(test_loader)
