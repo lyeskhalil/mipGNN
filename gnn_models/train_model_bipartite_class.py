@@ -14,6 +14,7 @@ from torch_geometric.data import (InMemoryDataset, Data)
 from torch_geometric.data import DataLoader
 from gnn_models.mip_alternating_arch_class import Net
 import torch.nn.functional as F
+import sklearn.metrics as metrics
 
 # Dataset and preprocessing.
 class GISR(InMemoryDataset):
@@ -159,9 +160,9 @@ dataset = GISR(path, transform=MyTransform()).shuffle()
 len(dataset)
 
 
-train_dataset = dataset[0:800].shuffle()
-val_dataset = dataset[800:900].shuffle()
-test_dataset = dataset[900:1000].shuffle()
+train_dataset = dataset[0:80].shuffle()
+val_dataset = dataset[80:90].shuffle()
+test_dataset = dataset[90:100].shuffle()
 
 print(1-test_dataset.data.y.sum().item()/test_dataset.data.y.size(-1))
 
@@ -178,8 +179,6 @@ optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
     optimizer, mode='min', factor=0.7, patience=3, min_lr=0.00001)
 print("### SETUP DONE.")
-
-
 
 
 def train(epoch):
@@ -203,24 +202,34 @@ def test(loader):
 
     correct = 0
     l = 0
+
+    rec = 0.0
+    pre = 0.0
+
+
     for data in loader:
         data = data.to(device)
         pred = model(data).max(dim=1)[1]
         correct += pred.eq(data.y).float().mean().item()
+
+        rec += metrics.recall_score(data.y.tolist(), pred.tolist())
+        pre += metrics.precision_score(data.y.tolist(), pred.tolist())
+
         l += 1
 
+    print(rec/l, pre/l)
     return correct / l
 
 
 
 for epoch in range(1, 101):
-    if epoch == 30:
-        for param_group in optimizer.param_groups:
-            param_group['lr'] = 0.1 * param_group['lr']
-
-    if epoch == 70:
-        for param_group in optimizer.param_groups:
-            param_group['lr'] = 0.1 * param_group['lr']
+    # if epoch == 30:
+    #     for param_group in optimizer.param_groups:
+    #         param_group['lr'] = 0.1 * param_group['lr']
+    #
+    # if epoch == 70:
+    #     for param_group in optimizer.param_groups:
+    #         param_group['lr'] = 0.1 * param_group['lr']
 
     train_loss = train(epoch)
     train_acc = test(train_loader)
