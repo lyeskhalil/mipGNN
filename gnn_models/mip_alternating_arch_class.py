@@ -185,6 +185,8 @@ class Net(torch.nn.Module):
         vars = []
         cons = []
 
+        print((data.num_nodes_var.sum(), data.num_nodes_con.sum()))
+
         cons.append(
             self.v2c_1(self.hidden_to_var_1, (v, c), c, data.edge_index_var, data.edge_features_var, data.rhs,
                        (data.num_nodes_var.sum(), data.num_nodes_con.sum())))
