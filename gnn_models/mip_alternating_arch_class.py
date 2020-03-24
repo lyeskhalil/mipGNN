@@ -37,7 +37,7 @@ class CONS_TO_VAR(MessagePassing):
         return self.propagate(hidden_to_var=hidden_to_var, x=x, edge_index=edge_index, size=size, old_vars=old_vars,
                               asums=asums, edge_feature=edge_feature, norm=norm)
 
-    def message(self, hidden_to_var, x_j, x_i, edge_index_j, edge_feature, norm, size, asums_j):
+    def message(self, hidden_to_var, x_j, x_i, edge_index_j, edge_feature, norm, asums_j):
         # Get coefficients of variable in constraint.
         c = edge_feature[edge_index_j]
         # Get violation of contraint.
@@ -54,7 +54,7 @@ class CONS_TO_VAR(MessagePassing):
 
         return out
 
-    def update(self, aggr_out, old_vars, size):
+    def update(self, aggr_out, old_vars):
         new_out = torch.empty(aggr_out.size(0), aggr_out.size(1), device=device)
 
         new_cons = torch.empty(aggr_out.size(0), aggr_out.size(1), device=device)
@@ -98,7 +98,7 @@ class VARS_TO_CON(MessagePassing):
         return self.propagate(hidden_to_var=hidden_to_var, x=x, edge_index=edge_index, size=size, old_cons=old_cons,
                               edge_feature=edge_feature, rhs=rhs, norm=norm)
 
-    def message(self, hidden_to_var, x_j, x_i, edge_index_j, edge_feature, norm, size):
+    def message(self, hidden_to_var, x_j, x_i, edge_index_j, edge_feature, norm):
         c = edge_feature[edge_index_j]
         # Compute variable assignment.
         var_assign = hidden_to_var(x_j)
@@ -111,7 +111,7 @@ class VARS_TO_CON(MessagePassing):
 
         return out
 
-    def update(self, aggr_out, old_cons, rhs, size):
+    def update(self, aggr_out, old_cons, rhs):
         new_out = torch.empty(aggr_out.size(0), aggr_out.size(1), device=device)
 
         # Assign violation back to embedding of contraints.
