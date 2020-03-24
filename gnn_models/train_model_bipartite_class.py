@@ -156,12 +156,12 @@ class MyTransform(object):
 # Prepare data.
 path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'DS')
 dataset = GISR(path, transform=MyTransform()).shuffle()
-# Do log transform?
+len(dataset)
 
 
-train_dataset = dataset[0:10].shuffle()
-val_dataset = dataset[10:20].shuffle()
-test_dataset = dataset[10:20].shuffle()
+train_dataset = dataset[0:8000].shuffle()
+val_dataset = dataset[8000:9000].shuffle()
+test_dataset = dataset[9000:].shuffle()
 
 
 
