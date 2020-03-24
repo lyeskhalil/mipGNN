@@ -25,11 +25,11 @@ class GISR(InMemoryDataset):
 
     @property
     def raw_file_names(self):
-        return "tedsrssedrsst"
+        return "tedsrsseedrsst"
 
     @property
     def processed_file_names(self):
-        return "tessrddderfdssst"
+        return "tessrddederfdssst"
 
     def download(self):
         pass
@@ -40,7 +40,7 @@ class GISR(InMemoryDataset):
         path = '../gisp_generator/DATA/er_200_10k/'
         total = len(os.listdir(path))
 
-        for num, filename in enumerate(os.listdir(path)[0:100]):
+        for num, filename in enumerate(os.listdir(path)[0:10000]):
             print(filename, num, total)
 
             # Get graph.
