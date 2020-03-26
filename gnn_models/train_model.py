@@ -139,9 +139,9 @@ print(len(dataset))
 # plt.show()
 # exit()
 
-train_dataset = dataset[0:800].shuffle()
-val_dataset = dataset[800:900].shuffle()
-test_dataset = dataset[900:].shuffle()
+train_dataset = dataset[0:8000].shuffle()
+val_dataset = dataset[8000:9000].shuffle()
+test_dataset = dataset[9000:].shuffle()
 
 train_loader = DataLoader(train_dataset, batch_size=5, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=50, shuffle=True)

@@ -12,8 +12,9 @@ import networkx as nx
 import torch
 from torch_geometric.data import (InMemoryDataset, Data)
 from torch_geometric.data import DataLoader
-from gnn_models.mip_alternating_arch import Net
-
+from gnn_models.mip_alternating_arch_class import Net
+import torch.nn.functional as F
+import sklearn.metrics as metrics
 
 # Dataset and preprocessing.
 class GISR(InMemoryDataset):
@@ -24,11 +25,11 @@ class GISR(InMemoryDataset):
 
     @property
     def raw_file_names(self):
-        return "TESdT411"
+        return "tedsrsseedrsst"
 
     @property
     def processed_file_names(self):
-        return "TESdT411"
+        return "tessrddederfdssst"
 
     def download(self):
         pass
@@ -39,7 +40,7 @@ class GISR(InMemoryDataset):
         path = '../gisp_generator/DATA/er_200_10k/'
         total = len(os.listdir(path))
 
-        for num, filename in enumerate(os.listdir(path)):
+        for num, filename in enumerate(os.listdir(path)[0:10000]):
             print(filename, num, total)
 
             # Get graph.
@@ -74,7 +75,11 @@ class GISR(InMemoryDataset):
                     var_node[i] = var_i
                     var_i += 1
 
-                    y.append(node_data['bias'])
+
+                    if (node_data['bias'] < 0.5):
+                        y.append(0)
+                    else:
+                        y.append(1)
                     # TODO: Scaling meaingful?
                     var_feat.append([node_data['objcoeff'] / 100.0, graph.degree[i]])
 
@@ -115,7 +120,7 @@ class GISR(InMemoryDataset):
 
             data.edge_index_var = edge_index_var
             data.edge_index_con = edge_index_con
-            data.y = torch.from_numpy(np.array(y)).to(torch.float)
+            data.y = torch.from_numpy(np.array(y)).to(torch.long)
             data.var_node_features = torch.from_numpy(np.array(var_feat)).to(torch.float)
             data.con_node_features = torch.from_numpy(np.array(con_feat)).to(torch.float)
             data.rhs = torch.from_numpy(np.array(rhss)).to(torch.float)
@@ -152,22 +157,14 @@ class MyTransform(object):
 # Prepare data.
 path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'DS')
 dataset = GISR(path, transform=MyTransform()).shuffle()
-# Do log transform?
-log = True
+len(dataset)
 
 
-print(dataset.data.y.mean())
+train_dataset = dataset[0:8000].shuffle()
+val_dataset = dataset[8000:9000].shuffle()
+test_dataset = dataset[9000:10000].shuffle()
 
-if log:
-    eps = 1.
-    dataset.data.y = torch.log(dataset.data.y + eps)
-    print(dataset.data.y.mean())
-
-print(len(dataset))
-
-train_dataset = dataset[0:1000].shuffle()
-val_dataset = dataset[1000:1200].shuffle()
-test_dataset = dataset[1200:1400].shuffle()
+print(1-test_dataset.data.y.sum().item()/test_dataset.data.y.size(-1))
 
 batch_size = 20
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
@@ -176,90 +173,66 @@ test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
 print("### DATA LOADED.")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = Net(dim=128).to(device)
-optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+model = Net(dim=512).to(device)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
     optimizer, mode='min', factor=0.7, patience=3, min_lr=0.00001)
 print("### SETUP DONE.")
 
 
-class RMSELoss(torch.nn.Module):
-    def __init__(self, eps=1e-6):
-        super().__init__()
-        self.mse = torch.nn.MSELoss()
-        self.eps = eps
-
-    def forward(self, yhat, y):
-        loss = torch.sqrt(self.mse(yhat, y) + self.eps)
-        return loss
-
-def train():
+def train(epoch):
     model.train()
-    total_loss = 0
-    total_loss_mae = 0
-    loss = torch.nn.MSELoss()
-    rmse = RMSELoss()
-    mse = torch.nn.MSELoss()
-    mae = torch.nn.L1Loss()
-    sm = torch.nn.SmoothL1Loss()
 
+    loss_all = 0
     for data in train_loader:
-        optimizer.zero_grad()
         data = data.to(device)
-        out = model(data)
+        optimizer.zero_grad()
+        output = model(data)
 
-        loss = rmse(out, data.y)
+        loss = F.nll_loss(output, data.y)
         loss.backward()
-
-        total_loss += loss.item() * batch_size
+        loss_all += batch_size * loss.item()
         optimizer.step()
-
-        if log:
-            total_loss_mae += mae(torch.exp(out) - eps, torch.exp(data.y) - eps).item() * batch_size
-        else:
-            total_loss_mae += mae(out, data.y).item() * batch_size
-
-    return total_loss_mae / len(train_loader.dataset), total_loss / len(train_loader.dataset)
+    return loss_all / len(train_dataset)
 
 
 def test(loader):
     model.eval()
-    error = 0
-    mae = torch.nn.L1Loss()
+
+    correct = 0
+    l = 0
+
+    rec = 0.0
+    pre = 0.0
+
 
     for data in loader:
         data = data.to(device)
-        out = model(data)
-        loss = 0.0
-        if log:
-            loss = mae(torch.exp(out) - eps, torch.exp(data.y) - eps)
-        else:
-            loss = mae(out, data.y)
-        error += loss.item() * batch_size
+        pred = model(data).max(dim=1)[1]
+        correct += pred.eq(data.y).float().mean().item()
 
-    return error / len(loader.dataset)
+        rec += metrics.recall_score(data.y.tolist(), pred.tolist())
+        pre += metrics.precision_score(data.y.tolist(), pred.tolist())
+
+        l += 1
+
+    print(rec/l, pre/l)
+    return correct / l
 
 
-best_val_error = None
-print(test(test_loader))
 
-for epoch in range(1, 500):
-    lr = scheduler.optimizer.param_groups[0]['lr']
-    mae, loss = train()
+for epoch in range(1, 101):
+    # if epoch == 30:
+    #     for param_group in optimizer.param_groups:
+    #         param_group['lr'] = 0.1 * param_group['lr']
+    #
+    # if epoch == 70:
+    #     for param_group in optimizer.param_groups:
+    #         param_group['lr'] = 0.1 * param_group['lr']
 
-    if epoch == 20:
-        for param_group in optimizer.param_groups:
-            param_group['lr'] = 0.1 * param_group['lr']
-
-    if epoch == 100:
-        for param_group in optimizer.param_groups:
-            param_group['lr'] = 0.1 * param_group['lr']
-
-    val_error = test(val_loader)
-    if best_val_error is None or val_error < best_val_error:
-        test_error = test(test_loader)
-
-    print('Epoch: {:03d}, LR: {:7f}, Loss: {:.7f}, Train MAE: {:.7f}, Vak MAE: {:.7f}, Test MAE: {:.7f}'.format(epoch, lr, loss, mae, val_error,
-                                                                                               test_error))
-
-# torch.save(model.state_dict(), "train_mip")
+    train_loss = train(epoch)
+    train_acc = test(train_loader)
+    test_acc = test(test_loader)
+    print('Epoch: {:03d}, Train Loss: {:.7f}, '
+          'Train Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, train_loss,
+                                                       train_acc, test_acc))

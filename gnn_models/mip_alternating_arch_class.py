@@ -26,6 +26,8 @@ class CONS_TO_VAR(MessagePassing):
         uniform(size - 1, self.bias)
 
     def forward(self, hidden_to_var, x, old_vars, edge_index, edge_feature, asums, size):
+
+
         # Compute normalization by degree.
         row, _ = edge_index
         deg = degree(row, x[0].size(0), dtype=x[0].dtype)
@@ -35,7 +37,7 @@ class CONS_TO_VAR(MessagePassing):
         return self.propagate(hidden_to_var=hidden_to_var, x=x, edge_index=edge_index, size=size, old_vars=old_vars,
                               asums=asums, edge_feature=edge_feature, norm=norm)
 
-    def message(self, hidden_to_var, x_j, x_i, edge_index_j, edge_feature, norm, size, asums_j):
+    def message(self, hidden_to_var, x_j, x_i, edge_index_j, edge_feature, norm, asums_j):
         # Get coefficients of variable in constraint.
         c = edge_feature[edge_index_j]
         # Get violation of contraint.
@@ -52,7 +54,7 @@ class CONS_TO_VAR(MessagePassing):
 
         return out
 
-    def update(self, aggr_out, old_vars, size):
+    def update(self, aggr_out, old_vars):
         new_out = torch.empty(aggr_out.size(0), aggr_out.size(1), device=device)
 
         new_cons = torch.empty(aggr_out.size(0), aggr_out.size(1), device=device)
@@ -82,16 +84,19 @@ class VARS_TO_CON(MessagePassing):
         uniform(size - 1, self.bias)
 
     def forward(self, hidden_to_var, x, old_cons, edge_index, edge_feature, rhs, size):
+
+
+
+
         row, _ = edge_index
         deg = degree(row, x[0].size(0), dtype=x[0].dtype)
         deg_inv = deg.pow(-1.0)
         norm = deg_inv[row]
 
         return self.propagate(hidden_to_var=hidden_to_var, x=x, edge_index=edge_index, size=size, old_cons=old_cons,
-                              edge_feature=edge_feature, rhs=rhs,
-                              norm=norm)
+                              edge_feature=edge_feature, rhs=rhs, norm=norm)
 
-    def message(self, hidden_to_var, x_j, x_i, edge_index_j, edge_feature, norm, size):
+    def message(self, hidden_to_var, x_j, x_i, edge_index_j, edge_feature, norm):
         c = edge_feature[edge_index_j]
         # Compute variable assignment.
         var_assign = hidden_to_var(x_j)
@@ -104,7 +109,7 @@ class VARS_TO_CON(MessagePassing):
 
         return out
 
-    def update(self, aggr_out, old_cons, rhs, size):
+    def update(self, aggr_out, old_cons, rhs):
         new_out = torch.empty(aggr_out.size(0), aggr_out.size(1), device=device)
 
         # Assign violation back to embedding of contraints.
@@ -152,7 +157,7 @@ class Net(torch.nn.Module):
         self.fc3 = Lin(dim, dim)
         self.fc4 = Lin(dim, dim)
         self.fc5 = Lin(dim, dim)
-        self.fc6 = Lin(dim, 1)
+        self.fc6 = Lin(dim, 2)
 
     def forward(self, data):
         # if torch.cuda.is_available():
@@ -179,6 +184,8 @@ class Net(torch.nn.Module):
 
         vars = []
         cons = []
+
+
 
         cons.append(
             self.v2c_1(self.hidden_to_var_1, (v, c), c, data.edge_index_var, data.edge_features_var, data.rhs,
@@ -217,10 +224,10 @@ class Net(torch.nn.Module):
         x = F.relu(self.fc1(x))
         # x = F.dropout(x, p=0.5, training=self.training)
         x = F.relu(self.fc2(x))
-        x = F.relu(self.fc3(x))
-        x = F.relu(self.fc4(x))
+        # x = F.relu(self.fc3(x))
+        # x = F.relu(self.fc4(x))
         x = F.relu(self.fc5(x))
         #x = F.sigmoid(self.fc6(x))
-        x = self.fc6(x)
+        x = F.log_softmax(self.fc6(x), dim=1)
+        return x
 
-        return x.squeeze(-1)
