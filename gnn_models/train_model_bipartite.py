@@ -208,7 +208,7 @@ def train():
         data = data.to(device)
         out = model(data)
 
-        loss = rmse(out, data.y)
+        loss = mse(out, data.y)
         loss.backward()
 
         total_loss += loss.item() * batch_size
