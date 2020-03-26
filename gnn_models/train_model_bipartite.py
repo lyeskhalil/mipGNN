@@ -165,9 +165,9 @@ if log:
 
 print(len(dataset))
 
-train_dataset = dataset[0:1000].shuffle()
-val_dataset = dataset[1000:1200].shuffle()
-test_dataset = dataset[1200:1400].shuffle()
+train_dataset = dataset[0:800].shuffle()
+val_dataset = dataset[800:900].shuffle()
+test_dataset = dataset[900:1000].shuffle()
 
 batch_size = 20
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
