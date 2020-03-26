@@ -153,7 +153,7 @@ class MyTransform(object):
 path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'DS')
 dataset = GISR(path, transform=MyTransform()).shuffle()
 # Do log transform?
-log = True
+log = False
 
 
 print(dataset.data.y.mean())
@@ -177,7 +177,7 @@ test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 print("### DATA LOADED.")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = Net(dim=64).to(device)
-optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
     optimizer, mode='min', factor=0.7, patience=3, min_lr=0.00001)
 print("### SETUP DONE.")
@@ -208,7 +208,7 @@ def train():
         data = data.to(device)
         out = model(data)
 
-        loss = mse(out, data.y)
+        loss = rmse(out, data.y)
         loss.backward()
 
         total_loss += loss.item() * batch_size
@@ -243,17 +243,17 @@ def test(loader):
 best_val_error = None
 print(test(test_loader))
 
-for epoch in range(1, 500):
+for epoch in range(1, 100):
     lr = scheduler.optimizer.param_groups[0]['lr']
     mae, loss = train()
-
-    if epoch == 20:
-        for param_group in optimizer.param_groups:
-            param_group['lr'] = 0.1 * param_group['lr']
-
-    if epoch == 100:
-        for param_group in optimizer.param_groups:
-            param_group['lr'] = 0.1 * param_group['lr']
+    #
+    # if epoch == 20:
+    #     for param_group in optimizer.param_groups:
+    #         param_group['lr'] = 0.1 * param_group['lr']
+    #
+    # if epoch == 100:
+    #     for param_group in optimizer.param_groups:
+    #         param_group['lr'] = 0.1 * param_group['lr']
 
     val_error = test(val_loader)
     if best_val_error is None or val_error < best_val_error:
