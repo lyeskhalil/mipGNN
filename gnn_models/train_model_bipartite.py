@@ -210,10 +210,8 @@ def train():
         data = data.to(device)
         out = model(data)
 
-        if log:
-            loss = lf(torch.exp(out) - eps, torch.exp(data.y) - eps)
-        else:
-            loss = lf(out, data.y)
+        loss = lf(torch.exp(out) - eps, torch.exp(data.y) - eps)
+
 
         loss.backward()
 
