@@ -177,7 +177,7 @@ test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 print("### DATA LOADED.")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = Net(dim=128).to(device)
-optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
     optimizer, mode='min', factor=0.7, patience=3, min_lr=0.00001)
 print("### SETUP DONE.")
@@ -259,7 +259,7 @@ for epoch in range(1, 500):
     if best_val_error is None or val_error < best_val_error:
         test_error = test(test_loader)
 
-    print('Epoch: {:03d}, LR: {:7f}, Loss: {:.7f}, Train MAE: {:.7f}, Vak MAE: {:.7f}, Test MAE: {:.7f}'.format(epoch, lr, loss, mae, val_error,
+    print('Epoch: {:03d}, LR: {:7f}, Loss: {:.7f}, Train MAE: {:.7f}, Val MAE: {:.7f}, Test MAE: {:.7f}'.format(epoch, lr, loss, mae, val_error,
                                                                                                test_error))
 
 # torch.save(model.state_dict(), "train_mip")
