@@ -24,11 +24,11 @@ class GISR(InMemoryDataset):
 
     @property
     def raw_file_names(self):
-        return "TESdT411"
+        return "TESdTr411"
 
     @property
     def processed_file_names(self):
-        return "TESdT411"
+        return "TESrdT411"
 
     def download(self):
         pass
@@ -36,7 +36,7 @@ class GISR(InMemoryDataset):
     def process(self):
         data_list = []
 
-        path = '../gisp_generator/DATA/er_200_10k/'
+        path = '../gisp_generator/DATA/er_200_SET1/'
         total = len(os.listdir(path))
 
         for num, filename in enumerate(os.listdir(path)):
@@ -215,9 +215,9 @@ def train():
         optimizer.step()
 
         if log:
-            total_loss_mae += mae(torch.exp(out) - eps, torch.exp(data.y) - eps).item() * batch_size
+            total_loss_mae += mse(torch.exp(out) - eps, torch.exp(data.y) - eps).item() * batch_size
         else:
-            total_loss_mae += mae(out, data.y).item() * batch_size
+            total_loss_mae += mse(out, data.y).item() * batch_size
 
     return total_loss_mae / len(train_loader.dataset), total_loss / len(train_loader.dataset)
 
