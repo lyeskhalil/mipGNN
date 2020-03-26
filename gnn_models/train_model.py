@@ -157,6 +157,17 @@ scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
 
 print("### SETUP DONE.")
 
+class RMSELoss(torch.nn.Module):
+    def __init__(self, eps=1e-6):
+        super().__init__()
+        self.mse = torch.nn.MSELoss()
+        self.eps = eps
+
+    def forward(self, yhat, y):
+        loss = torch.sqrt(self.mse(yhat, y) + self.eps)
+        return loss
+
+
 def train():
     model.train()
     total_loss = 0
@@ -174,7 +185,7 @@ def train():
         loss.backward()
 
         total_loss += loss.item() * data.num_graphs
-        total_loss_mae += mae(out, data.y).item() * data.num_graphs
+        total_loss_mae += rmse(out, data.y).item() * data.num_graphs
 
         optimizer.step()
 
