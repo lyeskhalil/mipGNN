@@ -25,11 +25,13 @@ class GISR(InMemoryDataset):
 
     @property
     def raw_file_names(self):
-        return "tedsfrffrssedrsst"
+        # return "tedsfrffrssedrsst"
+        return "tedsfrffrsserererdrsst"
 
     @property
     def processed_file_names(self):
-        return "tessrfffdrdderfdssst"
+        # return "tessrfffdrdderfdssst"
+        return "tedsfrffrssedrrrrrsst"
 
     def download(self):
         pass
@@ -38,6 +40,7 @@ class GISR(InMemoryDataset):
         data_list = []
 
         path = '../gisp_generator/DATA/er_200_SET2_1k/'
+        path = '../gisp_generator/DATA/er_200_SET1/'
         total = len(os.listdir(path))
 
         for num, filename in enumerate(os.listdir(path)[0:1000]):
@@ -239,6 +242,7 @@ for epoch in range(1, 101):
 
     train_loss = train(epoch)
     train_acc = test(train_loader)
+
     val_acc = test(val_loader)
     if val_acc > best_val:
         best_val = val_acc
