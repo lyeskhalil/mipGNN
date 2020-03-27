@@ -165,6 +165,8 @@ val_dataset = dataset[800:900].shuffle()
 test_dataset = dataset[900:1000].shuffle()
 
 
+print(len(val_dataset))
+
 print(1-test_dataset.data.y.sum().item()/test_dataset.data.y.size(-1))
 
 batch_size = 20
