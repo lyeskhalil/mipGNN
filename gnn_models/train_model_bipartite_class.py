@@ -158,7 +158,7 @@ class MyTransform(object):
 path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'DS')
 dataset = GISR(path, transform=MyTransform()).shuffle()
 len(dataset)
-exit()
+
 
 
 train_dataset = dataset[0:800].shuffle()
