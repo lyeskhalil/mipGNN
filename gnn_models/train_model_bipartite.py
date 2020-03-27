@@ -38,7 +38,7 @@ class GISR(InMemoryDataset):
     def process(self):
         data_list = []
 
-        path = '../gisp_generator/DATA/er_200_SET2/'
+        path = '../gisp_generator/DATA/er_200_SET2_1k/'
         total = len(os.listdir(path))
 
         for num, filename in enumerate(os.listdir(path)):
