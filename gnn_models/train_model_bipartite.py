@@ -205,7 +205,7 @@ def train():
     mae = torch.nn.L1Loss()
     sm = torch.nn.SmoothL1Loss()
 
-    lf = rmse
+    lf = mse
 
     for data in train_loader:
         optimizer.zero_grad()
