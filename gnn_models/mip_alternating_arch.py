@@ -12,6 +12,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # Compute new variable features.
 class CONS_TO_VAR(MessagePassing):
     def __init__(self, in_channels, out_channels, **kwargs):
+        # TODO: mean?
         super(CONS_TO_VAR, self).__init__(aggr='add', **kwargs)
         self.in_channels = in_channels
         self.out_channels = out_channels
@@ -68,6 +69,7 @@ class CONS_TO_VAR(MessagePassing):
 # Compute new variable features.
 class VARS_TO_CON(MessagePassing):
     def __init__(self, in_channels, out_channels, **kwargs):
+        # TODO: mean?
         super(VARS_TO_CON, self).__init__(aggr='add', **kwargs)
         self.in_channels = in_channels
         self.out_channels = out_channels

@@ -12,7 +12,8 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # Compute new variable features.
 class CONS_TO_VAR(MessagePassing):
     def __init__(self, in_channels, out_channels, **kwargs):
-        super(CONS_TO_VAR, self).__init__(aggr='add', **kwargs)
+        # TODO: mean?
+        super(CONS_TO_VAR, self).__init__(aggr='mean', **kwargs)
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.mlp_cons = Seq(Lin(in_channels, in_channels - 1), ReLU(), Lin(in_channels - 1, in_channels - 1))
@@ -68,7 +69,8 @@ class CONS_TO_VAR(MessagePassing):
 # Compute new variable features.
 class VARS_TO_CON(MessagePassing):
     def __init__(self, in_channels, out_channels, **kwargs):
-        super(VARS_TO_CON, self).__init__(aggr='add', **kwargs)
+        # TODO: mean?
+        super(VARS_TO_CON, self).__init__(aggr='mean', **kwargs)
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.mlp_var = Seq(Lin(in_channels, in_channels - 1), ReLU(), Lin(in_channels - 1, in_channels - 1))
