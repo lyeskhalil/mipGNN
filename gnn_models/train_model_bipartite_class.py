@@ -215,16 +215,17 @@ def test(loader):
         pred = model(data).max(dim=1)[1]
         correct += pred.eq(data.y).float().mean().item()
 
-        rec += metrics.recall_score(data.y.tolist(), pred.tolist())
-        pre += metrics.precision_score(data.y.tolist(), pred.tolist())
+        #rec += metrics.recall_score(data.y.tolist(), pred.tolist())
+        #pre += metrics.precision_score(data.y.tolist(), pred.tolist())
 
         l += 1
 
-    print(rec/l, pre/l)
+    #print(rec/l, pre/l)
     return correct / l
 
 
-
+best_val = 0.0
+test_acc = 0.0
 for epoch in range(1, 101):
     # if epoch == 30:
     #     for param_group in optimizer.param_groups:
@@ -234,9 +235,15 @@ for epoch in range(1, 101):
     #     for param_group in optimizer.param_groups:
     #         param_group['lr'] = 0.1 * param_group['lr']
 
+
+
     train_loss = train(epoch)
     train_acc = test(train_loader)
-    test_acc = test(test_loader)
+    val_acc = test(val_loader)
+    if val_acc > best_val:
+        best_val = val_acc
+        test_acc =  test(test_loader)
+
     print('Epoch: {:03d}, Train Loss: {:.7f}, '
           'Train Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, train_loss,
                                                        train_acc, test_acc))
