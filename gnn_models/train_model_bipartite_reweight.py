@@ -223,7 +223,7 @@ def train():
 
 
         loss = lf(out, data.y)
-        print(loss[data.ones].size())
+        print(data.y[data.ones].size())
         exit()
 
         loss.backward()
