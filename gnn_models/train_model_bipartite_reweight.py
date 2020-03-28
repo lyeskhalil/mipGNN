@@ -220,11 +220,11 @@ def train():
         data = data.to(device)
         out = model(data)
 
-        print(data.y.size(), data.weight.size(), (data.y * data.weight).size())
+        print(data.y.size(), data.weight.size(), (data.y ).size())
 
         exit()
 
-        loss = lf(out, data.y)
+        loss = lf(out, data.y* data.weight)
 
         loss.backward()
 
