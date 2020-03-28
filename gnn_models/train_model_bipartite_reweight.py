@@ -25,12 +25,12 @@ class GISR(InMemoryDataset):
     @property
     def raw_file_names(self):
         #return "TESdTr411"
-        return "SET2re"
+        return "SET2rer"
 
     @property
     def processed_file_names(self):
         # return "TESrdT411"
-        return "SET2re"
+        return "SET2rer"
 
     def download(self):
         pass
@@ -62,7 +62,7 @@ class GISR(InMemoryDataset):
             con_i = 0
             # Targets
             y = []
-            weight = []
+            ones = []
 
             # Features for variable nodes.
             var_feat = []
@@ -79,9 +79,7 @@ class GISR(InMemoryDataset):
                     var_i += 1
 
                     if node_data['bias'] > 0.2:
-                        weight.append(5.0)
-                    else:
-                        weight.append(1.0)
+                        ones.append(i)
 
                     y.append(node_data['bias'])
                     # TODO: Scaling meaingful?
@@ -125,7 +123,7 @@ class GISR(InMemoryDataset):
             data.edge_index_var = edge_index_var
             data.edge_index_con = edge_index_con
             data.y = torch.from_numpy(np.array(y)).to(torch.float)
-            data.weight = torch.from_numpy(np.array(weight)).to(torch.float)
+            data.ones = torch.from_numpy(np.array(ones)).to(torch.long)
             data.var_node_features = torch.from_numpy(np.array(var_feat)).to(torch.float)
             data.con_node_features = torch.from_numpy(np.array(con_feat)).to(torch.float)
             data.rhs = torch.from_numpy(np.array(rhss)).to(torch.float)
@@ -147,6 +145,8 @@ class MyData(Data):
             return torch.tensor([self.num_nodes_var, self.num_nodes_con]).view(2, 1)
         elif key in ['edge_index_con']:
             return torch.tensor([self.num_nodes_con, self.num_nodes_var]).view(2, 1)
+        elif key in ['ones']:
+            return self.num_nodes_var
         else:
             return 0
 
@@ -157,6 +157,17 @@ class MyTransform(object):
         for key, item in data:
             new_data[key] = item
         return new_data
+
+
+
+class MyTransform(object):
+    def __call__(self, data):
+        new_data = MyData()
+        for key, item in data:
+            new_data[key] = item
+        new_data.num_nodes = data.node_types.size(0)
+        return new_data
+
 
 
 # Prepare data.
@@ -222,7 +233,8 @@ def train():
 
 
         loss = lf(out, data.y)
-        print(loss[data.y > 0.2].size())
+        print(loss[data.ones].size())
+        exit()
 
         loss.backward()
 
