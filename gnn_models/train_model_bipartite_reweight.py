@@ -79,7 +79,7 @@ class GISR(InMemoryDataset):
                     var_i += 1
 
                     if node_data['bias'] > 0.2:
-                        ones.append(var_i[i])
+                        ones.append(var_node[i])
 
                     y.append(node_data['bias'])
                     # TODO: Scaling meaingful?
