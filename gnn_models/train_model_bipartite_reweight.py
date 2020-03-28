@@ -221,10 +221,11 @@ def train():
         data = data.to(device)
         out = model(data)
 
+        targets = data.y
+        targets[data.ones] =  targets[data.ones]*4.0
 
-        loss = lf(out, data.y)
-        print(data.y[data.ones].size())
-        exit()
+        loss = lf(out, targets)
+
 
         loss.backward()
 
