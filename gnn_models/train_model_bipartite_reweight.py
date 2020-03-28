@@ -204,6 +204,23 @@ class RMSELoss(torch.nn.Module):
         loss = torch.sqrt(self.mse(yhat, y) + self.eps)
         return loss
 
+class MSEILoss(torch.nn.Module):
+    def __init__(self, eps=1e-6):
+        super().__init__()
+        self.mse = torch.nn.MSELoss()
+        self.eps = eps
+
+    def forward(self, yhat, y, index):
+
+        loss  = torch.abs(yhat - y)
+        #loss[index] = loss[index] * 4.0
+        loss = loss.mean()
+
+
+        return loss
+
+
+
 def train():
     model.train()
     total_loss = 0
@@ -214,17 +231,16 @@ def train():
     mae = torch.nn.L1Loss()
     sm = torch.nn.SmoothL1Loss()
 
-    lf = mse
+    lf = MSEILoss()
 
     for data in train_loader:
         optimizer.zero_grad()
         data = data.to(device)
         out = model(data)
 
-        targets = data.y
-        targets[data.ones] =  targets[data.ones]*4.0
 
-        loss = lf(out, targets)
+
+        loss = lf(out, data.y)
 
 
         loss.backward()
