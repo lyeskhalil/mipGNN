@@ -80,7 +80,7 @@ class GISR(InMemoryDataset):
 
                     if node_data['bias'] > 0.2:
                         weight.append(5.0)
-                    else
+                    else:
                         weight.append(1.0)
 
                     y.append(node_data['bias'])
