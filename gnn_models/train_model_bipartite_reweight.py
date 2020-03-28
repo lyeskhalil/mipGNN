@@ -25,12 +25,12 @@ class GISR(InMemoryDataset):
     @property
     def raw_file_names(self):
         #return "TESdTr411"
-        return "SET2rer"
+        return "SET2rere"
 
     @property
     def processed_file_names(self):
         # return "TESrdT411"
-        return "SET2rer"
+        return "SET2rere"
 
     def download(self):
         pass
@@ -79,7 +79,7 @@ class GISR(InMemoryDataset):
                     var_i += 1
 
                     if node_data['bias'] > 0.2:
-                        ones.append(i)
+                        ones.append(var_i[i])
 
                     y.append(node_data['bias'])
                     # TODO: Scaling meaingful?
