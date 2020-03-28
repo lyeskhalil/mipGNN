@@ -222,7 +222,7 @@ def train():
 
 
         loss = lf(out, data.y)
-        loss[data.y > 0.2] = loss[data.y > 0.2] * 5
+        print(loss[data.y > 0.2].size())
 
         loss.backward()
 
