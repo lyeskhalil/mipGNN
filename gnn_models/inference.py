@@ -37,8 +37,15 @@ def create_data_object(graph):
     data = Data()
 
     #  Map for new nodes in graph.
+
+    # Original node to var nodes
     var_node = {}
+    # Var node to orignal
+    node_var = {}
+
     con_node = {}
+
+
 
     # Number of variables.
     var_i = 0
@@ -58,6 +65,7 @@ def create_data_object(graph):
         # Node is a variable.
         if node_data['bipartite'] == 0:
             var_node[i] = var_i
+            node_var[var_i] = i
             var_i += 1
 
             y.append(node_data['bias'])
@@ -111,4 +119,4 @@ def create_data_object(graph):
     data.num_nodes_var = num_nodes_var
     data.num_nodes_con = num_nodes_con
 
-    return data
+    return data, var_node, node_var
