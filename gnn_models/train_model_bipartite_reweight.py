@@ -220,7 +220,7 @@ def train():
         data = data.to(device)
         out = model(data)
 
-        print(data.y.size(), data.weight.size())
+        print(data.y.size(), data.weight.size(), (data.y * data.weight).size())
 
         exit()
 
