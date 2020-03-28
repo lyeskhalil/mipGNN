@@ -221,7 +221,7 @@ def train():
         out = model(data)
 
 
-        loss = lf(out, data.y* data.weight)
+        loss = lf(out, data.y)#* data.weight)
 
         loss.backward()
 
