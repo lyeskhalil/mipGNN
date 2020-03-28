@@ -160,16 +160,6 @@ class MyTransform(object):
 
 
 
-class MyTransform(object):
-    def __call__(self, data):
-        new_data = MyData()
-        for key, item in data:
-            new_data[key] = item
-        new_data.num_nodes = data.node_types.size(0)
-        return new_data
-
-
-
 # Prepare data.
 path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'DS')
 dataset = GISR(path, transform=MyTransform()).shuffle()
