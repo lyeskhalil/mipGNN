@@ -240,7 +240,7 @@ def train():
 
 
 
-        loss = lf(out, data.y)
+        loss = lf(out, data.y, data.ones)
 
 
         loss.backward()
