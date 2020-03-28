@@ -164,7 +164,7 @@ class MyTransform(object):
 path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'DS')
 dataset = GISR(path, transform=MyTransform()).shuffle()
 # Do log transform?
-log = False
+log = True
 
 
 print(dataset.data.y.mean())
