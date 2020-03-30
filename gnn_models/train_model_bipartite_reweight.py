@@ -25,12 +25,12 @@ class GISR(InMemoryDataset):
     @property
     def raw_file_names(self):
         # return "TESdTr411"
-        return "SET2rere"
+        return "SEvT2rere"
 
     @property
     def processed_file_names(self):
         # return "TESrdT411"
-        return "SET2rere"
+        return "SETv2rere"
 
     def download(self):
         pass
@@ -78,7 +78,7 @@ class GISR(InMemoryDataset):
                     var_node[i] = var_i
                     var_i += 1
 
-                    if node_data['bias'] > 0.2:
+                    if node_data['bias'] > 0.3:
                         ones.append(var_node[i])
 
                     y.append(node_data['bias'])
@@ -186,7 +186,7 @@ test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 print("### DATA LOADED.")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = Net(dim=128).to(device)
-optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
     optimizer, mode='min', factor=0.7, patience=3, min_lr=0.00001)
 print("### SETUP DONE.")
@@ -272,10 +272,6 @@ for epoch in range(1, 200):
     if epoch == 20:
         for param_group in optimizer.param_groups:
             param_group['lr'] = 0.1 * param_group['lr']
-
-    # if epoch == 100:
-    #     for param_group in optimizer.param_groups:
-    #         param_group['lr'] = 0.1 * param_group['lr']
 
     val_error = test(val_loader)
     if best_val_error is None or val_error < best_val_error:
