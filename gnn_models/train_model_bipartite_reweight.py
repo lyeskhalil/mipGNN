@@ -212,7 +212,7 @@ class MSEILoss(torch.nn.Module):
     def forward(self, yhat, y, index):
         loss = torch.abs(yhat - y)
         loss[index] = loss[index] * 4.0
-        loss = loss ** 2
+        loss = torch.sqrt(loss ** 2)
         loss = loss.mean()
 
         return loss
