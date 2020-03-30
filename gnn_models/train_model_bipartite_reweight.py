@@ -186,7 +186,7 @@ test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 print("### DATA LOADED.")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = Net(dim=128).to(device)
-optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
     optimizer, mode='min', factor=0.7, patience=3, min_lr=0.00001)
 print("### SETUP DONE.")
@@ -222,11 +222,6 @@ def train():
     model.train()
     total_loss = 0
     total_loss_mae = 0
-    loss = torch.nn.MSELoss()
-    rmse = RMSELoss()
-    mse = torch.nn.MSELoss()
-    mae = torch.nn.L1Loss()
-    sm = torch.nn.SmoothL1Loss()
 
     lf = MSEILoss()
 
@@ -234,9 +229,7 @@ def train():
         optimizer.zero_grad()
         data = data.to(device)
         out = model(data)
-
         loss = lf(out, data.y, data.ones)
-
         loss.backward()
 
         total_loss += loss.item() * batch_size
