@@ -224,6 +224,7 @@ def train():
     total_loss_mae = 0
 
     lf = MSEILoss()
+    mae = torch.nn.L1Loss()
 
     for data in train_loader:
         optimizer.zero_grad()
