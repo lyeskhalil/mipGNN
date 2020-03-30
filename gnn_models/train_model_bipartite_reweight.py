@@ -24,7 +24,7 @@ class GISR(InMemoryDataset):
 
     @property
     def raw_file_names(self):
-        #return "TESdTr411"
+        # return "TESdTr411"
         return "SET2rere"
 
     @property
@@ -159,13 +159,11 @@ class MyTransform(object):
         return new_data
 
 
-
 # Prepare data.
 path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'DS')
 dataset = GISR(path, transform=MyTransform()).shuffle()
 # Do log transform?
 log = True
-
 
 print(dataset.data.y.mean())
 
@@ -204,6 +202,7 @@ class RMSELoss(torch.nn.Module):
         loss = torch.sqrt(self.mse(yhat, y) + self.eps)
         return loss
 
+
 class MSEILoss(torch.nn.Module):
     def __init__(self, eps=1e-6):
         super().__init__()
@@ -211,14 +210,12 @@ class MSEILoss(torch.nn.Module):
         self.eps = eps
 
     def forward(self, yhat, y, index):
-
-        loss  = torch.abs(yhat - y)
+        loss = torch.abs(yhat - y)
         loss[index] = loss[index] * 4.0
+        loss = loss ** 2
         loss = loss.mean()
 
-
         return loss
-
 
 
 def train():
@@ -238,10 +235,7 @@ def train():
         data = data.to(device)
         out = model(data)
 
-
-
         loss = lf(out, data.y, data.ones)
-
 
         loss.backward()
 
@@ -293,7 +287,10 @@ for epoch in range(1, 200):
     if best_val_error is None or val_error < best_val_error:
         test_error = test(test_loader)
 
-    print('Epoch: {:03d}, LR: {:7f}, Loss: {:.7f}, Train MAE: {:.7f}, Val MAE: {:.7f}, Test MAE: {:.7f}'.format(epoch, lr, loss, mae, val_error,
-                                                                                               test_error))
+    print(
+        'Epoch: {:03d}, LR: {:7f}, Loss: {:.7f}, Train MAE: {:.7f}, Val MAE: {:.7f}, Test MAE: {:.7f}'.format(epoch, lr,
+                                                                                                              loss, mae,
+                                                                                                              val_error,
+                                                                                                              test_error))
 
 # torch.save(model.state_dict(), "train_mip")
