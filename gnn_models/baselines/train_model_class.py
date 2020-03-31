@@ -132,14 +132,14 @@ print(len(val_dataset))
 
 print(1 - test_dataset.data.y.sum().item() / test_dataset.data.y.size(-1))
 
-batch_size = 20
+batch_size = 5
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
 print("### DATA LOADED.")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = Net(dim=32).to(device)
+model = Net(dim=64).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
     optimizer, mode='min', factor=0.7, patience=3, min_lr=0.00001)
