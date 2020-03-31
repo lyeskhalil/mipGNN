@@ -147,7 +147,6 @@ class Net(torch.nn.Module):
         self.v2c_4 = VARS_TO_CON(dim, dim)
         self.c2v_4 = CONS_TO_VAR(dim, dim)
 
-
         # Final MLP for regression.
         self.fc1 = Lin(1 * dim, dim)
         self.fc2 = Lin(dim, dim)
