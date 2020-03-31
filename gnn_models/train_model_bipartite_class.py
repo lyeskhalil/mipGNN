@@ -44,7 +44,7 @@ class GISR(InMemoryDataset):
         path = '../gisp_generator/DATA/er_200_10k/'
         total = len(os.listdir(path))
 
-        for num, filename in enumerate(os.listdir(path)[0:1000]):
+        for num, filename in enumerate(os.listdir(path)[0:10000]):
             print(filename, num, total)
 
             # Get graph.
