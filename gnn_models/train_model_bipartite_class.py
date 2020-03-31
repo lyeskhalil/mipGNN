@@ -162,9 +162,9 @@ path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'DS')
 dataset = GISR(path, transform=MyTransform()).shuffle()
 len(dataset)
 
-train_dataset = dataset[0:800].shuffle()
-val_dataset = dataset[800:900].shuffle()
-test_dataset = dataset[900:1000].shuffle()
+train_dataset = dataset[0:8000].shuffle()
+val_dataset = dataset[8000:9000].shuffle()
+test_dataset = dataset[9000:10000].shuffle()
 
 print(len(val_dataset))
 
