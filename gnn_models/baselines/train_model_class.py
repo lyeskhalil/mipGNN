@@ -13,7 +13,7 @@ import networkx as nx
 from torch_geometric.data import (InMemoryDataset, Data)
 from torch_geometric.data import DataLoader
 import torch.nn.functional as F
-from ./train_model_class import Net
+from gnn_models.baselines.mpnn_architecture_class import Net
 
 class GISDS(InMemoryDataset):
     def __init__(self, root, transform=None, pre_transform=None,
@@ -35,7 +35,7 @@ class GISDS(InMemoryDataset):
     def process(self):
         data_list = []
 
-        path = '../../../gisp_generator/DATA/er_200_SET1/'
+        path = '../../gisp_generator/DATA/er_200_SET1/'
 
         total = len(os.listdir(path))
 
@@ -124,9 +124,9 @@ path = osp.join(osp.dirname(osp.realpath(__file__)), '../..', 'data', 'DS')
 dataset = GISDS(path, transform=MyTransform()).shuffle()
 len(dataset)
 
-train_dataset = dataset[0:8000].shuffle()
-val_dataset = dataset[8000:9000].shuffle()
-test_dataset = dataset[9000:10000].shuffle()
+train_dataset = dataset[0:800].shuffle()
+val_dataset = dataset[800:900].shuffle()
+test_dataset = dataset[900:1000].shuffle()
 
 print(len(val_dataset))
 
