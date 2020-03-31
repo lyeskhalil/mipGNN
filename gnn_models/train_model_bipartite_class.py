@@ -224,7 +224,7 @@ def test(loader):
 best_val = 0.0
 test_acc = 0.0
 for epoch in range(1, 101):
-    if epoch == 50:
+    if epoch == 20:
         for param_group in optimizer.param_groups:
             param_group['lr'] = 0.1 * param_group['lr']
 
