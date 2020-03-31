@@ -170,11 +170,15 @@ class Net(torch.nn.Module):
             ones_var = torch.zeros(data.var_node_features.size(0), 1).cpu()
             ones_con = torch.zeros(data.con_node_features.size(0), 1).cpu()
 
-        v = self.con_mlp(torch.cat([rand_con, data.var_node_features], dim=-1))
-        c = self.var_mlp(torch.cat([rand_var, data.con_node_features], dim=-1))
 
-        v = self.con_mlp(data.var_node_features)
-        c = self.var_mlp(data.con_node_features)
+
+        v = self.con_mlp(torch.cat([rand_var, data.var_node_features], dim=-1))
+        c = self.var_mlp(torch.cat([rand_con, data.con_node_features], dim=-1))
+
+        # v = self.con_mlp(data.var_node_features)
+        # c = self.var_mlp(data.con_node_features)
+
+
         v = torch.cat([v, ones_var], dim=-1)
         c = torch.cat([c, ones_con], dim=-1)
 
