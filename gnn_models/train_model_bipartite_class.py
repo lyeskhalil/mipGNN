@@ -27,12 +27,12 @@ class GISR(InMemoryDataset):
     @property
     def raw_file_names(self):
         # return "tedsfrffrssedrsst"
-        return "tedsgwfgfrffrsserergerdrsst"
+        return "tedsgwfgfrfrfrsserergerdrsst"
 
     @property
     def processed_file_names(self):
         # return "tessrfffdrdderfdssst"
-        return "tedwsffgrffgrssedrrrgrrsst"
+        return "tedwsffgrffrgrssedrrrgrrsst"
 
     def download(self):
         pass
@@ -41,10 +41,10 @@ class GISR(InMemoryDataset):
         data_list = []
 
         #path = '../gisp_generator/DATA/er_200_SET2_1k/'
-        path = '../gisp_generator/DATA/er_200_10k/'
+        path = '../gisp_generator/DATA/er_200_SET1/'
         total = len(os.listdir(path))
 
-        for num, filename in enumerate(os.listdir(path)[0:10000]):
+        for num, filename in enumerate(os.listdir(path)):
             print(filename, num, total)
 
             # Get graph.
@@ -162,9 +162,9 @@ path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'DS')
 dataset = GISR(path, transform=MyTransform()).shuffle()
 len(dataset)
 
-train_dataset = dataset[0:8000].shuffle()
-val_dataset = dataset[8000:9000].shuffle()
-test_dataset = dataset[9000:10000].shuffle()
+train_dataset = dataset[0:800].shuffle()
+val_dataset = dataset[800:900].shuffle()
+test_dataset = dataset[900:1000].shuffle()
 
 print(len(val_dataset))
 
@@ -177,7 +177,7 @@ test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
 print("### DATA LOADED.")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = Net(dim=256).to(device)
+model = Net(dim=32).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
     optimizer, mode='min', factor=0.7, patience=3, min_lr=0.00001)
