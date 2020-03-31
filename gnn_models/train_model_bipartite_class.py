@@ -16,6 +16,7 @@ from gnn_models.mip_alternating_arch_class import Net
 import torch.nn.functional as F
 import sklearn.metrics as metrics
 
+
 # Dataset and preprocessing.
 class GISR(InMemoryDataset):
     def __init__(self, root, transform=None, pre_transform=None,
@@ -25,12 +26,12 @@ class GISR(InMemoryDataset):
 
     @property
     def raw_file_names(self):
-        #return "tedsfrffrssedrsst"
+        # return "tedsfrffrssedrsst"
         return "tedswfrffrsserererdrsst"
 
     @property
     def processed_file_names(self):
-        #return "tessrfffdrdderfdssst"
+        # return "tessrfffdrdderfdssst"
         return "tedwsfrffrssedrrrrrsst"
 
     def download(self):
@@ -40,7 +41,7 @@ class GISR(InMemoryDataset):
         data_list = []
 
         path = '../gisp_generator/DATA/er_200_SET2_1k/'
-        #path = '../gisp_generator/DATA/er_200_SET1/'
+        # path = '../gisp_generator/DATA/er_200_SET1/'
         total = len(os.listdir(path))
 
         for num, filename in enumerate(os.listdir(path)[0:1000]):
@@ -77,7 +78,6 @@ class GISR(InMemoryDataset):
                 if node_data['bipartite'] == 0:
                     var_node[i] = var_i
                     var_i += 1
-
 
                     if (node_data['bias'] < 0.05):
                         y.append(0)
@@ -162,16 +162,13 @@ path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'DS')
 dataset = GISR(path, transform=MyTransform()).shuffle()
 len(dataset)
 
-
-
 train_dataset = dataset[0:800].shuffle()
 val_dataset = dataset[800:900].shuffle()
 test_dataset = dataset[900:1000].shuffle()
 
-
 print(len(val_dataset))
 
-print(1-test_dataset.data.y.sum().item()/test_dataset.data.y.size(-1))
+print(1 - test_dataset.data.y.sum().item() / test_dataset.data.y.size(-1))
 
 batch_size = 20
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
@@ -180,7 +177,7 @@ test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
 print("### DATA LOADED.")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = Net(dim=128).to(device)
+model = Net(dim=256).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
     optimizer, mode='min', factor=0.7, patience=3, min_lr=0.00001)
@@ -212,18 +209,15 @@ def test(loader):
     rec = 0.0
     pre = 0.0
 
-
     for data in loader:
         data = data.to(device)
         pred = model(data).max(dim=1)[1]
         correct += pred.eq(data.y).float().mean().item()
-
-        #rec += metrics.recall_score(data.y.tolist(), pred.tolist())
-        #pre += metrics.precision_score(data.y.tolist(), pred.tolist())
-
+        # rec += metrics.recall_score(data.y.tolist(), pred.tolist())
+        # pre += metrics.precision_score(data.y.tolist(), pred.tolist())
         l += 1
 
-    #print(rec/l, pre/l)
+    # print(rec/l, pre/l)
     return correct / l
 
 
@@ -238,15 +232,13 @@ for epoch in range(1, 101):
         for param_group in optimizer.param_groups:
             param_group['lr'] = 0.1 * param_group['lr']
 
-
-
     train_loss = train(epoch)
     train_acc = test(train_loader)
 
     val_acc = test(val_loader)
     if val_acc > best_val:
         best_val = val_acc
-        test_acc =  test(test_loader)
+        test_acc = test(test_loader)
 
     print('Epoch: {:03d}, Train Loss: {:.7f}, '
           'Train Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, train_loss,
