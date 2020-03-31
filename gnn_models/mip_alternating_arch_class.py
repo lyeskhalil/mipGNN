@@ -224,6 +224,5 @@ class Net(torch.nn.Module):
         x = F.relu(self.fc3(x))
         x = F.relu(self.fc4(x))
         x = F.relu(self.fc5(x))
-        #x = F.sigmoid(self.fc6(x))
         x = F.log_softmax(self.fc6(x), dim=1)
         return x
