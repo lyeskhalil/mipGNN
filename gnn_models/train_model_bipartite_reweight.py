@@ -273,6 +273,10 @@ for epoch in range(1, 200):
         for param_group in optimizer.param_groups:
             param_group['lr'] = 0.1 * param_group['lr']
 
+    if epoch == 100:
+        for param_group in optimizer.param_groups:
+            param_group['lr'] = 0.1 * param_group['lr']
+
     val_error = test(val_loader)
     if best_val_error is None or val_error < best_val_error:
         test_error = test(test_loader)
