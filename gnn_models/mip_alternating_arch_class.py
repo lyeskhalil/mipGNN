@@ -127,8 +127,8 @@ class Net(torch.nn.Module):
     def __init__(self, dim):
         super(Net, self).__init__()
 
-        self.var_mlp = Seq(Lin(2+16, dim - 1), ReLU(), Lin(dim - 1, dim - 1))
-        self.con_mlp = Seq(Lin(2+16, dim - 1), ReLU(), Lin(dim - 1, dim - 1))
+        self.var_mlp = Seq(Lin(2, dim - 1), ReLU(), Lin(dim - 1, dim - 1))
+        self.con_mlp = Seq(Lin(2, dim - 1), ReLU(), Lin(dim - 1, dim - 1))
 
         ### TODO: Sigmoid meaningful?
         self.hidden_to_var_1 = Seq(Lin(dim, dim - 1), Sigmoid(), Lin(dim - 1, 1))
@@ -171,11 +171,11 @@ class Net(torch.nn.Module):
             ones_con = torch.zeros(data.con_node_features.size(0), 1).cpu()
 
 
-        v = self.con_mlp(torch.cat([rand_var, data.var_node_features], dim=-1))
-        c = self.var_mlp(torch.cat([rand_con, data.con_node_features], dim=-1))
+        # v = self.con_mlp(torch.cat([rand_var, data.var_node_features], dim=-1))
+        # c = self.var_mlp(torch.cat([rand_con, data.con_node_features], dim=-1))
 
-        # v = self.con_mlp(data.var_node_features)
-        # c = self.var_mlp(data.con_node_features)
+        v = self.con_mlp(data.var_node_features)
+        c = self.var_mlp(data.con_node_features)
 
 
         v = torch.cat([v, ones_var], dim=-1)
