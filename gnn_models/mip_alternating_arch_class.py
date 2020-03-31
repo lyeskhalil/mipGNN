@@ -127,8 +127,8 @@ class Net(torch.nn.Module):
     def __init__(self, dim):
         super(Net, self).__init__()
 
-        self.var_mlp = Seq(Lin(2, dim - 1), ReLU(), Lin(dim - 1, dim - 1))
-        self.con_mlp = Seq(Lin(2, dim - 1), ReLU(), Lin(dim - 1, dim - 1))
+        self.var_mlp = Seq(Lin(2+16, dim - 1), ReLU(), Lin(dim - 1, dim - 1))
+        self.con_mlp = Seq(Lin(2+16, dim - 1), ReLU(), Lin(dim - 1, dim - 1))
 
         ### TODO: Sigmoid meaningful?
         self.hidden_to_var_1 = Seq(Lin(dim, dim - 1), Sigmoid(), Lin(dim - 1, 1))
@@ -156,12 +156,12 @@ class Net(torch.nn.Module):
         self.fc6 = Lin(dim, 2)
 
     def forward(self, data):
-        # if torch.cuda.is_available():
-        #     rand_var = torch.empty(data.var_node_features.size(0), 16).uniform_(0, 1).cuda()
-        #     rand_con = torch.empty(data.con_node_features.size(0), 16).uniform_(0, 1).cuda()
-        # else:
-        #     rand_var = torch.empty(data.var_node_features.size(0), 16).uniform_(0, 1).cpu()
-        #     rand_con = torch.empty(data.con_node_features.size(0), 16).uniform_(0, 1).cpu()
+        if torch.cuda.is_available():
+            rand_var = torch.empty(data.var_node_features.size(0), 16).uniform_(0, 1).cuda()
+            rand_con = torch.empty(data.con_node_features.size(0), 16).uniform_(0, 1).cuda()
+        else:
+            rand_var = torch.empty(data.var_node_features.size(0), 16).uniform_(0, 1).cpu()
+            rand_con = torch.empty(data.con_node_features.size(0), 16).uniform_(0, 1).cpu()
 
         if torch.cuda.is_available():
             ones_var = torch.empty(data.var_node_features.size(0), 1).normal_(0, 1).cuda()
@@ -170,8 +170,8 @@ class Net(torch.nn.Module):
             ones_var = torch.zeros(data.var_node_features.size(0), 1).cpu()
             ones_con = torch.zeros(data.con_node_features.size(0), 1).cpu()
 
-        # v = self.con_mlp(torch.cat([data.var_node_features], dim=-1))
-        # c = self.var_mlp(torch.cat([data.con_node_features], dim=-1))
+        v = self.con_mlp(torch.cat([rand_con, data.var_node_features], dim=-1))
+        c = self.var_mlp(torch.cat([rand_var, data.con_node_features], dim=-1))
 
         v = self.con_mlp(data.var_node_features)
         c = self.var_mlp(data.con_node_features)
