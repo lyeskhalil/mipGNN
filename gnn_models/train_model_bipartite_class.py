@@ -228,9 +228,9 @@ for epoch in range(1, 501):
         for param_group in optimizer.param_groups:
             param_group['lr'] = 0.1 * param_group['lr']
 
-    # if epoch == 70:
-    #     for param_group in optimizer.param_groups:
-    #         param_group['lr'] = 0.1 * param_group['lr']
+    if epoch == 200:
+        for param_group in optimizer.param_groups:
+            param_group['lr'] = 0.1 * param_group['lr']
 
     train_loss = train(epoch)
     train_acc = test(train_loader)
