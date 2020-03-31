@@ -174,6 +174,7 @@ if log:
 
 print(len(dataset))
 
+
 train_dataset = dataset[0:800].shuffle()
 val_dataset = dataset[800:900].shuffle()
 test_dataset = dataset[900:1000].shuffle()
@@ -210,6 +211,10 @@ class MSEILoss(torch.nn.Module):
         self.eps = eps
 
     def forward(self, yhat, y, index):
+        t = yhat
+        t[index] = t[index] * 2
+        print(t.mean())
+
         loss = torch.abs(yhat - y)
         loss[index] = loss[index] * 2.0
         loss = loss ** 2
