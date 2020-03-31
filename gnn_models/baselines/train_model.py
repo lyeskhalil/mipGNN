@@ -9,14 +9,11 @@ import os.path as osp
 import torch
 import numpy as np
 import networkx as nx
-import matplotlib.pyplot as plt
-
 
 from torch_geometric.data import (InMemoryDataset, Data)
 from torch_geometric.data import DataLoader
-import torch_geometric
 # from gnn_models import dummy_architecture as arch
-from gnn_models import mpnn_architecture as arch
+from gnn_models.baselines import mpnn_architecture as arch
 
 
 class GISDS(InMemoryDataset):
@@ -39,7 +36,7 @@ class GISDS(InMemoryDataset):
     def process(self):
         data_list = []
 
-        path = '../gisp_generator/DATA/er_200_SET1/'
+        path = '../../gisp_generator/DATA/er_200_SET1/'
 
         total = len(os.listdir(path))
 

@@ -60,6 +60,7 @@ class CONS_TO_VAR(MessagePassing):
         new_cons[:, 0:-1] = aggr_out[:, 0:-1] + torch.matmul(old_vars, self.root_vars)
 
         # TODO: MLP
+        # TODO: go in direction of negative gradient?
         new_out[:, -1] = aggr_out[:, -1]
         new_out[:, 0:-1] = F.relu(new_cons[:, 0:-1] + self.bias)
 
