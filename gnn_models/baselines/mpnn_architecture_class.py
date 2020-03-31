@@ -31,9 +31,9 @@ class Net(torch.nn.Module):
         # Final MLP for regression.
         self.fc1 = Lin(1 * dim, dim)
         self.fc2 = Lin(dim, dim)
-        self.fc3 = Lin(dim, dim)
-        self.fc4 = Lin(dim, dim)
-        self.fc5 = Lin(dim, dim)
+        # self.fc3 = Lin(dim, dim)
+        # self.fc4 = Lin(dim, dim)
+        # self.fc5 = Lin(dim, dim)
         self.fc6 = Lin(dim, 2)
 
     def forward(self, data):
@@ -55,8 +55,8 @@ class Net(torch.nn.Module):
         x = F.relu(self.fc1(x))
         # x = F.dropout(x, p=0.5, training=self.training)
         x = F.relu(self.fc2(x))
-        x = F.relu(self.fc3(x))
-        x = F.relu(self.fc4(x))
-        x = F.relu(self.fc5(x))
+        # x = F.relu(self.fc3(x))
+        # x = F.relu(self.fc4(x))
+        # x = F.relu(self.fc5(x))
         x = F.log_softmax(self.fc6(x), dim=1)
         return x
