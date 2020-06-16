@@ -175,8 +175,9 @@ test_dataset = dataset[test_index].shuffle()
 #
 np.savetxt("index_er_200_SET2_1k_20", test_index, delimiter=",", fmt="%d")
 
-
 print(len(val_dataset))
+print(len(test_dataset))
+
 
 print(1 - test_dataset.data.y.sum().item() / test_dataset.data.y.size(-1))
 
