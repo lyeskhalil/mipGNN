@@ -15,18 +15,21 @@ from torch_geometric.data import DataLoader
 from gnn_models.mip_alternating_arch_class import Net
 
 
+
+
 def get_prediction(model_name, graph):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     model = Net(dim=64).to(device)
     model.load_state_dict(torch.load(model_name, map_location=device))
 
-    data = create_data_object(graph)
 
+    data, var_node, node_var = create_data_object(graph)
     model.eval()
 
     data = data.to(device)
-    out = model(data).cpu().detach().numpy()
+
+    out = model(data, inference=True).max(dim=1)[1].cpu().detach().numpy()
 
     return out
 
@@ -121,3 +124,8 @@ def create_data_object(graph):
     data.num_nodes_con = num_nodes_con
 
     return data, var_node, node_var
+
+print("TEST")
+graph = nx.read_gpickle("../gisp_generator/DATA/er_200_SET2_1k/er_n=200_m=1867_p=0.10_SET2_setparam=100.00_alpha=0.75_606.pk")
+p = get_prediction(model_name="trained_model_er_200_SET2_1k", graph=graph)
+print(p)
