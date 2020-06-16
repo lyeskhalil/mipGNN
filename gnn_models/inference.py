@@ -72,6 +72,7 @@ def create_data_object(graph):
             # TODO: Scaling meaingful?
             var_feat.append([node_data['objcoeff'] / 100.0, graph.degree[i]])
 
+
         # Node is constraint.
         else:
             a = []
