@@ -12,7 +12,7 @@ import networkx as nx
 import torch
 from torch_geometric.data import (InMemoryDataset, Data)
 from torch_geometric.data import DataLoader
-from gnn_models.mip_alternating_arch import Net
+from gnn_models.mip_alternating_arch_class import Net
 
 
 def get_prediction(model_name, graph):
