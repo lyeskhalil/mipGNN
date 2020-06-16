@@ -179,8 +179,9 @@ print("### DATA LOADED.")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = Net(dim=64).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-    optimizer, mode='min', factor=0.5, patience=5, min_lr=0.00001)
+scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
+                                                       factor=0.5, patience=5,
+                                                       min_lr=0.0000001)
 print("### SETUP DONE.")
 
 
@@ -219,18 +220,15 @@ def test(loader):
 best_val = 0.0
 test_acc = 0.0
 for epoch in range(1, 501):
-    if epoch == 20:
-        for param_group in optimizer.param_groups:
-            param_group['lr'] = 0.1 * param_group['lr']
 
-    if epoch == 200:
-        for param_group in optimizer.param_groups:
-            param_group['lr'] = 0.1 * param_group['lr']
 
     train_loss = train(epoch)
     train_acc = test(train_loader)
 
     val_acc = test(val_loader)
+    scheduler.step(val_acc)
+
+
     if val_acc > best_val:
         best_val = val_acc
         test_acc = test(test_loader)
