@@ -41,7 +41,7 @@ class GISR(InMemoryDataset):
         data_list = []
 
         #path = '../gisp_generator/DATA/er_200_SET2_1k/'
-        path = '../gisp_generator/DATA/er_200_SET1/'
+        path = '../gisp_generator/DATA/er_200_SET2_1k/'
         total = len(os.listdir(path))
 
         for num, filename in enumerate(os.listdir(path)):
@@ -180,7 +180,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = Net(dim=64).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-    optimizer, mode='min', factor=0.7, patience=3, min_lr=0.00001)
+    optimizer, mode='min', factor=0.5, patience=5, min_lr=0.00001)
 print("### SETUP DONE.")
 
 
@@ -206,18 +206,13 @@ def test(loader):
     correct = 0
     l = 0
 
-    rec = 0.0
-    pre = 0.0
 
     for data in loader:
         data = data.to(device)
         pred = model(data).max(dim=1)[1]
         correct += pred.eq(data.y).float().mean().item()
-        # rec += metrics.recall_score(data.y.tolist(), pred.tolist())
-        # pre += metrics.precision_score(data.y.tolist(), pred.tolist())
         l += 1
 
-    # print(rec/l, pre/l)
     return correct / l
 
 

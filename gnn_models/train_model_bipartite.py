@@ -24,12 +24,10 @@ class GISR(InMemoryDataset):
 
     @property
     def raw_file_names(self):
-        #return "TESdTr411"
         return "SET2"
 
     @property
     def processed_file_names(self):
-        # return "TESrdT411"
         return "SET2"
 
     def download(self):
@@ -160,6 +158,7 @@ dataset = GISR(path, transform=MyTransform()).shuffle()
 log = True
 
 
+
 print(dataset.data.y.mean())
 
 if log:
@@ -183,7 +182,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = Net(dim=128).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-    optimizer, mode='min', factor=0.7, patience=3, min_lr=0.00001)
+    optimizer, mode='min', factor=0.5, patience=5, min_lr=0.00001)
 print("### SETUP DONE.")
 
 
