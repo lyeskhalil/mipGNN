@@ -45,8 +45,6 @@ def create_data_object(graph):
 
     con_node = {}
 
-
-
     # Number of variables.
     var_i = 0
     # Number of constraints.
@@ -61,17 +59,19 @@ def create_data_object(graph):
     rhss = []
     # Sums over coefficients.
     a_sum = []
-    for i, (node, node_data) in enumerate(graph.nodes(data=True)):
+    for i, (node, node_data) in enumerate(graphwww.nodes(data=True)):
         # Node is a variable.
         if node_data['bipartite'] == 0:
             var_node[i] = var_i
             node_var[var_i] = i
             var_i += 1
 
-            y.append(node_data['bias'])
+            if (node_data['bias'] < 0.05):
+                y.append(0)
+            else:
+                y.append(1)
             # TODO: Scaling meaingful?
             var_feat.append([node_data['objcoeff'] / 100.0, graph.degree[i]])
-
 
         # Node is constraint.
         else:
