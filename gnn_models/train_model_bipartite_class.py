@@ -173,7 +173,7 @@ train_dataset = dataset[train_index].shuffle()
 val_dataset = dataset[val_index].shuffle()
 test_dataset = dataset[test_index].shuffle()
 #
-np.savetxt("index_er_200_SET2_1k_20", test_index, delimiter=",")
+np.savetxt("index_er_200_SET2_1k_20", test_index, delimiter=",", fmt="%d")
 
 
 print(len(val_dataset))
