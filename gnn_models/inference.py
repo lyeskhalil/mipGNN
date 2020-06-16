@@ -59,7 +59,7 @@ def create_data_object(graph):
     rhss = []
     # Sums over coefficients.
     a_sum = []
-    for i, (node, node_data) in enumerate(graphwww.nodes(data=True)):
+    for i, (node, node_data) in enumerate(graph.nodes(data=True)):
         # Node is a variable.
         if node_data['bipartite'] == 0:
             var_node[i] = var_i
