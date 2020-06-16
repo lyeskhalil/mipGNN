@@ -8,6 +8,7 @@ import os
 import os.path as osp
 import numpy as np
 import networkx as nx
+from sklearn.model_selection import train_test_split
 
 import torch
 from torch_geometric.data import (InMemoryDataset, Data)
@@ -162,9 +163,15 @@ path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'DS')
 dataset = GISR(path, transform=MyTransform()).shuffle()
 len(dataset)
 
-train_dataset = dataset[0:800].shuffle()
-val_dataset = dataset[800:900].shuffle()
-test_dataset = dataset[900:1000].shuffle()
+
+train_index, rest = train_test_split(list(range(0,1000)), test_size=0.2)
+val_index = rest[0:100]
+test_index = rest[100:]
+
+
+train_dataset = dataset[train_index].shuffle()
+val_dataset = dataset[val_index].shuffle()
+test_dataset = dataset[test_index].shuffle()
 
 print(len(val_dataset))
 
