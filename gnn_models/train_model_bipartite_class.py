@@ -27,12 +27,12 @@ class GISR(InMemoryDataset):
     @property
     def raw_file_names(self):
         # return "tedsfrffrssedrsst"
-        return "tedsgwfgfrfrfrsserergerdrsst"
+        return "SET2_class"
 
     @property
     def processed_file_names(self):
         # return "tessrfffdrdderfdssst"
-        return "tedwsffgrffrgrssedrrrgrrsst"
+        return "SET2_class"
 
     def download(self):
         pass
