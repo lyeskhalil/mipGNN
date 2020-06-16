@@ -237,6 +237,7 @@ for epoch in range(1, 1001):
     if lr < 0.000001:
         break
 
+    print(lr)
     print('Epoch: {:03d}, Train Loss: {:.7f}, '
           'Train Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, train_loss,
                                                        train_acc, test_acc))
