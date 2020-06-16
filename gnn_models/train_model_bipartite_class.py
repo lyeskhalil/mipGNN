@@ -219,7 +219,7 @@ def test(loader):
 
 best_val = 0.0
 test_acc = 0.0
-for epoch in range(1, 501):
+for epoch in range(1, 1001):
 
 
     train_loss = train(epoch)
@@ -227,11 +227,15 @@ for epoch in range(1, 501):
 
     val_acc = test(val_loader)
     scheduler.step(val_acc)
-
+    lr = scheduler.optimizer.param_groups[0]['lr']
 
     if val_acc > best_val:
         best_val = val_acc
         test_acc = test(test_loader)
+
+    # Break if learning rate is smaller 10**-6.
+    if lr < 0.000001:
+        break
 
     print('Epoch: {:03d}, Train Loss: {:.7f}, '
           'Train Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, train_loss,
