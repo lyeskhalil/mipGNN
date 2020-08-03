@@ -35,7 +35,7 @@ class GISDS(InMemoryDataset):
     def process(self):
         data_list = []
 
-        path = '../../gisp_generator/DATA/er_200_SET1/'
+        path = '../../gisp_generator/DATA/er_200_SET2_1k/'
 
         total = len(os.listdir(path))
 
