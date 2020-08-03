@@ -185,7 +185,7 @@ def test(loader):
 
 best_val = 0.0
 test_acc = 0.0
-for epoch in range(1, 501):
+for epoch in range(1, 50):
     if epoch == 20:
         for param_group in optimizer.param_groups:
             param_group['lr'] = 0.1 * param_group['lr']
@@ -205,5 +205,8 @@ for epoch in range(1, 501):
     print('Epoch: {:03d}, Train Loss: {:.7f}, '
           'Train Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, train_loss,
                                                        train_acc, test_acc))
+
+
+torch.save(model.state_dict(), "trained_model_er_200_SET2_1k_SIMPLE")
 
 
