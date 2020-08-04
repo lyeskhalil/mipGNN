@@ -112,7 +112,8 @@ def create_data_object(graph):
 
     data.edge_index_var = edge_index_var
     data.edge_index_con = edge_index_con
-    data.y = torch.from_numpy(np.array(y)).to(torch.float)
+    # data.y = torch.from_numpy(np.array(y)).to(torch.float)
+    data.y = torch.from_numpy(np.array(y)).to(torch.long)
     data.var_node_features = torch.from_numpy(np.array(var_feat)).to(torch.float)
     data.con_node_features = torch.from_numpy(np.array(con_feat)).to(torch.float)
     data.rhs = torch.from_numpy(np.array(rhss)).to(torch.float)

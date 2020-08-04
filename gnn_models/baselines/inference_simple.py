@@ -128,6 +128,9 @@ def create_data_object(graph):
     data.asums = torch.from_numpy(np.array(a_sum)).to(torch.float)
     data.num_nodes_var = num_nodes_var
     data.num_nodes_con = num_nodes_con
+    data.node_types = torch.from_numpy(np.array(node_type)).to(torch.long)
+    data.assoc_var = torch.from_numpy(np.array(assoc_var)).to(torch.long)
+    data.assoc_con = torch.from_numpy(np.array(assoc_con)).to(torch.long)
 
     edge_types = []
     for i, (s, t, edge_data) in enumerate(graph.edges(data=True)):
