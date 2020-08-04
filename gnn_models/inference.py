@@ -16,7 +16,6 @@ from gnn_models.mip_alternating_arch_class import Net
 
 
 
-
 def get_prediction(model_name, graph):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 

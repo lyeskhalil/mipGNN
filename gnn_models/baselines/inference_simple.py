@@ -28,7 +28,7 @@ def get_prediction(model_name, graph):
 
     data = data.to(device)
 
-    out = model(data, inference=True).max(dim=1)[1].cpu().detach().numpy()
+    out = model(data).max(dim=1)[1].cpu().detach().numpy()
 
     return out
 
@@ -37,6 +37,8 @@ def create_data_object(graph):
     graph = nx.convert_node_labels_to_integers(graph)
     graph = graph.to_directed() if not nx.is_directed(graph) else graph
     data = Data()
+    edge_index = torch.tensor(list(graph.edges)).t().contiguous()
+    data = Data(edge_index=edge_index)
 
     #  Map for new nodes in graph.
 
@@ -47,6 +49,9 @@ def create_data_object(graph):
 
     con_node = {}
 
+    assoc_var = []
+    assoc_con = []
+    node_type = []
     # Number of variables.
     var_i = 0
     # Number of constraints.
@@ -65,6 +70,8 @@ def create_data_object(graph):
         # Node is a variable.
         if node_data['bipartite'] == 0:
             var_node[i] = var_i
+            node_type.append(0)
+            assoc_var.append(i)
             node_var[var_i] = i
             var_i += 1
 
@@ -77,6 +84,9 @@ def create_data_object(graph):
 
         # Node is constraint.
         else:
+
+            node_type.append(1)
+            assoc_con.append(i)
             a = []
             for e in graph.edges(node, data=True):
                 a.append(graph[e[0]][e[1]]['coeff'])
@@ -107,20 +117,27 @@ def create_data_object(graph):
             edge_list_var.append([var_node[s], con_node[t]])
             edge_features_var.append([edge_data['coeff']])
 
-    edge_index_var = torch.tensor(edge_list_var).t().contiguous()
-    edge_index_con = torch.tensor(edge_list_con).t().contiguous()
+    data.y = torch.from_numpy(np.array(y)).to(torch.long)
+    #data.y = torch.from_numpy(np.array(y)).to(torch.float)
 
-    data.edge_index_var = edge_index_var
-    data.edge_index_con = edge_index_con
-    data.y = torch.from_numpy(np.array(y)).to(torch.float)
     data.var_node_features = torch.from_numpy(np.array(var_feat)).to(torch.float)
     data.con_node_features = torch.from_numpy(np.array(con_feat)).to(torch.float)
-    data.rhs = torch.from_numpy(np.array(rhss)).to(torch.float)
-    data.edge_features_con = torch.from_numpy(np.array(edge_features_con)).to(torch.float)
-    data.edge_features_var = torch.from_numpy(np.array(edge_features_var)).to(torch.float)
+    #data.rhs = torch.from_numpy(np.array(rhss)).to(torch.float)
+    #data.edge_features_con = torch.from_numpy(np.array(edge_features_con)).to(torch.float)
+    #data.edge_features_var = torch.from_numpy(np.array(edge_features_var)).to(torch.float)
     data.asums = torch.from_numpy(np.array(a_sum)).to(torch.float)
     data.num_nodes_var = num_nodes_var
     data.num_nodes_con = num_nodes_con
+
+    edge_types = []
+    for i, (s, t, edge_data) in enumerate(graph.edges(data=True)):
+
+        if graph.nodes[s]['bipartite']:
+            edge_types.append([0, edge_data['coeff']])
+        else:
+            edge_types.append([1, edge_data['coeff']])
+
+    data.edge_types = torch.from_numpy(np.array(edge_types)).to(torch.float)
 
     return data, var_node, node_var
 
