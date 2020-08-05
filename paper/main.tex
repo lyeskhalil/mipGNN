@@ -310,46 +310,47 @@ Given a system of linear equations $\vec{A} \vec{x} \geq \vec{b}$, see~\cref{bip
 for $i$ in $[m]$.\cm{say sth. about optimal solution, give intution of the MWU, discrete prob., oracle for LP, Farkas' lemma.}
 
 \begin{algorithm}[H]\mbox{\hfill}
-\\\textbf{Input:} System of linear equations $\vec{A} \vec{x} \geq \vec{b}$, $\varepsilon > 0$,  stepsize $\eta > 0$, scaling constant $\rho$. \\
-\textbf{Output:} $\vec{\bar{x}}$ satisfying~\cref{epsfeas} or \texttt{non-feasible}
-\begin{algorithmic}[1]
-	\State Initialize constraint weights $\vec{w}_i \leftarrow 1$ for $i$ in $[m]$ 
-	\State Initialize probabilities $\vec{p}_j \leftarrow \nicefrac{1}{m}$ for $i$ in $[m]$ 
-	\State Set $T$ to according~\cref{mwubound}
-	\For{$t \text{ in } [T]$}
-
-	\State Call oracle: $\vec{x} \leftarrow \cO(\vec{p}\trans \vec{A} \vec{x} \geq \vec{p}\trans \vec{b})$, \textbf{if} $
-	\vec{x} = \emptyset$ \Return  \texttt{non-feasible}
-	\State Compute error signal $\vec{e}$, where
-	\begin{equation*}
+	\\\textbf{Input:} System of linear equations $\vec{A} \vec{x} \geq \vec{b}$, $\varepsilon > 0$,  stepsize $\eta > 0$, scaling constant $\rho$. \\
+	\textbf{Output:} $\vec{\bar{x}}$ satisfying~\cref{epsfeas} or \texttt{non-feasible}.
+	\begin{algorithmic}[1]
+		\State Initialize constraint weights $\vec{w}_i \leftarrow 1$ for $i$ in $[m]$ 
+		\State Initialize probabilities $\vec{p}_j \leftarrow \nicefrac{1}{m}$ for $i$ in $[m]$ 
+		\State Set $T$ to according~\cref{mwubound}
+		\For{$t \text{ in } [T]$}
+		
+		\State Call oracle: $\vec{x} \leftarrow \cO(\vec{p}\trans \vec{A} \vec{x} \geq \vec{p}\trans \vec{b})$, \textbf{if} $
+		\vec{x} = \emptyset$ \Return  \texttt{non-feasible}
+		\State Compute error signal $\vec{e}$, where
+		\begin{equation*}
 		\vec{e}_j \leftarrow \nicefrac{1}{\rho}\,(\vec{A}_j\trans \vec{x}(t) - \vec{b}_j)   
-	\end{equation*}
-	\State Perform gradient descent by $\vec{w}_i \leftarrow (1 - \eta \vec{e}_i) \vec{w}_i$ 
-	\State Normalize weights $\vec{p}_j \leftarrow \nicefrac{\vec{w}_j}{\Phi} $  for $i$ in $[m]$, where $\Phi = \sum_{i \in [m]} \vec{w}_i$
-	\State Update solution $\vec{\bar{x}} \leftarrow \vec{\bar{x}} + \vec{x}$
-	\EndFor
-	\State \Return Average over solution $ \nicefrac{\vec{\bar{x}}}{T} $
-\end{algorithmic}
-\caption{MWU for the LP feasibility problem.}
-\label{alg:as}
+		\end{equation*}
+		\State Perform gradient descent by $\vec{w}_i \leftarrow (1 - \eta \vec{e}_i) \vec{w}_i$ 
+		\State Normalize weights $\vec{p}_j \leftarrow \nicefrac{\vec{w}_j}{\boldsymbol{\Gamma}(t)} $  for $i$ in $[m]$, where $\boldsymbol{\Gamma}(t) = \sum_{i \in [m]} \vec{w}_i$
+		\State Update solution $\vec{\bar{x}} \leftarrow \vec{\bar{x}} + \vec{x}$
+		\EndFor
+		\State \Return Average over solution $ \nicefrac{\vec{\bar{x}}}{T} $
+	\end{algorithmic}
+	\caption{MWU for the LP feasibility problem.}
+	\label{alg:as}
 \end{algorithm}
-
+Same algorithm as above interpreted as a message passing algorithm:
 \begin{algorithm}[H]\mbox{\hfill}
 	\\\textbf{Input:} Biparite constraint graph $B(I)$, $\varepsilon > 0$,  stepsize $\eta > 0$, scaling constant $\rho$. \\
-	\textbf{Output:} $\vec{\bar{x}}$ satisfying~\cref{epsfeas} or \texttt{non-feasible}
+	\textbf{Output:} $\vec{\bar{x}}$ satisfying~\cref{epsfeas} or \texttt{non-feasible}.
 	\begin{algorithmic}[1]
 		\State Initialize weights $\vec{w}_j \leftarrow 1$ for each constraint node
 		\State Initialize probabilities $\vec{p}_j \leftarrow \nicefrac{1}{m}$ for each constraint node
 		\State Set $T$ to according~\cref{mwubound}
 		\For{$t \text{ in } [T]$}
-		\State For each constraint node $\vec{c}_j$ send $\vec{p}_j$ to adjacent node variable 
+		\State For each constraint node $\vec{c}_j$ send $\vec{p}_j$ to adjacent node variable \Comment{Constraint to variable pass}
+		\Statex
 		\State Update each variable node $\vec{v}_i$ based on output $\vec{x}_i$ of oracle using $\vec{p}$
-		\State Send $\vec{v}_i$ to each adjacent constraint, compute error signal $\vec{e}_i$ for each constraint $\vec{c}_j$
+		\State Send $\vec{v}_i$ to each adjacent constraint, compute error signal $\vec{e}_i$ for each constraint $\vec{c}_j$\Comment{Variable to constraint pass}
 		\begin{equation*}
-		\vec{e}_j \leftarrow \nicefrac{1}{\rho}\,\Big(\sum_{i \in N(j)} \vec{A}_{ji}  \vec{v}_i \Big) - \vec{b}_j   
+		\vec{e}_j \leftarrow \nicefrac{1}{\rho}\,\Big(\sum_{i \in N(j)} \label{key}\vec{A}_{ji}  \vec{v}_i \Big) - \vec{b}_j   
 		\end{equation*}
 		\State Perform gradient descent by $\vec{w}_i \leftarrow (1 - \eta \vec{e}_i) \vec{w}_i$ 
-		\State Normalize weights $\vec{p}_j \leftarrow \nicefrac{\vec{w}_j}{\Phi} $  for $i$ in $[m]$, where $\Phi = \sum_{i \in [m]} \vec{w}_i$
+		\State Normalize weights $\vec{p}_j \leftarrow \nicefrac{\vec{w}_j}{\boldsymbol{\Gamma}(t)} $  for $i$ in $[m]$, where $\boldsymbol{\Gamma}(t) = \sum_{i \in [m]} \vec{w}_i$
 		\State Update solution $\vec{\bar{x}} \leftarrow \vec{\bar{x}} + \vec{x}$
 		\EndFor
 		\State \Return Average over solution $ \nicefrac{\vec{\bar{x}}}{T}$
@@ -357,7 +358,6 @@ for $i$ in $[m]$.\cm{say sth. about optimal solution, give intution of the MWU, 
 	\caption{MWU (Message passing version) for the LP feasibility problem.}
 	\label{alg:as}
 \end{algorithm}
-
 
 We get the following bound of the running time.
 \begin{theorem}[E.g., \cite{Aro+2012}]
@@ -388,28 +388,30 @@ In the following, we gives details about the two passes.
 
 
 \begin{algorithm}[H]\mbox{\hfill}
-	\\\textbf{Input:}  Training set $\cS$, $\varepsilon > 0$, number of rounds $T$, stepsize $\eta > 0$, scaling constant $\rho$.  \\
-	\textbf{Output:} A trained model $f_{\boldsymbol{\theta}} \colon \cI \to [0,1]^n$ 
+	\\\textbf{Input:}  Training set $\cS$, $\varepsilon > 0$, number of epochs $E$, number of rounds $T$, stepsize $\eta > 0$, scaling constant $\rho$.  \\
+	\textbf{Output:} A trained model $f_{\boldsymbol{\theta}} \colon \cI \to [0,1]^n$.
 	\begin{algorithmic}[1]
-		\State Initialize $\vec{v}_i^{(0)}$, $\vec{c}_i^{(0)}$, and $\boldsymbol{\theta}$
+		\State Initialize $\vec{v}_i^{(0)}$, $\vec{c}_i^{(0)}$
+		\State Initialize parameters $\boldsymbol{\theta} = (\boldsymbol{\theta}_{\text{V}}$, $\boldsymbol{\theta}_{\text{C}}$, $\boldsymbol{\theta}_{\text{X}})$
 		\State Set weights $\vec{w}_j^{(0)} \leftarrow 1$, $\vec{p}_j^{(0)} \leftarrow \nicefrac{1}{m}$ for $j$ in $[m]$
-		\Statex
 		\For{$e \text{ in } [E]$}
-		\State \cm{Make p a parameter?}
-		\State Sample $I = (\vec{c}, \vec{A}, \vec{b})$ with bias  $\vec{\bar{b}}$ uniformly and at random from $\cS$ \cm{define Ib}
+		\State Sample $I = (\vec{c}, \vec{A}, \vec{b})$ with variable bias $\vec{\bar{b}}$ uniformly and at random from $\cS$, inducing the bipartite graph $B(I)$
 		\For{$t \text{ in } [T]$}
-		\State $\vec{v}_i^{(t)} \leftarrow \mathbf{f}^{(t)}_{\text{V}} \hspace{-2pt} \left( \left\{ \hspace{-5pt} \left\{ \left( \vec{v}^{(t-1)}_i, \vec{c}_j, \vec{A}_{ij}, \vec{p}_j \right)\hspace{-3pt} \colon j \in N(\vec{v}_i) \right\} \hspace{-5pt} \right\} \right)\quad$		 $\vec{x}_i^{(t)} \leftarrow \mathbf{f}^{(t)}_{\text{V}}   \hspace{-2pt} \left(\vec{v}_i^{(t-1)} \right)$ %\cm{Oracle?}
+		\State $\vec{v}_i^{(t)} \leftarrow {f}^{(t)}_{\text{V}} \hspace{-1pt} \big( \big\{ \hspace{-4.4pt} \big\{ \big( \vec{v}^{(t-1)}_i, \vec{c}^{(t-1)}_j, \vec{p}^{(t-1)}_j, \vec{A}_{ji} \big)\hspace{-1pt} \colon c_j \in N(v_i) \big\} \hspace{-4.4pt} \big\} \big)$ for all $i$ in $[n]$ 		
+		\Comment{Constraint to variable pass}
+		\State $\vec{x}_i^{(t)} \leftarrow {f}^{(t)}_{\text{X}} \hspace{-2pt} \left(\vec{v}_i^{(t-1)} \right)$ for all $i$ in $[n]$ \Comment{Generate variable assigment}
+		\Statex
+		\Statex
+		\State $\vec{c}_j^{\hspace{1pt}(t)} \leftarrow {f}^{(t)}_{\text{C}} \hspace{-2pt} \left( \left\{ \hspace{-4.4pt} \left\{ \left( \vec{c}^{(t-1)}_j, \vec{v}^{(t)}_i, \vec{x}^{(t)}_i, \vec{A}_{ji}, \vec{b}_j \right)\hspace{-2pt} \colon i \in N(c_j) \right\} \hspace{-4.4pt} \right\} \right)$ for all $j$ in $[m]$ 		\Comment{Variable to constraint pass}
+		\State $\vec{e}_j^{(t)} \, \leftarrow \nicefrac{1}{\rho}\,\Big(\sum_{i \in N(j)} \label{key}\vec{A}_{ji}  \vec{v}_i \Big) - \vec{b}_j$
 		%\Statex
-		\State $\vec{c}_j^{\hspace{1pt}(t)} \leftarrow \mathbf{f}^{(t)}_{\text{C}} \hspace{-2pt} \left( \left\{ \hspace{-5pt} \left\{ \left( \vec{c}^{(t-1)}_j, \vec{v}_i, \vec{x}_i, \vec{A}_{ij}, \vec{b}_j \right)\hspace{-3pt} \colon i \in N(\vec{c}_j) \right\} \hspace{-5pt} \right\} \right)$
-		\State $\vec{e}_j^{(t)} \leftarrow \nicefrac{1}{\rho}\! \sum_{i \in N(j)} \vec{A}_{ji} \vec{x}_i^{(t)} - \vec{b}_j$
-		%\Statex
-		\State $\vec{w}_j^{(t)} \leftarrow ( 1 -  \eta \vec{e}_j) \vec{w}_j^{(t)} $ 
-		\State $\vec{p}_j \leftarrow \frac{w_j^{(t)}}{\Phi(t)} $, where $\Phi(t) = \sum_{j \in [m]} \vec{w}^{(t)}_j$
+		\State $\vec{w}_j^{(t)} \leftarrow ( 1 -  \eta \vec{e}^{(t)}_j) \vec{w}_j^{(t-1)} $ 
+		\State $\vec{p}_j \leftarrow \nicefrac{w_j^{(t)}}{\boldsymbol{\Gamma}(t)} $, where $\boldsymbol{\Gamma}(t) = \sum_{j \in [m]} \vec{w}^{(t)}_j$
+		\State Update solution $\vec{\bar{x}} \leftarrow \vec{\bar{x}} + \vec{x}$
 		\EndFor
-		\State g
 		\State $\vec{\bar{x}} \leftarrow \nicefrac{1}{T} \sum_{t \in [T]} \vec{x}(t) $
 		\State $L \leftarrow L + \ell(\vec{\bar{x}}, \vec{\bar b})$ 
-		\State Gradient descent on $L$
+		\State Gradient descent on $\nicefrac{1}{T} L$ with regard to $\boldsymbol{\theta}$
 		\EndFor
 		\State \Return $\boldsymbol{\theta}$
 		
@@ -417,6 +419,7 @@ In the following, we gives details about the two passes.
 	\caption{Data-driven MWU for variable bias prediction.}
 	\label{alg:as2}
 \end{algorithm}
+
 \cm{overloading of c}
 \cm{how to incoperate data information}
 \subsection{Unsupervised setting}
