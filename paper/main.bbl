@@ -1,0 +1,14 @@
+\begin{thebibliography}{1}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Arora et~al.(2012)Arora, Hazan, and Kale]{Aro+2012}
+S.~Arora, E.~Hazan, and S.~Kale.
+\newblock The multiplicative weights update method: a meta-algorithm and
+  applications.
+\newblock \emph{Theory of Computing}, 8\penalty0 (1):\penalty0 121--164, 2012.
+
+\end{thebibliography}
