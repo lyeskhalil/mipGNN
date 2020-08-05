@@ -310,49 +310,51 @@ Given a system of linear equations $\vec{A} \vec{x} \geq \vec{b}$, see~\cref{bip
 for $i$ in $[m]$.\cm{say sth. about optimal solution, give intution of the MWU, discrete prob., oracle for LP, Farkas' lemma.}
 
 \begin{algorithm}[H]\mbox{\hfill}
-\\\textbf{Input:} System of linear equations $\vec{A} \vec{x} \geq \vec{b}$, $\varepsilon > 0$,  stepsize $\eta > 0$, scaling constant $\rho$, failure probability $\delta$. \\
+\\\textbf{Input:} System of linear equations $\vec{A} \vec{x} \geq \vec{b}$, $\varepsilon > 0$,  stepsize $\eta > 0$, scaling constant $\rho$. \\
 \textbf{Output:} $\vec{\bar{x}}$ satisfying~\cref{epsfeas} or \texttt{non-feasible}
 \begin{algorithmic}[1]
-	\State Initialize constraint weights $w_i \leftarrow 1$ for $i$ in $[m]$ 
+	\State Initialize constraint weights $\vec{w}_i \leftarrow 1$ for $i$ in $[m]$ 
+	\State Initialize probabilities $\vec{p}_j \leftarrow \nicefrac{1}{m}$ for $i$ in $[m]$ 
 	\State Set $T$ to according~\cref{mwubound}
 	\For{$t \text{ in } [T]$}
-	\State Normalize weights $p_j \leftarrow \frac{w_j(t)}{\Phi(t)} $  for $i$ in $[m]$, where $\Phi(t) = \sum_{i \in [m]} w_i$
-	\State Call oracle: $\vec{x}(t) \leftarrow \cO(\vec{p}\trans \vec{A} \vec{x} \geq \vec{p}\trans \vec{b})$ if $
-	\vec{x}(t) = \emptyset$ \Return  \texttt{non-feasible}
-	\State Compute error signal $\vec{m}$ with
+
+	\State Call oracle: $\vec{x} \leftarrow \cO(\vec{p}\trans \vec{A} \vec{x} \geq \vec{p}\trans \vec{b})$, \textbf{if} $
+	\vec{x} = \emptyset$ \Return  \texttt{non-feasible}
+	\State Compute error signal $\vec{e}$, where
 	\begin{equation*}
-		m_i \leftarrow \nicefrac{1}{\rho}\,(\vec{A}_i\trans \vec{x}(t) - b_i)   
+		\vec{e}_j \leftarrow \nicefrac{1}{\rho}\,(\vec{A}_j\trans \vec{x}(t) - \vec{b}_j)   
 	\end{equation*}
-	\State Perform gradient descent  by $w_i(t+1) \leftarrow ( 1 -  \eta m_i) w_i(t) $ 
+	\State Perform gradient descent by $\vec{w}_i \leftarrow (1 - \eta \vec{e}_i) \vec{w}_i$ 
+	\State Normalize weights $\vec{p}_j \leftarrow \nicefrac{\vec{w}_j}{\Phi} $  for $i$ in $[m]$, where $\Phi = \sum_{i \in [m]} \vec{w}_i$
+	\State Update solution $\vec{\bar{x}} \leftarrow \vec{\bar{x}} + \vec{x}$
 	\EndFor
-	\State \Return $\vec{\bar{x}} \leftarrow \nicefrac{1}{T} \sum_{t \in [T]} \vec{x}(t) $
+	\State \Return Average over solution $ \nicefrac{\vec{\bar{x}}}{T} $
 \end{algorithmic}
 \caption{MWU for the LP feasibility problem.}
 \label{alg:as}
 \end{algorithm}
 
 \begin{algorithm}[H]\mbox{\hfill}
-	\\\textbf{Input:} $B(I)$, $\varepsilon > 0$,  stepsize $\eta > 0$, scaling constant $\rho$, failure probability $\delta$. \\
+	\\\textbf{Input:} Biparite constraint graph $B(I)$, $\varepsilon > 0$,  stepsize $\eta > 0$, scaling constant $\rho$. \\
 	\textbf{Output:} $\vec{\bar{x}}$ satisfying~\cref{epsfeas} or \texttt{non-feasible}
 	\begin{algorithmic}[1]
-		\State Initialize constraint weights $\vec{p}_j \leftarrow \nicefrac{1}{m}$ for each constraint node
+		\State Initialize weights $\vec{w}_j \leftarrow 1$ for each constraint node
+		\State Initialize probabilities $\vec{p}_j \leftarrow \nicefrac{1}{m}$ for each constraint node
 		\State Set $T$ to according~\cref{mwubound}
 		\For{$t \text{ in } [T]$}
 		\State For each constraint node $\vec{c}_j$ send $\vec{p}_j$ to adjacent node variable 
-		\Statex
 		\State Update each variable node $\vec{v}_i$ based on output $\vec{x}_i$ of oracle using $\vec{p}$
-		\Statex
-		\State Send $\vec{x}_i$ to each adjacent constraint, compute error signal $\vec{m}_i$ for each constraint $\vec{c}_j$
+		\State Send $\vec{v}_i$ to each adjacent constraint, compute error signal $\vec{e}_i$ for each constraint $\vec{c}_j$
 		\begin{equation*}
-		\vec{m}_j \leftarrow \nicefrac{1}{\rho}\,\Big(\sum_{i \in N(j)}\vec{A}_{ji}  \vec{x}_i \Big) - \vec{b}_j   
+		\vec{e}_j \leftarrow \nicefrac{1}{\rho}\,\Big(\sum_{i \in N(j)} \vec{A}_{ji}  \vec{v}_i \Big) - \vec{b}_j   
 		\end{equation*}
-		\State Perform gradient descent  by $\vec{w}_i(t+1) \leftarrow ( 1 -  \eta \vec{m}_i) \vec{w}_i(t) $ 
-		\State Normalize weights $p_j \leftarrow \frac{w_j(t)}{\Phi(t)}$ for each constraint node, where $\Phi(t) = \sum_{i \in [m]} w_i$
-
+		\State Perform gradient descent by $\vec{w}_i \leftarrow (1 - \eta \vec{e}_i) \vec{w}_i$ 
+		\State Normalize weights $\vec{p}_j \leftarrow \nicefrac{\vec{w}_j}{\Phi} $  for $i$ in $[m]$, where $\Phi = \sum_{i \in [m]} \vec{w}_i$
+		\State Update solution $\vec{\bar{x}} \leftarrow \vec{\bar{x}} + \vec{x}$
 		\EndFor
-		\State \Return $\vec{\bar{x}} \leftarrow \nicefrac{1}{T} \sum_{t \in [T]} \vec{x}(t) $
+		\State \Return Average over solution $ \nicefrac{\vec{\bar{x}}}{T}$
 	\end{algorithmic}
-	\caption{MWU (Message Passing version) for the LP feasibility problem.}
+	\caption{MWU (Message passing version) for the LP feasibility problem.}
 	\label{alg:as}
 \end{algorithm}
 
@@ -407,7 +409,7 @@ In the following, we gives details about the two passes.
 		\State g
 		\State $\vec{\bar{x}} \leftarrow \nicefrac{1}{T} \sum_{t \in [T]} \vec{x}(t) $
 		\State $L \leftarrow L + \ell(\vec{\bar{x}}, \vec{\bar b})$ 
-		\State Gradient descent on L
+		\State Gradient descent on $L$
 		\EndFor
 		\State \Return $\boldsymbol{\theta}$
 		
@@ -416,8 +418,7 @@ In the following, we gives details about the two passes.
 	\label{alg:as2}
 \end{algorithm}
 \cm{overloading of c}
-
-
+\cm{how to incoperate data information}
 \subsection{Unsupervised setting}
 
 random matrices, recover MWU, also test in experiments
@@ -425,7 +426,7 @@ random matrices, recover MWU, also test in experiments
 
 \subsection{Discussion: Road blocks and the road ahead}
 						
-discuss limitation of GNNs approaches, unsupervised approaches
+discuss limitation of GNNs approaches (bipartite GNN), unsupervised approaches
 
 discuss problems of generating labeled training data
 
