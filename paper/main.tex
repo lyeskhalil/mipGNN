@@ -342,10 +342,10 @@ Same algorithm as above interpreted as a message passing algorithm:
 		\State Initialize probabilities $\vec{p}_j \leftarrow \nicefrac{1}{m}$ for each constraint node
 		\State Set $T$ to according~\cref{mwubound}
 		\For{$t \text{ in } [T]$}
-		\State For each constraint node $\vec{c}_j$ send $\vec{p}_j$ to adjacent node variable \Comment{Constraint to variable pass}
+		\State For each constraint node $\vec{c}_j$ send $\vec{p}_j$ to adjacent node variable
 		\Statex
 		\State Update each variable node $\vec{v}_i$ based on output $\vec{x}_i$ of oracle using $\vec{p}$
-		\State Send $\vec{v}_i$ to each adjacent constraint, compute error signal $\vec{e}_i$ for each constraint $\vec{c}_j$\Comment{Variable to constraint pass}
+		\State Send $\vec{v}_i$ to each adjacent constraint, compute error signal $\vec{e}_i$ for each constraint $\vec{c}_j$
 		\begin{equation*}
 		\vec{e}_j \leftarrow \nicefrac{1}{\rho}\,\Big(\sum_{i \in N(j)} \label{key}\vec{A}_{ji}  \vec{v}_i \Big) - \vec{b}_j   
 		\end{equation*}
@@ -398,11 +398,11 @@ In the following, we gives details about the two passes.
 		\State Sample $I = (\vec{c}, \vec{A}, \vec{b})$ with variable bias $\vec{\bar{b}}$ uniformly and at random from $\cS$, inducing the bipartite graph $B(I)$
 		\For{$t \text{ in } [T]$}
 		\State $\vec{v}_i^{(t)} \leftarrow {f}^{(t)}_{\text{V}} \hspace{-1pt} \big( \big\{ \hspace{-4.4pt} \big\{ \big( \vec{v}^{(t-1)}_i, \vec{c}^{(t-1)}_j, \vec{p}^{(t-1)}_j, \vec{A}_{ji} \big)\hspace{-1pt} \colon c_j \in N(v_i) \big\} \hspace{-4.4pt} \big\} \big)$ for all $i$ in $[n]$ 		
-		\Comment{Constraint to variable pass}
-		\State $\vec{x}_i^{(t)} \leftarrow {f}^{(t)}_{\text{X}} \hspace{-2pt} \left(\vec{v}_i^{(t-1)} \right)$ for all $i$ in $[n]$ \Comment{Generate variable assigment}
+		
+		\State $\vec{x}_i^{(t)} \leftarrow {f}^{(t)}_{\text{X}} \hspace{-2pt} \left(\vec{v}_i^{(t-1)} \right)$ for all $i$ in $[n]$ 
 		\Statex
 		\Statex
-		\State $\vec{c}_j^{\hspace{1pt}(t)} \leftarrow {f}^{(t)}_{\text{C}} \hspace{-2pt} \left( \left\{ \hspace{-4.4pt} \left\{ \left( \vec{c}^{(t-1)}_j, \vec{v}^{(t)}_i, \vec{x}^{(t)}_i, \vec{A}_{ji}, \vec{b}_j \right)\hspace{-2pt} \colon i \in N(c_j) \right\} \hspace{-4.4pt} \right\} \right)$ for all $j$ in $[m]$ 		\Comment{Variable to constraint pass}
+		\State $\vec{c}_j^{\hspace{1pt}(t)} \leftarrow {f}^{(t)}_{\text{C}} \hspace{-2pt} \left( \left\{ \hspace{-4.4pt} \left\{ \left( \vec{c}^{(t-1)}_j, \vec{v}^{(t)}_i, \vec{x}^{(t)}_i, \vec{A}_{ji}, \vec{b}_j \right)\hspace{-2pt} \colon i \in N(c_j) \right\} \hspace{-4.4pt} \right\} \right)$ for all $j$ in $[m]$ 	
 		\State $\vec{e}_j^{(t)} \, \leftarrow \nicefrac{1}{\rho}\,\Big(\sum_{i \in N(j)} \label{key}\vec{A}_{ji}  \vec{v}_i \Big) - \vec{b}_j$
 		%\Statex
 		\State $\vec{w}_j^{(t)} \leftarrow ( 1 -  \eta \vec{e}^{(t)}_j) \vec{w}_j^{(t-1)} $ 

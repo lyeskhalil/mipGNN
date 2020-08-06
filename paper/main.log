@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019) (preloaded format=pdflatex 2019.12.30)  5 AUG 2020 15:54
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019) (preloaded format=pdflatex 2019.12.30)  5 AUG 2020 15:56
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1687,7 +1687,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 438--441
 
  []
 
-[6] (./main.bbl) [7]
+(./main.bbl) [6]
 Package atveryend Info: Empty hook `BeforeClearDocument' on input line 452.
 Package atveryend Info: Empty hook `AfterLastShipout' on input line 452.
  (./main.aux)
@@ -1704,13 +1704,13 @@ LaTeX Warning: There were multiply-defined labels.
 
  ) 
 Here is how much of TeX's memory you used:
- 41410 strings out of 492616
- 821217 string characters out of 6129480
- 999576 words of memory out of 5000000
+ 41403 strings out of 492616
+ 821147 string characters out of 6129480
+ 998576 words of memory out of 5000000
  44536 multiletter control sequences out of 15000+600000
- 656939 words of font info for 166 fonts, out of 8000000 for 9000
+ 656690 words of font info for 163 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 73i,11n,85p,9110b,898s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 73i,11n,85p,9110b,749s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/local/texlive/2019/texmf-dist/fonts/enc/dvips/lm/lm-rm.enc}{/usr/local/
 texlive/2019/texmf-dist/fonts/enc/dvips/lm/lm-mathit.enc}{/usr/local/texlive/20
 19/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc}{/usr/local/texlive/2019/texmf-dist/
@@ -1735,10 +1735,10 @@ ocal/texlive/2019/texmf-dist/fonts/type1/public/lm/lmsy6.pfb></usr/local/texliv
 e/2019/texmf-dist/fonts/type1/public/lm/lmsy8.pfb></usr/local/texlive/2019/texm
 f-dist/fonts/type1/public/lm/lmtt10.pfb></usr/local/texlive/2019/texmf-dist/fon
 ts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on main.pdf (7 pages, 337778 bytes).
+Output written on main.pdf (6 pages, 336546 bytes).
 PDF statistics:
- 242 PDF objects out of 1000 (max. 8388607)
- 193 compressed objects within 2 object streams
- 34 named destinations out of 1000 (max. 500000)
+ 236 PDF objects out of 1000 (max. 8388607)
+ 188 compressed objects within 2 object streams
+ 33 named destinations out of 1000 (max. 500000)
  39629 words of extra memory for PDF output out of 42996 (max. 10000000)
 
