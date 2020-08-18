@@ -10,22 +10,107 @@ import numpy as np
 import networkx as nx
 from sklearn.model_selection import train_test_split
 
-import torch
 from torch_geometric.data import (InMemoryDataset, Data)
 from torch_geometric.data import DataLoader
 
+import torch
+import torch.nn.functional as F
+from torch.nn import BatchNorm1d as BN
+from torch.nn import Sequential, Linear, ReLU
+from torch_geometric.nn import MessagePassing
+from torch_geometric.nn.inits import reset
+
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+
+class SimpleBipartiteLayer(MessagePassing):
+    def __init__(self, edge_dim, dim_init, dim):
+        super(SimpleBipartiteLayer, self).__init__(aggr="add", flow="source_to_target")
+
+        self.edge_encoder = Sequential(Linear(edge_dim, dim_init), ReLU(), Linear(dim_init, dim_init), ReLU(),
+                                       BN(dim_init))
+        self.mlp = Sequential(Linear(dim_init, dim), ReLU(), Linear(dim, dim), ReLU(), BN(dim))
+        self.eps = torch.nn.Parameter(torch.Tensor([0]))
+        self.initial_eps = 0
+
+    def forward(self, x, edge_index, edge_attr, size):
+        edge_embedding = self.edge_encoder(edge_attr)
+
+        print(x.size(), edge_index.size(), edge_attr.size())
+        print(size)
+
+        tmp = self.propagate(edge_index, x=x, edge_attr=edge_embedding, size=size)
+        print(tmp)
+        exit()
+
+        out = self.mlp((1 + self.eps) * x + tmp)
+
+
+        return out
+
+    def message(self, x_j, edge_attr):
+        return F.relu(x_j + edge_attr)
+
+    def update(self, aggr_out):
+        return aggr_out
+
+    def reset_parameters(self):
+        reset(self.edge_encoder)
+        reset(self.mlp)
+        self.eps.data.fill_(self.initial_eps)
+
+
+class SimpleNet(torch.nn.Module):
+    def __init__(self, hidden):
+        super(SimpleNet, self).__init__()
+        self.var_con_1 = SimpleBipartiteLayer(1, 2, hidden)
+        self.con_var_1 = SimpleBipartiteLayer(1, 2, hidden)
+        self.var_con_2 = SimpleBipartiteLayer(1, 2, hidden)
+
+        self.lin1 = Linear(hidden, hidden)
+        self.lin2 = Linear(hidden, 2)
+
+    def reset_parameters(self):
+        self.var_con_1.reset_parameters()
+        self.con_var_1.reset_parameters()
+        self.var_con_2.reset_parameters()
+
+        self.lin1.reset_parameters()
+        self.lin2.reset_parameters()
+
+    def forward(self, data):
+        var_node_features = data.var_node_features
+        var_node_features = data.con_node_features
+
+        edge_index_var = data.edge_index_var
+        edge_index_con = data.edge_index_con
+
+        edge_features_con = data.edge_features_con
+        edge_features_var = data.edge_features_var
+        num_nodes_var = data.num_nodes_var
+        num_nodes_con = data.num_nodes_con
+
+        x = self.var_con_1(var_node_features, edge_index_var, edge_features_var, (num_nodes_var.sum(), num_nodes_con.sum()))
+
+
+
+        x = F.relu(self.lin1(x))
+        x = F.dropout(x, p=0.5, training=self.training)
+        x = self.lin2(x)
+        return F.log_softmax(x, dim=-1)
+
+    def __repr__(self):
+        return self.__class__.__name__
 
 # Preprocessing to create Torch dataset.
 class GraphDataset(InMemoryDataset):
-
     def __init__(self, root, data_path, bias_threshold, transform=None, pre_transform=None,
                  pre_filter=None):
         super(GraphDataset, self).__init__(root, transform, pre_transform, pre_filter)
         self.data, self.slices = torch.load(self.processed_paths[0])
         self.data_path = data_path
         self.bias_threshold = bias_threshold
-
-
 
     @property
     def raw_file_names(self):
@@ -42,16 +127,14 @@ class GraphDataset(InMemoryDataset):
         print("Preprocessing.")
 
         data_list = []
-
-        path = data_path
-        num_graphs = len(os.listdir(path))
+        num_graphs = len(os.listdir(data_path))
 
         # Iterate over instance files and create data objects.
-        for num, filename in enumerate(os.listdir(path)):
+        for num, filename in enumerate(os.listdir(data_path)):
             print(filename, num, num_graphs)
 
             # Get graph.
-            graph = nx.read_gpickle(path + filename)
+            graph = nx.read_gpickle(data_path + filename)
 
             # Make graph directed.
             graph = nx.convert_node_labels_to_integers(graph)
@@ -112,16 +195,21 @@ class GraphDataset(InMemoryDataset):
             # Create features matrices for constraint nodes.
             edge_features_con = []
 
-            # TODO: This need to be checked!!!
             # Remark: graph is directed, i.e., each edge exists for each direction.
+            # Flow of messages: source -> target.
             for i, (s, t, edge_data) in enumerate(graph.edges(data=True)):
                 # Source node is con, target node is var.
+
                 if graph.nodes[s]['bipartite'] == 1:
+                    # Source node ist constraint. C->V.
                     edge_list_con.append([node_to_connode[s], node_to_varnode[t]])
                     edge_features_con.append([edge_data['coeff']])
                 else:
+                    # Source node is variable. V->C.
                     edge_list_var.append([node_to_varnode[s], node_to_connode[t]])
                     edge_features_var.append([edge_data['coeff']])
+
+
 
             edge_index_var = torch.tensor(edge_list_var).t().contiguous()
             edge_index_con = torch.tensor(edge_list_con).t().contiguous()
@@ -146,7 +234,6 @@ class GraphDataset(InMemoryDataset):
 
 
 # Preprocess indices of bipartite graphs to make batching work.
-# TODO: Check.
 class MyData(Data):
     def __inc__(self, key, value):
         if key in ['edge_index_var']:
@@ -175,9 +262,6 @@ bias_threshold = 0.05
 dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform()).shuffle()
 len(dataset)
 
-
-print(dataset[0].is_directed())
-
 # Split data.
 train_index, rest = train_test_split(list(range(0, 1000)), test_size=0.2)
 val_index = rest[0:100]
@@ -186,88 +270,92 @@ test_index = rest[100:]
 train_dataset = dataset[train_index].shuffle()
 val_dataset = dataset[val_index].shuffle()
 test_dataset = dataset[test_index].shuffle()
+
 # TODO: Do not change this.
 # np.savetxt("index_er_200_SET2_1k_20", test_index, delimiter=",", fmt="%d")
 
 print(len(val_dataset))
 print(len(test_dataset))
-
 print(1 - test_dataset.data.y.sum().item() / test_dataset.data.y.size(-1))
 
+# Prepare batch loaders.
 batch_size = 25
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
 
+print("### DATA LOADED.")
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+model = SimpleNet(hidden=64).to(device)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+
+# Play with this.
+scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
+                                                       factor=0.8, patience=10,
+                                                       min_lr=0.0000001)
+print("### SETUP DONE.")
 
 
-#
-# print("### DATA LOADED.")
-# device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-# model = Net(dim=64).to(device)
-# optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-#
-# # Play with this.
-# scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
-#                                                        factor=0.8, patience=10,
-#                                                        min_lr=0.0000001)
-# print("### SETUP DONE.")
-#
-#
-# def train(epoch):
-#     model.train()
-#
-#     loss_all = 0
-#     for data in train_loader:
-#         data = data.to(device)
-#         optimizer.zero_grad()
-#         output = model(data)
-#
-#         loss = F.nll_loss(output, data.y)
-#         loss.backward()
-#         loss_all += batch_size * loss.item()
-#         optimizer.step()
-#     return loss_all / len(train_dataset)
-#
-#
-# def test(loader):
-#     model.eval()
-#
-#     correct = 0
-#     l = 0
-#
-#     for data in loader:
-#         data = data.to(device)
-#         pred = model(data).max(dim=1)[1]
-#         correct += pred.eq(data.y).float().mean().item()
-#         l += 1
-#
-#     return correct / l
-#
-#
-# best_val = 0.0
-# test_acc = 0.0
-# for epoch in range(1, 100):
-#
-#     train_loss = train(epoch)
-#     train_acc = test(train_loader)
-#
-#     val_acc = test(val_loader)
-#     scheduler.step(val_acc)
-#     lr = scheduler.optimizer.param_groups[0]['lr']
-#
-#     if val_acc > best_val:
-#         best_val = val_acc
-#         test_acc = test(test_loader)
-#
-#     # Break if learning rate is smaller 10**-6.
-#     if lr < 0.000001:
-#         break
-#
-#     print(lr)
-#     print('Epoch: {:03d}, Train Loss: {:.7f}, '
-#           'Train Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, train_loss,
-#                                                        train_acc, test_acc))
-#
-# torch.save(model.state_dict(), "trained_model_er_200_SET2_1k")
+def train(epoch):
+    model.train()
+
+    if epoch == 51:
+        for param_group in optimizer.param_groups:
+            param_group['lr'] = 0.5 * param_group['lr']
+
+    loss_all = 0
+    for data in train_loader:
+        data = data.to(device)
+        optimizer.zero_grad()
+
+        output = model(data)
+        loss = F.nll_loss(output, data.y)
+        loss.backward()
+        loss_all += loss.item() * data.num_graphs
+        optimizer.step()
+    return loss_all / len(train_dataset)
+
+
+def test(loader):
+    model.eval()
+
+    correct = 0
+    l = 0
+
+    for data in loader:
+        data = data.to(device)
+        pred = model(data).max(dim=1)[1]
+        correct += pred.eq(data.y).float().mean().item()
+        l += 1
+
+    return correct / l
+
+
+best_val = 0.0
+test_acc = 0.0
+for epoch in range(1, 100):
+
+    train_loss = train(epoch)
+
+    exit()
+    train_acc = test(train_loader)
+
+    val_acc = test(val_loader)
+    scheduler.step(val_acc)
+    lr = scheduler.optimizer.param_groups[0]['lr']
+
+    if val_acc > best_val:
+        best_val = val_acc
+        test_acc = test(test_loader)
+
+    # Break if learning rate is smaller 10**-6.
+    if lr < 0.000001:
+        break
+
+    print(lr)
+    print('Epoch: {:03d}, Train Loss: {:.7f}, '
+          'Train Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, train_loss,
+                                                       train_acc, test_acc))
+
+torch.save(model.state_dict(), "trained_model_er_200_SET2_1k")

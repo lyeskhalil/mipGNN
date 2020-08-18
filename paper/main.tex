@@ -447,7 +447,7 @@ In the following, we gives details about the two passes.
 		\State $\vec{C}_j^{\hspace{1pt}(t)} \leftarrow f_\textsc{Con}^{(t)} \hspace{-2pt} \big( \big\{ \hspace{-4.4pt} \big\{ \big( \vec{C}^{(t-1)}_j, \vec{V}^{(t)}_i, \vec{X}^{(t)}_i, \vec{A}_{ij}, \vec{b}_j \big)\hspace{-2pt} \mid v_i \in N(c_j) \big\} \hspace{-4.4pt} \big\} \big)$ for all $i$ in $[m]$ 	
 		%\State $\vec{e}_j^{(t)} \leftarrow \sum_{i \in N(j)} \label{key}\vec{A}_{ji}  \vec{x}_i - \vec{b}_j$
 		%\Statex
-		\State $\vec{p}_{j}^{(t)} \hspace{3pt}\leftarrow \text{softmax}(\textsc{Prob}^{(t)}(\vec{e}^{(t)}))_{j}$
+		\State $\vec{p}_{j}^{(t)} \hspace{3pt}\leftarrow \text{softmax}(f_\textsc{Prob}^{(t)}(\vec{e}^{(t)}))_{j}$
 		%\begin{equation*}
 		%\vec{e}_j \leftarrow \nicefrac{1}{\rho}\,\Big(\sum_{i \in N(j)} \label{key}\vec{A}_{ji}  %\vec{v}_i \Big) - \vec{b}_j   
 		%\end{equation*}
