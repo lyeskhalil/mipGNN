@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019) (preloaded format=pdflatex 2019.12.30)  18 AUG 2020 00:20
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019) (preloaded format=pdflatex 2019.12.30)  18 AUG 2020 01:56
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1683,16 +1683,16 @@ put line 363.
 Package hyperref Info: bookmark level for unknown theorem defaults to 0 on inpu
 t line 368.
  [4] [5]
-Underfull \hbox (badness 10000) in paragraph at lines 482--485
+Underfull \hbox (badness 10000) in paragraph at lines 490--493
 
  []
 
-(./main.bbl [6] [7]) [8]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 496.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 496.
+[6] (./main.bbl [7]) [8]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 504.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 504.
  (./main.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 496.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 496.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 504.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 504.
 Package rerunfilecheck Info: File `main.out' has not changed.
 (rerunfilecheck)             Checksum: D41D8CD98F00B204E9800998ECF8427E;0.
 
@@ -1704,13 +1704,13 @@ LaTeX Warning: There were multiply-defined labels.
 
  ) 
 Here is how much of TeX's memory you used:
- 41547 strings out of 492616
- 823170 string characters out of 6129480
- 1003574 words of memory out of 5000000
- 44618 multiletter control sequences out of 15000+600000
+ 41550 strings out of 492616
+ 823197 string characters out of 6129480
+ 1003575 words of memory out of 5000000
+ 44620 multiletter control sequences out of 15000+600000
  658206 words of font info for 179 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 73i,11n,85p,9110b,895s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 73i,11n,85p,9110b,893s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/local/texlive/2019/texmf-dist/fonts/enc/dvips/lm/lm-rm.enc}{/usr/local/
 texlive/2019/texmf-dist/fonts/enc/dvips/lm/lm-mathit.enc}{/usr/local/texlive/20
 19/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc}{/usr/local/texlive/2019/texmf-dist/
@@ -1735,10 +1735,10 @@ ocal/texlive/2019/texmf-dist/fonts/type1/public/lm/lmsy6.pfb></usr/local/texliv
 e/2019/texmf-dist/fonts/type1/public/lm/lmsy8.pfb></usr/local/texlive/2019/texm
 f-dist/fonts/type1/public/lm/lmtt10.pfb></usr/local/texlive/2019/texmf-dist/fon
 ts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on main.pdf (8 pages, 354948 bytes).
+Output written on main.pdf (8 pages, 357281 bytes).
 PDF statistics:
- 313 PDF objects out of 1000 (max. 8388607)
- 262 compressed objects within 3 object streams
- 63 named destinations out of 1000 (max. 500000)
+ 314 PDF objects out of 1000 (max. 8388607)
+ 263 compressed objects within 3 object streams
+ 64 named destinations out of 1000 (max. 500000)
  39637 words of extra memory for PDF output out of 42996 (max. 10000000)
 

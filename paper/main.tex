@@ -430,7 +430,7 @@ In the following, we gives details about the two passes.
 
 
 \begin{algorithm}[H]\mbox{\hfill}
-	\\\textbf{Input:}  Training set $S$, number of epochs $E$, number of layers $T$, stepsize $\eta > 0$.  \\
+	\\\textbf{Input:}  Training set $S$, number of epochs $E$, number of layers $T$.  \\
 	\textbf{Output:} A trained model $f_{\boldsymbol{\theta}} \colon \cI \to [0,1]^n$.
 	\begin{algorithmic}[1]
 		\State Initialize $\vec{v}^{(0)}$ and $\vec{c}^{(0)}$
@@ -439,19 +439,22 @@ In the following, we gives details about the two passes.
 		\For{$e \text{ in } [E]$}
 		\State Sample $I = (\vec{c}, \vec{A}, \vec{b})$ from $U(S)$ 
 		\For{$t \text{ in } [T]$}
-		\State $\vec{V}_j^{(t)} \leftarrow {f}^{(t)}_{\text{V}} \hspace{-1pt} \big( \big\{ \hspace{-4.4pt} \big\{ \big( \vec{V}^{(t-1)}_j, \vec{C}^{(t-1)}_j, \vec{p}^{(t-1)}_j, \vec{A}_{ij} \big)\hspace{-1pt} \mid c_i \in N(v_j) \big\} \hspace{-4.4pt} \big\} \big)$ for all $j$ in $[n]$ 		
-		
-		\State $\vec{X}_j^{(t)} \leftarrow {f}^{(t)}_{\text{X}} \hspace{-2pt} \big(\vec{V}_i^{(t-1)} \big)$ for all $j$ in $[n]$ 
+		%\State \textit{Compute variable embedding:}
+		\State $\vec{V}_j^{(t)} \leftarrow f_{\textsc{Var}}^{(t)} \hspace{-1pt} \big( \big\{ \hspace{-4.4pt} \big\{ \big( \vec{V}^{(t-1)}_j, \vec{C}^{(t-1)}_j, \vec{p}^{(t-1)}_j, \vec{A}_{ij} \big)\hspace{-1pt} \mid c_i \in N(v_j) \big\} \hspace{-4.4pt} \big\} \big)$ for all $j$ in $[n]$ 		
+		\State $\vec{X}_j^{(t)} \leftarrow f_\textsc{Assn}^{(t)} \hspace{-2pt} \big(\vec{V}_i^{(t-1)} \big)$ for all $j$ in $[n]$ 
 		\Statex
-		\Statex
-		\State $\vec{C}_j^{\hspace{1pt}(t)} \leftarrow {f}^{(t)}_{\text{C}} \hspace{-2pt} \big( \big\{ \hspace{-4.4pt} \big\{ \big( \vec{C}^{(t-1)}_j, \vec{V}^{(t)}_i, \vec{X}^{(t)}_i, \vec{A}_{ij}, \vec{b}_j \big)\hspace{-2pt} \mid v_i \in N(c_j) \big\} \hspace{-4.4pt} \big\} \big)$ for all $i$ in $[m]$ 	
+		%\State \textit{Compute constraint embedding:}
+		\State $\vec{C}_j^{\hspace{1pt}(t)} \leftarrow f_\textsc{Con}^{(t)} \hspace{-2pt} \big( \big\{ \hspace{-4.4pt} \big\{ \big( \vec{C}^{(t-1)}_j, \vec{V}^{(t)}_i, \vec{X}^{(t)}_i, \vec{A}_{ij}, \vec{b}_j \big)\hspace{-2pt} \mid v_i \in N(c_j) \big\} \hspace{-4.4pt} \big\} \big)$ for all $i$ in $[m]$ 	
 		%\State $\vec{e}_j^{(t)} \leftarrow \sum_{i \in N(j)} \label{key}\vec{A}_{ji}  \vec{x}_i - \vec{b}_j$
 		%\Statex
-		\State $\vec{p}_{j}^{(t)} \hspace{3pt}\leftarrow \text{softmax}(f_{\text{P}}(\vec{e}^{(t)}))_{j}$
+		\State $\vec{p}_{j}^{(t)} \hspace{3pt}\leftarrow \text{softmax}(\textsc{Prob}^{(t)}(\vec{e}^{(t)}))_{j}$
+		%\begin{equation*}
+		%\vec{e}_j \leftarrow \nicefrac{1}{\rho}\,\Big(\sum_{i \in N(j)} \label{key}\vec{A}_{ji}  %\vec{v}_i \Big) - \vec{b}_j   
+		%\end{equation*}
 		\EndFor
-		\State $\bar{\vec{x}} \leftarrow f(\mathbin\Vert_{t \in [T]} \vec{x}^{(t)})$
+		\State $\bar{\vec{x}} \leftarrow f_\textsc{Mrg}(\mathbin\Vert_{t \in [T]} \vec{x}^{(t)})$
 		\State $L \leftarrow L + \ell(\vec{\bar{x}}, \vec{\bar b})$ 
-		\State Gradient descent on $L$ with regard to $\boldsymbol{\theta}$
+		\State Gradient descent  with regard to $\boldsymbol{\theta}$
 		\EndFor
 		\State \Return $\boldsymbol{\theta}$
 		
@@ -460,11 +463,16 @@ In the following, we gives details about the two passes.
 	\label{alg:as2}
 \end{algorithm}
 
+\begin{equation}\label{err}
+\vec{e}_j \leftarrow \nicefrac{1}{\rho}\,\Big(\sum_{i \in N(j)} \vec{A}_{ji}  \vec{v}_i \Big) - \vec{b}_j   
+\end{equation}
+
 Initialize parameters $\boldsymbol{\theta} = (\boldsymbol{\theta}_{\text{V}}$, $\boldsymbol{\theta}_{\text{C}}$, $\boldsymbol{\theta}_{\text{X}}, \boldsymbol{\theta}_{\text{P}})$
 
 \subsection{Connnection to boosting}
 
 joint MWU and boosting
+
 
 \subsection{Unsupervised setting}
 
