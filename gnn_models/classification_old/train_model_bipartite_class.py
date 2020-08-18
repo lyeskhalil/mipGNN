@@ -45,6 +45,7 @@ class GISR(InMemoryDataset):
         path = '../gisp_generator/DATA/er_200_SET2_1k/'
         total = len(os.listdir(path))
 
+        # Iterate over instance file and create data objects.
         for num, filename in enumerate(os.listdir(path)):
             print(filename, num, total)
 
@@ -64,7 +65,7 @@ class GISR(InMemoryDataset):
             var_i = 0
             # Number of constraints.
             con_i = 0
-            # Targets
+            # Targets.
             y = []
             # Features for variable nodes.
             var_feat = []
@@ -80,16 +81,20 @@ class GISR(InMemoryDataset):
                     var_node[i] = var_i
                     var_i += 1
 
+                    # TODO: Think of a better way to do this.
                     if (node_data['bias'] < 0.05):
                         y.append(0)
                     else:
                         y.append(1)
+
                     # TODO: Scaling meaingful?
                     var_feat.append([node_data['objcoeff'] / 100.0, graph.degree[i]])
 
                 # Node is constraint.
                 else:
                     a = []
+
+                    # TODO: Check this, seems wrong.
                     for e in graph.edges(node, data=True):
                         a.append(graph[e[0]][e[1]]['coeff'])
                     a_sum.append(sum(a))
@@ -108,8 +113,11 @@ class GISR(InMemoryDataset):
             # Edge list for con->var graphs.
             edge_list_con = []
 
+            # Create sparse adjacency matrices for both sides of the biparitite graphs.
             edge_features_var = []
             edge_features_con = []
+
+            # TODO: Check if edges exists twice.
             for i, (s, t, edge_data) in enumerate(graph.edges(data=True)):
                 # Source node is con, target node is var.
                 if graph.nodes[s]['bipartite'] == 1:
@@ -122,6 +130,7 @@ class GISR(InMemoryDataset):
             edge_index_var = torch.tensor(edge_list_var).t().contiguous()
             edge_index_con = torch.tensor(edge_list_con).t().contiguous()
 
+            # Create data object.
             data.edge_index_var = edge_index_var
             data.edge_index_con = edge_index_con
             data.y = torch.from_numpy(np.array(y)).to(torch.long)
@@ -140,6 +149,7 @@ class GISR(InMemoryDataset):
         torch.save((data, slices), self.processed_paths[0])
 
 
+# Preprocess indices of bipartite graphs to make batching work.
 class MyData(Data):
     def __inc__(self, key, value):
         if key in ['edge_index_var']:
@@ -163,7 +173,7 @@ path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'DS')
 dataset = GISR(path, transform=MyTransform()).shuffle()
 len(dataset)
 
-
+# Split data.
 train_index, rest = train_test_split(list(range(0,1000)), test_size=0.2)
 val_index = rest[0:100]
 test_index = rest[100:]
@@ -172,7 +182,7 @@ test_index = rest[100:]
 train_dataset = dataset[train_index].shuffle()
 val_dataset = dataset[val_index].shuffle()
 test_dataset = dataset[test_index].shuffle()
-# TODO: Don't mess this up.
+# TODO: Do not change this.
 #np.savetxt("index_er_200_SET2_1k_20", test_index, delimiter=",", fmt="%d")
 
 print(len(val_dataset))
@@ -190,6 +200,8 @@ print("### DATA LOADED.")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = Net(dim=64).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+
+# Play with this.
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
                                                        factor=0.8, patience=10,
                                                        min_lr=0.0000001)
@@ -218,7 +230,6 @@ def test(loader):
     correct = 0
     l = 0
 
-
     for data in loader:
         data = data.to(device)
         pred = model(data).max(dim=1)[1]
@@ -231,7 +242,6 @@ def test(loader):
 best_val = 0.0
 test_acc = 0.0
 for epoch in range(1, 100):
-
 
     train_loss = train(epoch)
     train_acc = test(train_loader)

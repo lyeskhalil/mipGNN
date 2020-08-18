@@ -36,14 +36,18 @@ class CONS_TO_VAR(MessagePassing):
         return self.propagate(hidden_to_var=hidden_to_var, x=x, edge_index=edge_index, size=size, old_vars=old_vars,
                               asums=asums, edge_feature=edge_feature, norm=norm)
 
+    # TODO: x_j: constraint embeddings and x_i are variable embedding (target):
     def message(self, hidden_to_var, x_j, x_i, edge_index_j, edge_feature, norm, asums_j):
         # Get coefficients of variable in constraint.
         c = edge_feature[edge_index_j]
         # Get violation of contraint.
         violation = x_j[:, -1]
+
+        # Map variable to scalar (assigment of variable)
+        # TODO: Weird.
         violation = hidden_to_var(x_i).view(-1) * violation * c.view(-1)
-        # TODO: FIX numerical problems here
-        #violation = c.view(-1) / (asums_j) * hidden_to_var(x_i).view(-1) * violation
+        # TODO: Fix numerical problems here.
+        # violation = c.view(-1) / (asums_j) * hidden_to_var(x_i).view(-1) * violation
 
         # TODO: Scale by coefficient?
         out = self.mlp_cons(c * x_j)
@@ -94,6 +98,7 @@ class VARS_TO_CON(MessagePassing):
                               edge_feature=edge_feature, rhs=rhs,
                               norm=norm)
 
+    # TODO: x_j: var. embeddings and x_i are constraint embedding (target):
     def message(self, hidden_to_var, x_j, x_i, edge_index_j, edge_feature, norm):
         c = edge_feature[edge_index_j]
         # Compute variable assignment.
@@ -219,6 +224,10 @@ class Net(torch.nn.Module):
                                    data.edge_features_con, data.asums,
                                    (data.num_nodes_con, data.num_nodes_var)))
         else:
+            cons.append(
+                self.v2c_1(self.hidden_to_var_1, (v, c), c, data.edge_index_var, data.edge_features_var, data.rhs,
+                           (data.num_nodes_var.sum(), data.num_nodes_con.sum())))
+
             vars.append(
                 self.c2v_1(self.hidden_to_var_1, (cons[-1], v), v, data.edge_index_con, data.edge_features_con,
                            data.asums, (data.num_nodes_con.sum(), data.num_nodes_var.sum())))

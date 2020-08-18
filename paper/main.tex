@@ -178,6 +178,7 @@ pdfcreator={pdflatex}
 
 \newcommand{\trans}{^\mathsf{T}}
 \renewcommand{\vec}[1]{\mathbf{#1}}
+%\renewcommand{\vec}[1]{#1}
 
 \usepackage[auth-lg]{authblk}
 \newcommand{\cm}[1]{{{\textcolor{blue}{\textbf{[CM:} {#1}\textbf{]}}}}}
@@ -222,12 +223,13 @@ Write introduction, main points (MIP-GNN is a general purpose tool for guiding d
 
 \paragraph{Related work} Discuss related work.
 \begin{itemize}
-	\item Most important GNN papers,
-	\item GNNs to solve MIPs/comb. optimization problems,
-	\item Papers on SAT and CSP solving (Hsu, LeSong, Aachen, Dilkina, Khalil, \dots) 
+	\item Most important GNN papers, 
+	\item GNNs to solve MIPs/comb. optimization problems, \cite{Li+2018b}, \cite{Vel+2020}, \cite{Gasse+2019} \cite{Gup+2020} \cite{Kha+2016}, paper by Bistra Dilkina: 
+	\item Papers on SAT and CSP solving (Hsu, LeSong, Aachen, Loukas \dots) \cite{Sel+2019}
 \end{itemize}
  
 
+GNN: Recently, graph neural networks (GNNs)~\cite{Gil+2017,Sca+2009} emerged as a flexible framework for machine learning on graphs and relational data. Notable instances of this architecture include, e.g.,~\cite{Duv+2015,Ham+2017,Vel+2018}, and the spectral approaches proposed in, e.g.,~\cite{Bru+2014,Def+2015,Kip+2017,Mon+2017}---all of which descend from early work in~\cite{Kir+1995,Mer+2005,Spe+1997,Sca+2009}. A survey of recent advancements in GNN techniques can be found, e.g., in~\cite{Cha+2020,Wu+2019,Zho+2018}. The limits of GNNs have been studied in~\cite{Bar+2020,Che+2019,Mae+2019,Mar+2019,Mor+2019,Xu+2018b}.
 
 
 \section{Preliminaries}
@@ -276,6 +278,7 @@ The \new{optimal integral solution} $\vec{x}^*$ is equal to $\arg\max_{\vec{x} \
 
 
 \cm{State connection to comb. optimization}
+\cm{Background on bb, branching etc}
 
 \subsection{Graph neural networks}
 Let $G$ be a labeled graph $(V,E,l)$ with an initial vertex coloring $f^{(0)} \colon V(G)\rightarrow \RR^{1\times d}$ that is \emph{consistent} with $l$. That is, each vertex $v$ is annotated with a feature $\vec{f}^{(0)}(v)$ in $\bbR^{1\times d}$ such that $\vec{f}^{(0)}(u) = \vec{f}^{(0)}(v)$ if and only if $l(u) = l(v)$.
@@ -285,6 +288,7 @@ f^{\vec{W_2}}_{\textsc{Up}}\Big(\vec{f}^{(t-1)}(v) ,f^{\vec{W_1}}_{\textsc{Agg}}
 \end{equation}
 where $f^{\vec{W_1}}_{\text{aggr}}$ aggregates over the set of neighborhood features and $f^{\vec{W_2}}_{\text{merge}}$ merges the vertex's representations from step $(t-1)$ with the computed neighborhood features.
 Both $f^{\vec{W_1}}_{\text{aggr}}$ and $f^{\vec{W_2}}_{\text{merge}}$ may be arbitrary differentiable, (permutation-invariant) functions (e.g., neural networks), and $\vec{W_1}$ and $\vec{W_2}$, respectively, denote sets of parameters.
+
 
 
 \subsection{Setup of the learning problem}
@@ -309,30 +313,31 @@ Given a system of linear equations $\vec{A} \vec{x} \geq \vec{b}$, see~\cref{bip
 \end{equation}
 for $i$ in $[m]$.\cm{say sth. about optimal solution, give intution of the MWU, discrete prob., oracle for LP, Farkas' lemma.}
 
-\begin{algorithm}[H]\mbox{\hfill}
-	\\\textbf{Input:} System of linear equations $\vec{A} \vec{x} \geq \vec{b}$, $\varepsilon > 0$,  stepsize $\eta > 0$, scaling constant $\rho$. \\
-	\textbf{Output:} $\vec{\bar{x}}$ satisfying~\cref{epsfeas} or \texttt{non-feasible}.
-	\begin{algorithmic}[1]
-		\State Initialize constraint weights $\vec{w}_i \leftarrow 1$ for $i$ in $[m]$ 
-		\State Initialize probabilities $\vec{p}_j \leftarrow \nicefrac{1}{m}$ for $i$ in $[m]$ 
-		\State Set $T$ to according~\cref{mwubound}
-		\For{$t \text{ in } [T]$}
-		
-		\State Call oracle: $\vec{x} \leftarrow \cO(\vec{p}\trans \vec{A} \vec{x} \geq \vec{p}\trans \vec{b})$, \textbf{if} $
-		\vec{x} = \emptyset$ \Return  \texttt{non-feasible}
-		\State Compute error signal $\vec{e}$, where
-		\begin{equation*}
-		\vec{e}_j \leftarrow \nicefrac{1}{\rho}\,(\vec{A}_j\trans \vec{x}(t) - \vec{b}_j)   
-		\end{equation*}
-		\State Perform gradient descent by $\vec{w}_i \leftarrow (1 - \eta \vec{e}_i) \vec{w}_i$ 
-		\State Normalize weights $\vec{p}_j \leftarrow \nicefrac{\vec{w}_j}{\boldsymbol{\Gamma}(t)} $  for $i$ in $[m]$, where $\boldsymbol{\Gamma}(t) = \sum_{i \in [m]} \vec{w}_i$
-		\State Update solution $\vec{\bar{x}} \leftarrow \vec{\bar{x}} + \vec{x}$
-		\EndFor
-		\State \Return Average over solution $ \nicefrac{\vec{\bar{x}}}{T} $
-	\end{algorithmic}
-	\caption{MWU for the LP feasibility problem.}
-	\label{alg:as}
-\end{algorithm}
+%\begin{algorithm}[H]\mbox{\hfill}
+%	\\\textbf{Input:} System of linear equations $\vec{A} \vec{x} \geq \vec{b}$, $\varepsilon > 0$,  stepsize $\eta > 0$, scaling constant $\rho$. \\
+%	\textbf{Output:} $\vec{\bar{x}}$ satisfying~\cref{epsfeas} or \texttt{non-feasible}.
+%	\begin{algorithmic}[1]
+%		\State Initialize constraint weights $\vec{w}_i \leftarrow 1$ for $i$ in $[m]$ 
+%		\State Initialize probabilities $\vec{p}_j \leftarrow \nicefrac{1}{m}$ for $i$ in $[m]$ 
+%		\State Set $T$ to according~\cref{mwubound}
+%		\For{$t \text{ in } [T]$}
+%		
+%		\State Call oracle: $\vec{x} \leftarrow \cO(\vec{p}\trans \vec{A} \vec{x} \geq \vec{p}\trans \vec{b})$, \textbf{if} $
+%		\vec{x} = \emptyset$ \Return  \texttt{non-feasible}
+%		\State Compute error signal $\vec{e}$, where
+%		\begin{equation*}
+%		\vec{e}_j \leftarrow \nicefrac{1}{\rho}\,(\vec{A}_j\trans \vec{x}(t) - \vec{b}_j)   
+%		\end{equation*}
+%		\State Perform gradient descent by $\vec{w}_i \leftarrow (1 - \eta \vec{e}_i) \vec{w}_i$ 
+%		\State Normalize weights $\vec{p}_j \leftarrow \nicefrac{\vec{w}_j}{\boldsymbol{\Gamma}(t)} $  for $i$ in $[m]$, where $\boldsymbol{\Gamma}(t) = \sum_{i \in [m]} \vec{w}_i$
+%		\State Update solution $\vec{\bar{x}} \leftarrow \vec{\bar{x}} + \vec{x}$
+%		\EndFor
+%		\State \Return Average over solution $ \nicefrac{\vec{\bar{x}}}{T} $
+%	\end{algorithmic}
+%	\caption{MWU for the LP feasibility problem.}
+%	\label{alg:as}
+%\end{algorithm}
+\cm{exploration/exploitation $\eta$}
 Same algorithm as above interpreted as a message passing algorithm:
 \begin{algorithm}[H]\mbox{\hfill}
 	\\\textbf{Input:} Biparite constraint graph $B(I)$, $\varepsilon > 0$,  stepsize $\eta > 0$, scaling constant $\rho$. \\
@@ -403,7 +408,7 @@ In the following, we gives details about the two passes.
 		\Statex
 		\Statex
 		\State $\vec{c}_j^{\hspace{1pt}(t)} \leftarrow {f}^{(t)}_{\text{C}} \hspace{-2pt} \left( \left\{ \hspace{-4.4pt} \left\{ \left( \vec{c}^{(t-1)}_j, \vec{v}^{(t)}_i, \vec{x}^{(t)}_i, \vec{A}_{ji}, \vec{b}_j \right)\hspace{-2pt} \colon i \in N(c_j) \right\} \hspace{-4.4pt} \right\} \right)$ for all $j$ in $[m]$ 	
-		\State $\vec{e}_j^{(t)} \, \leftarrow \nicefrac{1}{\rho}\,\Big(\sum_{i \in N(j)} \label{key}\vec{A}_{ji}  \vec{v}_i \Big) - \vec{b}_j$
+		\State $\vec{e}_j^{(t)} \, \leftarrow \nicefrac{1}{\rho}\,\Big(\sum_{i \in N(j)} \label{key}\vec{A}_{ji}  \vec{x}_i \Big) - \vec{b}_j$
 		%\Statex
 		\State $\vec{w}_j^{(t)} \leftarrow ( 1 -  \eta \vec{e}^{(t)}_j) \vec{w}_j^{(t-1)} $ 
 		\State $\vec{p}_j \leftarrow \nicefrac{w_j^{(t)}}{\boldsymbol{\Gamma}(t)} $, where $\boldsymbol{\Gamma}(t) = \sum_{j \in [m]} \vec{w}^{(t)}_j$
@@ -422,6 +427,45 @@ In the following, we gives details about the two passes.
 
 \cm{overloading of c}
 \cm{how to incoperate data information}
+
+
+\begin{algorithm}[H]\mbox{\hfill}
+	\\\textbf{Input:}  Training set $S$, number of epochs $E$, number of layers $T$, stepsize $\eta > 0$.  \\
+	\textbf{Output:} A trained model $f_{\boldsymbol{\theta}} \colon \cI \to [0,1]^n$.
+	\begin{algorithmic}[1]
+		\State Initialize $\vec{v}^{(0)}$ and $\vec{c}^{(0)}$
+
+		\State Initialize $\vec{p}_i^{(0)} \leftarrow 1/m$
+		\For{$e \text{ in } [E]$}
+		\State Sample $I = (\vec{c}, \vec{A}, \vec{b})$ from $U(S)$ 
+		\For{$t \text{ in } [T]$}
+		\State $\vec{V}_j^{(t)} \leftarrow {f}^{(t)}_{\text{V}} \hspace{-1pt} \big( \big\{ \hspace{-4.4pt} \big\{ \big( \vec{V}^{(t-1)}_j, \vec{C}^{(t-1)}_j, \vec{p}^{(t-1)}_j, \vec{A}_{ij} \big)\hspace{-1pt} \mid c_i \in N(v_j) \big\} \hspace{-4.4pt} \big\} \big)$ for all $j$ in $[n]$ 		
+		
+		\State $\vec{X}_j^{(t)} \leftarrow {f}^{(t)}_{\text{X}} \hspace{-2pt} \big(\vec{V}_i^{(t-1)} \big)$ for all $j$ in $[n]$ 
+		\Statex
+		\Statex
+		\State $\vec{C}_j^{\hspace{1pt}(t)} \leftarrow {f}^{(t)}_{\text{C}} \hspace{-2pt} \big( \big\{ \hspace{-4.4pt} \big\{ \big( \vec{C}^{(t-1)}_j, \vec{V}^{(t)}_i, \vec{X}^{(t)}_i, \vec{A}_{ij}, \vec{b}_j \big)\hspace{-2pt} \mid v_i \in N(c_j) \big\} \hspace{-4.4pt} \big\} \big)$ for all $i$ in $[m]$ 	
+		%\State $\vec{e}_j^{(t)} \leftarrow \sum_{i \in N(j)} \label{key}\vec{A}_{ji}  \vec{x}_i - \vec{b}_j$
+		%\Statex
+		\State $\vec{p}_{j}^{(t)} \hspace{3pt}\leftarrow \text{softmax}(f_{\text{P}}(\vec{e}^{(t)}))_{j}$
+		\EndFor
+		\State $\bar{\vec{x}} \leftarrow f(\mathbin\Vert_{t \in [T]} \vec{x}^{(t)})$
+		\State $L \leftarrow L + \ell(\vec{\bar{x}}, \vec{\bar b})$ 
+		\State Gradient descent on $L$ with regard to $\boldsymbol{\theta}$
+		\EndFor
+		\State \Return $\boldsymbol{\theta}$
+		
+	\end{algorithmic}
+	\caption{MIP-GNN for variable bias prediction.}
+	\label{alg:as2}
+\end{algorithm}
+
+Initialize parameters $\boldsymbol{\theta} = (\boldsymbol{\theta}_{\text{V}}$, $\boldsymbol{\theta}_{\text{C}}$, $\boldsymbol{\theta}_{\text{X}}, \boldsymbol{\theta}_{\text{P}})$
+
+\subsection{Connnection to boosting}
+
+joint MWU and boosting
+
 \subsection{Unsupervised setting}
 
 random matrices, recover MWU, also test in experiments
