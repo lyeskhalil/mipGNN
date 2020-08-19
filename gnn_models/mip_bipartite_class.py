@@ -20,32 +20,25 @@ from torch.nn import Sequential, Linear, ReLU
 from torch_geometric.nn import MessagePassing
 from torch_geometric.nn.inits import reset
 
-
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 class SimpleBipartiteLayer(MessagePassing):
-    def __init__(self, edge_dim, dim_init, dim):
+    def __init__(self, edge_dim, dim):
         super(SimpleBipartiteLayer, self).__init__(aggr="add", flow="source_to_target")
 
-        self.edge_encoder = Sequential(Linear(edge_dim, dim_init), ReLU(), Linear(dim_init, dim_init), ReLU(),
-                                       BN(dim_init))
-        self.mlp = Sequential(Linear(dim_init, dim), ReLU(), Linear(dim, dim), ReLU(), BN(dim))
+        self.edge_encoder = Sequential(Linear(edge_dim, dim), ReLU(), Linear(dim, dim), ReLU(),
+                                       BN(dim))
+
+        self.mlp = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim), ReLU(), BN(dim))
         self.eps = torch.nn.Parameter(torch.Tensor([0]))
         self.initial_eps = 0
 
-    def forward(self, x, edge_index, edge_attr, size):
+    def forward(self, source, target, edge_index, edge_attr, size):
         edge_embedding = self.edge_encoder(edge_attr)
+        tmp = self.propagate(edge_index, x=source, edge_attr=edge_embedding, size=size)
 
-        print(x.size(), edge_index.size(), edge_attr.size())
-        print(size)
-
-        tmp = self.propagate(edge_index, x=x, edge_attr=edge_embedding, size=size)
-        print(tmp)
-        exit()
-
-        out = self.mlp((1 + self.eps) * x + tmp)
-
+        out = self.mlp((1 + self.eps) * target + tmp)
 
         return out
 
@@ -56,6 +49,7 @@ class SimpleBipartiteLayer(MessagePassing):
         return aggr_out
 
     def reset_parameters(self):
+        reset(self.node_encoder)
         reset(self.edge_encoder)
         reset(self.mlp)
         self.eps.data.fill_(self.initial_eps)
@@ -64,9 +58,13 @@ class SimpleBipartiteLayer(MessagePassing):
 class SimpleNet(torch.nn.Module):
     def __init__(self, hidden):
         super(SimpleNet, self).__init__()
-        self.var_con_1 = SimpleBipartiteLayer(1, 2, hidden)
-        self.con_var_1 = SimpleBipartiteLayer(1, 2, hidden)
-        self.var_con_2 = SimpleBipartiteLayer(1, 2, hidden)
+
+        self.var_node_encoder = Sequential(Linear(2, hidden), ReLU(), Linear(hidden, hidden))
+        self.con_node_encoder = Sequential(Linear(2, hidden), ReLU(), Linear(hidden, hidden))
+
+        self.var_con_1 = SimpleBipartiteLayer(1, hidden)
+        self.con_var_1 = SimpleBipartiteLayer(1, hidden)
+        self.var_con_2 = SimpleBipartiteLayer(1, hidden)
 
         self.lin1 = Linear(hidden, hidden)
         self.lin2 = Linear(hidden, 2)
@@ -81,19 +79,31 @@ class SimpleNet(torch.nn.Module):
 
     def forward(self, data):
         var_node_features = data.var_node_features
-        var_node_features = data.con_node_features
+        con_node_features = data.con_node_features
 
         edge_index_var = data.edge_index_var
         edge_index_con = data.edge_index_con
 
-        edge_features_con = data.edge_features_con
+
         edge_features_var = data.edge_features_var
+        edge_features_con = data.edge_features_con
         num_nodes_var = data.num_nodes_var
         num_nodes_con = data.num_nodes_con
 
-        x = self.var_con_1(var_node_features, edge_index_var, edge_features_var, (num_nodes_var.sum(), num_nodes_con.sum()))
+        var_node_features_0 = self.var_node_encoder(var_node_features)
+        con_node_features_0 = self.con_node_encoder(con_node_features)
 
-        x = F.relu(self.lin1(x))
+
+        con_node_features_1 = self.var_con_1(var_node_features_0, con_node_features_0, edge_index_var, edge_features_var,
+                           (num_nodes_var.sum(), num_nodes_con.sum()))
+
+        var_node_features_1 = self.con_var_1(con_node_features_1, var_node_features_0, edge_index_con, edge_features_con,
+                           (num_nodes_con.sum(), num_nodes_var.sum()))
+
+
+
+
+        x = F.relu(self.lin1(var_node_features_1))
         x = F.dropout(x, p=0.5, training=self.training)
         x = self.lin2(x)
         return F.log_softmax(x, dim=-1)
@@ -180,7 +190,7 @@ class GraphDataset(InMemoryDataset):
                     feat_rhs.append(rhs)
                     feat_con.append([rhs, graph.degree[i]])
                 else:
-                    print("Error in graph format")
+                    print("Error in graph format.")
                     exit(-1)
 
             # Edge list for var->con graphs.
@@ -206,8 +216,6 @@ class GraphDataset(InMemoryDataset):
                     # Source node is variable. V->C.
                     edge_list_var.append([node_to_varnode[s], node_to_connode[t]])
                     edge_features_var.append([edge_data['coeff']])
-
-
 
             edge_index_var = torch.tensor(edge_list_var).t().contiguous()
             edge_index_con = torch.tensor(edge_list_con).t().contiguous()
@@ -294,23 +302,18 @@ scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
                                                        min_lr=0.0000001)
 print("### SETUP DONE.")
 
-
 def train(epoch):
     model.train()
-
-    if epoch == 51:
-        for param_group in optimizer.param_groups:
-            param_group['lr'] = 0.5 * param_group['lr']
 
     loss_all = 0
     for data in train_loader:
         data = data.to(device)
         optimizer.zero_grad()
-
         output = model(data)
+
         loss = F.nll_loss(output, data.y)
         loss.backward()
-        loss_all += loss.item() * data.num_graphs
+        loss_all += batch_size * loss.item()
         optimizer.step()
     return loss_all / len(train_dataset)
 
@@ -335,8 +338,6 @@ test_acc = 0.0
 for epoch in range(1, 100):
 
     train_loss = train(epoch)
-
-    exit()
     train_acc = test(train_loader)
 
     val_acc = test(val_loader)
