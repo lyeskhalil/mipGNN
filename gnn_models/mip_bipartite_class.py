@@ -87,7 +87,6 @@ class SimpleNet(torch.nn.Module):
         edge_index_var = data.edge_index_var
         edge_index_con = data.edge_index_con
 
-
         edge_features_var = data.edge_features_var
         edge_features_con = data.edge_features_con
         num_nodes_var = data.num_nodes_var
@@ -364,7 +363,7 @@ for epoch in range(1, 100):
 
     print(lr)
     print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
-          'Train Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
-                                                       train_acc, test_acc))
+          'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
+                                                       train_acc, val_acc, test_acc))
 
 torch.save(model.state_dict(), "trained_model_er_200_SET2_1k")
