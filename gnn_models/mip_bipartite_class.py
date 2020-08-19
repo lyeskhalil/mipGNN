@@ -65,6 +65,9 @@ class SimpleNet(torch.nn.Module):
         self.var_con_1 = SimpleBipartiteLayer(1, hidden)
         self.con_var_1 = SimpleBipartiteLayer(1, hidden)
         self.var_con_2 = SimpleBipartiteLayer(1, hidden)
+        self.con_var_2 = SimpleBipartiteLayer(1, hidden)
+        self.var_con_3 = SimpleBipartiteLayer(1, hidden)
+        self.con_var_3 = SimpleBipartiteLayer(1, hidden)
 
         self.lin1 = Linear(hidden, hidden)
         self.lin2 = Linear(hidden, 2)
@@ -96,14 +99,21 @@ class SimpleNet(torch.nn.Module):
 
         con_node_features_1 = self.var_con_1(var_node_features_0, con_node_features_0, edge_index_var, edge_features_var,
                            (num_nodes_var.sum(), num_nodes_con.sum()))
-
         var_node_features_1 = self.con_var_1(con_node_features_1, var_node_features_0, edge_index_con, edge_features_con,
                            (num_nodes_con.sum(), num_nodes_var.sum()))
 
+        con_node_features_2 = self.var_con_2(var_node_features_1, con_node_features_1, edge_index_var, edge_features_var,
+                           (num_nodes_var.sum(), num_nodes_con.sum()))
+        var_node_features_2 = self.con_var_2(con_node_features_2, var_node_features_1, edge_index_con, edge_features_con,
+                           (num_nodes_con.sum(), num_nodes_var.sum()))
+
+        con_node_features_3 = self.var_con_4(var_node_features_2, con_node_features_2, edge_index_var, edge_features_var,
+                           (num_nodes_var.sum(), num_nodes_con.sum()))
+        var_node_features_3 = self.con_var_4(con_node_features_3, var_node_features_1, edge_index_con, edge_features_con,
+                           (num_nodes_con.sum(), num_nodes_var.sum()))
 
 
-
-        x = F.relu(self.lin1(var_node_features_1))
+        x = F.relu(self.lin1(var_node_features_3))
         x = F.dropout(x, p=0.5, training=self.training)
         x = self.lin2(x)
         return F.log_softmax(x, dim=-1)
