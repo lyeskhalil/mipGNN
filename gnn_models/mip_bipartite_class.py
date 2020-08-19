@@ -107,9 +107,9 @@ class SimpleNet(torch.nn.Module):
         var_node_features_2 = self.con_var_2(con_node_features_2, var_node_features_1, edge_index_con, edge_features_con,
                            (num_nodes_con.sum(), num_nodes_var.sum()))
 
-        con_node_features_3 = self.var_con_4(var_node_features_2, con_node_features_2, edge_index_var, edge_features_var,
+        con_node_features_3 = self.var_con_3(var_node_features_2, con_node_features_2, edge_index_var, edge_features_var,
                            (num_nodes_var.sum(), num_nodes_con.sum()))
-        var_node_features_3 = self.con_var_4(con_node_features_3, var_node_features_1, edge_index_con, edge_features_con,
+        var_node_features_3 = self.con_var_3(con_node_features_3, var_node_features_1, edge_index_con, edge_features_con,
                            (num_nodes_con.sum(), num_nodes_var.sum()))
 
 
