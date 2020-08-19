@@ -353,8 +353,8 @@ for epoch in range(1, 100):
         break
 
     print(lr)
-    print('Epoch: {:03d}, Train Loss: {:.7f}, '
-          'Train Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, train_loss,
+    print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
+          'Train Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
                                                        train_acc, test_acc))
 
 torch.save(model.state_dict(), "trained_model_er_200_SET2_1k")
