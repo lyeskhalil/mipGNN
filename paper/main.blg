@@ -3,44 +3,53 @@ Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
 The top-level auxiliary file: main.aux
 The style file: plainnat.bst
 Database file #1: bibliography.bib
-You've used 28 entries,
+Repeated entry---line 167 of file bibliography.bib
+ : @inproceedings{Wil+2019
+ :                        ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 213 of file bibliography.bib
+ : @article{Gup+2020
+ :                  ,
+I'm skipping whatever remains of this entry
+You've used 38 entries,
             2773 wiz_defined-function locations,
-            754 strings with 9510 characters,
-and the built_in function-call counts, 16822 in all, are:
-= -- 1431
-> -- 1207
-< -- 15
-+ -- 403
-- -- 375
-* -- 1396
-:= -- 2501
-add.period$ -- 85
-call.type$ -- 28
-change.case$ -- 209
-chr.to.int$ -- 28
-cite$ -- 56
-duplicate$ -- 742
-empty$ -- 1253
-format.name$ -- 411
-if$ -- 3578
-int.to.chr$ -- 1
+            810 strings with 11231 characters,
+and the built_in function-call counts, 22703 in all, are:
+= -- 1953
+> -- 1597
+< -- 22
++ -- 534
+- -- 495
+* -- 1893
+:= -- 3369
+add.period$ -- 120
+call.type$ -- 38
+change.case$ -- 279
+chr.to.int$ -- 37
+cite$ -- 76
+duplicate$ -- 1013
+empty$ -- 1686
+format.name$ -- 541
+if$ -- 4839
+int.to.chr$ -- 2
 int.to.str$ -- 1
-missing$ -- 28
-newline$ -- 149
-num.names$ -- 112
-pop$ -- 460
+missing$ -- 38
+newline$ -- 204
+num.names$ -- 152
+pop$ -- 598
 preamble$ -- 1
-purify$ -- 181
+purify$ -- 241
 quote$ -- 0
-skip$ -- 635
+skip$ -- 868
 stack$ -- 0
-substring$ -- 574
-swap$ -- 156
-text.length$ -- 10
+substring$ -- 770
+swap$ -- 226
+text.length$ -- 17
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 308
+type$ -- 418
 warning$ -- 0
-while$ -- 123
+while$ -- 168
 width$ -- 0
-write$ -- 365
+write$ -- 507
+(There were 2 error messages)

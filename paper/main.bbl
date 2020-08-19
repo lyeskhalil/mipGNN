@@ -1,4 +1,4 @@
-\begin{thebibliography}{28}
+\begin{thebibliography}{38}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -17,6 +17,29 @@ P.~Barcel{\'{o}}, E.~V. Kostylev, M.~Monet, J.~P{\'{e}}rez, J.~L. Reutter, and
   J.~Pablo Silva.
 \newblock The logical expressiveness of graph neural networks.
 \newblock In \emph{International Conference on Learning Representations}, 2020.
+
+\bibitem[Bengio et~al.(2019)Bengio, Frejinger, Lodi, Patel, and
+  Sankaranarayanan]{Ben+2019}
+Y.~Bengio, E.~Frejinger, A.~Lodi, R.~Patel, and S.~Sankaranarayanan.
+\newblock A learning-based algorithm to quickly compute good primal solutions
+  for stochastic integer programs.
+\newblock \emph{CoRR}, abs/1912.08112, 2019.
+\newblock URL \url{http://arxiv.org/abs/1912.08112}.
+
+\bibitem[Bengio et~al.(2018)Bengio, Lodi, and Prouvost]{Ben+2018}
+Z.~Bengio, A.~Lodi, and A.~Prouvost.
+\newblock Machine learning for combinatorial optimization: a methodological
+  tour d'horizon.
+\newblock \emph{CoRR}, abs/1811.06128, 2018.
+\newblock URL \url{http://arxiv.org/abs/1811.06128}.
+
+\bibitem[Bonami et~al.(2018)Bonami, Lodi, and Zarpellon]{Bon+2018}
+P.~Bonami, A.~Lodi, and G.~Zarpellon.
+\newblock Learning a classification of mixed-integer quadratic programming
+  problems.
+\newblock In \emph{Integration of Constraint Programming, Artificial
+  Intelligence, and Operations Research}, volume 10848 of \emph{Lecture Notes
+  in Computer Science}, pages 595--604, 2018.
 
 \bibitem[Bruna et~al.(2014)Bruna, Zaremba, Szlam, and LeCun]{Bru+2014}
 J.~Bruna, W.~Zaremba, A.~Szlam, and Y.~LeCun.
@@ -51,6 +74,19 @@ D.~K. Duvenaud, D.~Maclaurin, J.~Iparraguirre, R.~Bombarell, T.~Hirzel,
 \newblock In \emph{Advances in Neural Information Processing Systems}, pages
   2224--2232, 2015.
 
+\bibitem[Ferber et~al.(2020)Ferber, Wilder, Dilkina, and Tambe]{Fer+2020}
+A.~Ferber, B.~Wilder, B.~Dilkina, and M.~Tambe.
+\newblock Mipaal: Mixed integer program as a layer.
+\newblock In \emph{{AAAI} Conference on Artificial Intelligence}, pages
+  1504--1511, 2020.
+
+\bibitem[Fischetti et~al.(2019)Fischetti, Lodi, and Zarpellon]{Fis+2019}
+M.~Fischetti, A.~Lodi, and G.~Zarpellon.
+\newblock Learning {MILP} resolution outcomes before reaching time-limit.
+\newblock In \emph{Integration of Constraint Programming, Artificial
+  Intelligence, and Operations Research}, volume 11494 of \emph{Lecture Notes
+  in Computer Science}, pages 275--291, 2019.
+
 \bibitem[Gasse et~al.(2019)Gasse, Ch{\'{e}}telat, Ferroni, Charlin, and
   Lodi]{Gasse+2019}
 M.~Gasse, D.~Ch{\'{e}}telat, N.~Ferroni, L.~Charlin, and A.~Lodi.
@@ -78,12 +114,19 @@ W.~L. Hamilton, R.~Ying, and J.~Leskovec.
 \newblock In \emph{Advances in Neural Information Processing Systems}, pages
   1025--1035, 2017.
 
-\bibitem[Khalil et~al.(2016)Khalil, Bodic, Song, Nemhauser, and
+\bibitem[Khalil et~al.(2016{\natexlab{a}})Khalil, Bodic, Song, Nemhauser, and
   Dilkina]{Kha+2016}
 E.~B. Khalil, P.~Le Bodic, L.~Song, G.~L. Nemhauser, and B.~Dilkina.
 \newblock Learning to branch in mixed integer programming.
 \newblock In \emph{{AAAI} Conference on Artificial Intelligence}, pages
-  724--731, 2016.
+  724--731, 2016{\natexlab{a}}.
+
+\bibitem[Khalil et~al.(2016{\natexlab{b}})Khalil, Bodic, Song, Nemhauser, and
+  Dilkina]{Kha+2016b}
+E.~B. Khalil, P.~Le Bodic, L.~Song, G.~L. Nemhauser, and B.~Dilkina.
+\newblock Learning to branch in mixed integer programming.
+\newblock In \emph{{AAAI} Conference on Artificial Intelligence}, pages
+  724--731, 2016{\natexlab{b}}.
 
 \bibitem[Kipf and Welling(2017)]{Kip+2017}
 T.~N. Kipf and M.~Welling.
@@ -96,6 +139,15 @@ D.~B. Kireev.
   mapping.
 \newblock \emph{Journal of Chemical Information and Computer Sciences},
   35\penalty0 (2):\penalty0 175--180, 1995.
+
+\bibitem[Larsen et~al.(2018)Larsen, Lachapelle, Bengio, Frejinger,
+  Lacoste{-}Julien, and A]{Lar+2018}
+E.~Larsen, S.~Lachapelle, Y.~Bengio, E.~Frejinger, S.~Lacoste{-}Julien, and
+  Lodi A.
+\newblock Predicting solution summaries to integer linear programs under
+  imperfect information with machine learning.
+\newblock \emph{CoRR}, abs/1807.11876, 2018.
+\newblock URL \url{http://arxiv.org/abs/1807.11876}.
 
 \bibitem[Li et~al.(2018)Li, Chen, and Koltun]{Li+2018b}
 Z.~Li, Q.~Chen, and V.~Koltun.
@@ -154,6 +206,13 @@ D.~Selsam, M.~Lamm, B.~B{\"{u}}nz, P.~Liang, L.~de~Moura, and D.~L. Dill.
 \newblock Learning a {SAT} solver from single-bit supervision.
 \newblock In \emph{International Conference on Learning Representations}, 2019.
 
+\bibitem[Song et~al.(2020)Song, Lanka, Yue, and Dilkina]{Son+2020}
+J.~Song, R.~Lanka, Y.~Yue, and B.~Dilkina.
+\newblock A general large neighborhood search framework for solving integer
+  programs.
+\newblock \emph{CoRR}, abs/2004.00422, 2020.
+\newblock URL \url{https://arxiv.org/abs/2004.00422}.
+
 \bibitem[Sperduti and Starita(1997)]{Spe+1997}
 A.~Sperduti and A.~Starita.
 \newblock Supervised neural networks for the classification of structures.
@@ -173,6 +232,13 @@ P.~Velickovic, R.~Ying, M.~Padovano, R>~Hadsell, and C.~Blundell.
 \newblock Neural execution of graph algorithms.
 \newblock In \emph{International Conference on Learning Representations}, 2020.
 
+\bibitem[Wilder et~al.(2019)Wilder, Dilkina, and Tambe]{Wil+2019}
+B.~Wilder, B.~Dilkina, and M.~Tambe.
+\newblock Melding the data-decisions pipeline: Decision-focused learning for
+  combinatorial optimization.
+\newblock In \emph{{AAAI} Conference on Artificial Intelligence}, pages
+  1658--1665, 2019.
+
 \bibitem[Wu et~al.(2019)Wu, Pan, Chen, Long, Zhang, and Yu]{Wu+2019}
 Z.~Wu, S.~Pan, F.~Chen, G.~Long, C.~Zhang, and P.~S. Yu.
 \newblock A comprehensive survey on graph neural networks.
@@ -182,6 +248,13 @@ Z.~Wu, S.~Pan, F.~Chen, G.~Long, C.~Zhang, and P.~S. Yu.
 K.~Xu, W.~Hu, J.~Leskovec, and S.~Jegelka.
 \newblock How powerful are graph neural networks?
 \newblock In \emph{International Conference on Learning Representations}, 2019.
+
+\bibitem[Zarpellon et~al.(2020)Zarpellon, Jo, Lodi, and Bengio]{Zar+2020}
+G.~Zarpellon, J.~Jo, A.~Lodi, and Y.~Bengio.
+\newblock Parameterizing branch-and-bound search trees to learn branching
+  policies.
+\newblock \emph{CoRR}, abs/2002.05120, 2020.
+\newblock URL \url{https://arxiv.org/abs/2002.05120}.
 
 \bibitem[Zhou et~al.(2018)Zhou, Cui, Zhang, Yang, Liu, Wang, Li, and
   Sun]{Zho+2018}

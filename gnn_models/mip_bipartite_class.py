@@ -93,8 +93,6 @@ class SimpleNet(torch.nn.Module):
 
         x = self.var_con_1(var_node_features, edge_index_var, edge_features_var, (num_nodes_var.sum(), num_nodes_con.sum()))
 
-
-
         x = F.relu(self.lin1(x))
         x = F.dropout(x, p=0.5, training=self.training)
         x = self.lin2(x)
