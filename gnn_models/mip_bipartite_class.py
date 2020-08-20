@@ -35,7 +35,9 @@ class SimpleBipartiteLayer(MessagePassing):
         self.initial_eps = 0
 
     def forward(self, source, target, edge_index, edge_attr, size):
+        # Map edge features to embeddings with the same number of components as node embeddings.
         edge_embedding = self.edge_encoder(edge_attr)
+
         tmp = self.propagate(edge_index, x=source, edge_attr=edge_embedding, size=size)
 
         out = self.mlp((1 + self.eps) * target + tmp)
@@ -59,9 +61,11 @@ class SimpleNet(torch.nn.Module):
     def __init__(self, hidden):
         super(SimpleNet, self).__init__()
 
+        # Embed initial node features.
         self.var_node_encoder = Sequential(Linear(2, hidden), ReLU(), Linear(hidden, hidden))
         self.con_node_encoder = Sequential(Linear(2, hidden), ReLU(), Linear(hidden, hidden))
 
+        # Bipartite GNN architecture.
         self.var_con_1 = SimpleBipartiteLayer(1, hidden)
         self.con_var_1 = SimpleBipartiteLayer(1, hidden)
         self.var_con_2 = SimpleBipartiteLayer(1, hidden)
@@ -71,6 +75,7 @@ class SimpleNet(torch.nn.Module):
         self.var_con_4 = SimpleBipartiteLayer(1, hidden)
         self.con_var_4 = SimpleBipartiteLayer(1, hidden)
 
+        # MLP used for classification.
         self.lin1 = Linear(hidden, hidden)
         self.lin2 = Linear(hidden, hidden)
         self.lin3 = Linear(hidden, hidden)
@@ -80,6 +85,11 @@ class SimpleNet(torch.nn.Module):
         self.var_con_1.reset_parameters()
         self.con_var_1.reset_parameters()
         self.var_con_2.reset_parameters()
+        self.con_var_2.reset_parameters()
+        self.var_con_3.reset_parameters()
+        self.con_var_3.reset_parameters()
+        self.var_con_4.reset_parameters()
+        self.con_var_4.reset_parameters()
 
         self.lin1.reset_parameters()
         self.lin2.reset_parameters()
@@ -87,17 +97,18 @@ class SimpleNet(torch.nn.Module):
         self.lin4.reset_parameters()
 
     def forward(self, data):
+
+        # Get data of batch.
         var_node_features = data.var_node_features
         con_node_features = data.con_node_features
-
         edge_index_var = data.edge_index_var
         edge_index_con = data.edge_index_con
-
         edge_features_var = data.edge_features_var
         edge_features_con = data.edge_features_con
         num_nodes_var = data.num_nodes_var
         num_nodes_con = data.num_nodes_con
 
+        # Compute initial node embeddings.
         var_node_features_0 = self.var_node_encoder(var_node_features)
         con_node_features_0 = self.con_node_encoder(con_node_features)
 
@@ -123,9 +134,11 @@ class SimpleNet(torch.nn.Module):
                            (num_nodes_con.sum(), num_nodes_var.sum())))
 
         x = F.relu(self.lin1(var_node_features_4))
-        #x = F.dropout(x, p=0.5, training=self.training)
+        x = F.dropout(x, p=0.5, training=self.training)
         x = F.relu(self.lin2(x))
+        x = F.dropout(x, p=0.5, training=self.training)
         x = F.relu(self.lin3(x))
+        x = F.dropout(x, p=0.5, training=self.training)
         x = self.lin4(x)
         return F.log_softmax(x, dim=-1)
 
