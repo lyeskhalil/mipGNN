@@ -76,7 +76,7 @@ class SimpleNet(torch.nn.Module):
         self.con_var_4 = SimpleBipartiteLayer(1, hidden)
 
         # MLP used for classification.
-        self.lin1 = Linear(hidden, hidden)
+        self.lin1 = Linear(5*hidden, hidden)
         self.lin2 = Linear(hidden, hidden)
         self.lin3 = Linear(hidden, hidden)
         self.lin4 = Linear(hidden, 2)
@@ -132,6 +132,8 @@ class SimpleNet(torch.nn.Module):
                            (num_nodes_var.sum(), num_nodes_con.sum())))
         var_node_features_4 = F.relu(self.con_var_4(con_node_features_4, var_node_features_3, edge_index_con, edge_features_con,
                            (num_nodes_con.sum(), num_nodes_var.sum())))
+
+        x = torch.cat([var_node_features_0,var_node_features_1,var_node_features_2,var_node_features_3,var_node_features_4], dim=-1)
 
         x = F.relu(self.lin1(var_node_features_4))
         x = F.dropout(x, p=0.5, training=self.training)
@@ -243,7 +245,7 @@ class GraphDataset(InMemoryDataset):
                 # Source node is con, target node is var.
 
                 if graph.nodes[s]['bipartite'] == 1:
-                    # Source node ist constraint. C->V.
+                    # Source node is constraint. C->V.
                     edge_list_con.append([node_to_connode[s], node_to_varnode[t]])
                     edge_features_con.append([edge_data['coeff']])
                 else:
@@ -319,7 +321,7 @@ print(len(test_dataset))
 print(1 - test_dataset.data.y.sum().item() / test_dataset.data.y.size(-1))
 
 # Prepare batch loaders.
-batch_size = 25
+batch_size = 128
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
