@@ -102,30 +102,30 @@ class SimpleNet(torch.nn.Module):
         con_node_features_0 = self.con_node_encoder(con_node_features)
 
 
-        con_node_features_1 = self.var_con_1(var_node_features_0, con_node_features_0, edge_index_var, edge_features_var,
-                           (num_nodes_var.sum(), num_nodes_con.sum()))
-        var_node_features_1 = self.con_var_1(con_node_features_1, var_node_features_0, edge_index_con, edge_features_con,
-                           (num_nodes_con.sum(), num_nodes_var.sum()))
+        con_node_features_1 = F.relu(self.var_con_1(var_node_features_0, con_node_features_0, edge_index_var, edge_features_var,
+                           (num_nodes_var.sum(), num_nodes_con.sum())))
+        var_node_features_1 = F.relu(self.con_var_1(con_node_features_1, var_node_features_0, edge_index_con, edge_features_con,
+                           (num_nodes_con.sum(), num_nodes_var.sum())))
 
-        con_node_features_2 = self.var_con_2(var_node_features_1, con_node_features_1, edge_index_var, edge_features_var,
-                           (num_nodes_var.sum(), num_nodes_con.sum()))
-        var_node_features_2 = self.con_var_2(con_node_features_2, var_node_features_1, edge_index_con, edge_features_con,
-                           (num_nodes_con.sum(), num_nodes_var.sum()))
+        con_node_features_2 = F.relu(self.var_con_2(var_node_features_1, con_node_features_1, edge_index_var, edge_features_var,
+                           (num_nodes_var.sum(), num_nodes_con.sum())))
+        var_node_features_2 = F.relu(self.con_var_2(con_node_features_2, var_node_features_1, edge_index_con, edge_features_con,
+                           (num_nodes_con.sum(), num_nodes_var.sum())))
 
-        con_node_features_3 = self.var_con_3(var_node_features_2, con_node_features_2, edge_index_var, edge_features_var,
-                           (num_nodes_var.sum(), num_nodes_con.sum()))
-        var_node_features_3 = self.con_var_3(con_node_features_3, var_node_features_2, edge_index_con, edge_features_con,
-                           (num_nodes_con.sum(), num_nodes_var.sum()))
+        con_node_features_3 = F.relu(self.var_con_3(var_node_features_2, con_node_features_2, edge_index_var, edge_features_var,
+                           (num_nodes_var.sum(), num_nodes_con.sum())))
+        var_node_features_3 = F.relu(self.con_var_3(con_node_features_3, var_node_features_2, edge_index_con, edge_features_con,
+                           (num_nodes_con.sum(), num_nodes_var.sum())))
 
-        con_node_features_4 = self.var_con_4(var_node_features_3, con_node_features_3, edge_index_var, edge_features_var,
-                           (num_nodes_var.sum(), num_nodes_con.sum()))
-        var_node_features_4 = self.con_var_4(con_node_features_4, var_node_features_3, edge_index_con, edge_features_con,
-                           (num_nodes_con.sum(), num_nodes_var.sum()))
+        con_node_features_4 = F.relu(self.var_con_4(var_node_features_3, con_node_features_3, edge_index_var, edge_features_var,
+                           (num_nodes_var.sum(), num_nodes_con.sum())))
+        var_node_features_4 = F.relu(self.con_var_4(con_node_features_4, var_node_features_3, edge_index_con, edge_features_con,
+                           (num_nodes_con.sum(), num_nodes_var.sum())))
 
         x = F.relu(self.lin1(var_node_features_4))
         #x = F.dropout(x, p=0.5, training=self.training)
-        x = self.lin2(x)
-        x = self.lin3(x)
+        x = F.relu(self.lin2(x))
+        x = F.relu(self.lin3(x))
         x = self.lin4(x)
         return F.log_softmax(x, dim=-1)
 
