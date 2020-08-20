@@ -68,9 +68,13 @@ class SimpleNet(torch.nn.Module):
         self.con_var_2 = SimpleBipartiteLayer(1, hidden)
         self.var_con_3 = SimpleBipartiteLayer(1, hidden)
         self.con_var_3 = SimpleBipartiteLayer(1, hidden)
+        self.var_con_4 = SimpleBipartiteLayer(1, hidden)
+        self.con_var_4 = SimpleBipartiteLayer(1, hidden)
 
         self.lin1 = Linear(hidden, hidden)
-        self.lin2 = Linear(hidden, 2)
+        self.lin2 = Linear(hidden, hidden)
+        self.lin3 = Linear(hidden, hidden)
+        self.lin4 = Linear(hidden, 2)
 
     def reset_parameters(self):
         self.var_con_1.reset_parameters()
@@ -79,6 +83,8 @@ class SimpleNet(torch.nn.Module):
 
         self.lin1.reset_parameters()
         self.lin2.reset_parameters()
+        self.lin3.reset_parameters()
+        self.lin4.reset_parameters()
 
     def forward(self, data):
         var_node_features = data.var_node_features
@@ -108,13 +114,19 @@ class SimpleNet(torch.nn.Module):
 
         con_node_features_3 = self.var_con_3(var_node_features_2, con_node_features_2, edge_index_var, edge_features_var,
                            (num_nodes_var.sum(), num_nodes_con.sum()))
-        var_node_features_3 = self.con_var_3(con_node_features_3, var_node_features_1, edge_index_con, edge_features_con,
+        var_node_features_3 = self.con_var_3(con_node_features_3, var_node_features_2, edge_index_con, edge_features_con,
                            (num_nodes_con.sum(), num_nodes_var.sum()))
 
+        con_node_features_4 = self.var_con_4(var_node_features_3, con_node_features_3, edge_index_var, edge_features_var,
+                           (num_nodes_var.sum(), num_nodes_con.sum()))
+        var_node_features_4 = self.con_var_4(con_node_features_4, var_node_features_3, edge_index_con, edge_features_con,
+                           (num_nodes_con.sum(), num_nodes_var.sum()))
 
-        x = F.relu(self.lin1(var_node_features_3))
-        x = F.dropout(x, p=0.5, training=self.training)
+        x = F.relu(self.lin1(var_node_features_4))
+        #x = F.dropout(x, p=0.5, training=self.training)
         x = self.lin2(x)
+        x = self.lin3(x)
+        x = self.lin4(x)
         return F.log_softmax(x, dim=-1)
 
     def __repr__(self):

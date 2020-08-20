@@ -439,14 +439,14 @@ In the following, we gives details about the two passes.
 		\For{$e \text{ in } [E]$}
 		\State Sample $I = (\vec{c}, \vec{A}, \vec{b})$ from $U(S)$ 
 		\For{$t \text{ in } [T]$}
-		%\State \textit{Compute variable embedding:}
-		\State $\vec{V}_j^{(t)} \leftarrow f_{\textsc{Var}}^{(t)} \hspace{-1pt} \big( \big\{ \hspace{-4.4pt} \big\{ \big( \vec{V}^{(t-1)}_j, \vec{C}^{(t-1)}_j, \vec{p}^{(t-1)}_j, \vec{A}_{ij} \big)\hspace{-1pt} \mid c_i \in N(v_j) \big\} \hspace{-4.4pt} \big\} \big)$ for all $j$ in $[n]$ 		
+		\State $\vec{V}_j^{(t)} \leftarrow f_{\textsc{Var}}^{(t)} \hspace{-1pt} \big( \big\{ \hspace{-4.4pt} \big\{ \big( \vec{V}^{(t-1)}_j, \vec{C}^{(t-1)}_j, \vec{p}^{(t-1)}_i, \vec{A}_{ij} \big)\hspace{-1pt} \mid c_i \in N(v_j) \big\} \hspace{-4.4pt} \big\} \big)$ for all $j$ in $[n]$ 		
 		\State $\vec{X}_j^{(t)} \leftarrow f_\textsc{Assn}^{(t)} \hspace{-2pt} \big(\vec{V}_i^{(t-1)} \big)$ for all $j$ in $[n]$ 
 		\Statex
 		%\State \textit{Compute constraint embedding:}
-		\State $\vec{C}_j^{\hspace{1pt}(t)} \leftarrow f_\textsc{Con}^{(t)} \hspace{-2pt} \big( \big\{ \hspace{-4.4pt} \big\{ \big( \vec{C}^{(t-1)}_j, \vec{V}^{(t)}_i, \vec{X}^{(t)}_i, \vec{A}_{ij}, \vec{b}_j \big)\hspace{-2pt} \mid v_i \in N(c_j) \big\} \hspace{-4.4pt} \big\} \big)$ for all $i$ in $[m]$ 	
+		\State $\vec{C}_i^{\hspace{1pt}(t)} \leftarrow f_\textsc{Con}^{(t)} \hspace{-2pt} \big( \big\{ \hspace{-4.4pt} \big\{ \big( \vec{C}^{(t-1)}_i, \vec{V}^{(t)}_i, \vec{X}^{(t)}_i, \vec{A}_{ij}, \vec{b}_i \big)\hspace{-2pt} \mid v_i \in N(c_j) \big\} \hspace{-4.4pt} \big\} \big)$ for all $i$ in $[m]$ 	
 		%\State $\vec{e}_j^{(t)} \leftarrow \sum_{i \in N(j)} \label{key}\vec{A}_{ji}  \vec{x}_i - \vec{b}_j$
 		%\Statex
+		\State \cm{below needs to be changed as  $m$ is not fixed}
 		\State $\vec{p}_{j}^{(t)} \hspace{3pt}\leftarrow \text{softmax}(f_\textsc{Prob}^{(t)}(\vec{e}^{(t)}))_{j}$
 		%\begin{equation*}
 		%\vec{e}_j \leftarrow \nicefrac{1}{\rho}\,\Big(\sum_{i \in N(j)} \label{key}\vec{A}_{ji}  %\vec{v}_i \Big) - \vec{b}_j   
@@ -479,7 +479,7 @@ Initialize parameters $\boldsymbol{\theta} = (\boldsymbol{\theta}_{\text{V}}$, $
 \cm{Proof idea: show that GNN can be seen as low "degree" (assuming low nnz) compositional functions encoded as a tree, then use results on composiotional function (smaller set of parameters) to derive generalization bounds, Problem: (1) we are ingnoring the invariances here (should be okay as incoperating invariances are only improving sample complexity) (2) f}
 
 
-\cm{Somehow show that architecture of Alg. 2 (MWU) is better than using a standard GNN. Idea: Show that MWU can be recovered to show to always get at ferasible solutions.}
+\cm{Somehow show that architecture of Alg. 2 (MWU) is better than using a standard GNN. Idea: Show that MWU can be recovered to show that we always get an (epsilon) feasible solution (on the test data)}
 
 \cm{Connection to Stefanies and Keyulus reasoning paper}
 
