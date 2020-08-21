@@ -25,8 +25,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 class SimpleBipartiteLayer(MessagePassing):
     def __init__(self, edge_dim, dim):
-        # TODO add
-        super(SimpleBipartiteLayer, self).__init__(aggr="mean", flow="source_to_target")
+        super(SimpleBipartiteLayer, self).__init__(aggr="add", flow="source_to_target")
 
         self.edge_encoder = Sequential(Linear(edge_dim, dim), ReLU(), Linear(dim, dim), ReLU(),
                                        BN(dim))
