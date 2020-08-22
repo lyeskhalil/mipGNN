@@ -83,9 +83,6 @@ class ErrorLayer(MessagePassing):
 
         tmp = self.propagate(edge_index, x=new_source, edge_attr=edge_attr, size=size)
         out = tmp - rhs
-
-        # TODO: Change
-        out = self.error_encoder(out)
         out = softmax(out, index)
 
         return out
@@ -121,6 +118,7 @@ class ConVarBipartiteLayer(MessagePassing):
         tmp = self.propagate(edge_index, x=joint_con, error=error_con, edge_attr=edge_embedding, size=size)
 
         out = self.mlp((1 + self.eps) * target + tmp)
+
         return out
 
     def message(self, x_j, error_j, edge_attr):
@@ -215,7 +213,7 @@ class SimpleNet(torch.nn.Module):
         var_node_features_1 = F.relu(
             self.con_var_1(con_node_features_1, var_node_features_0, edge_index_con, edge_features_con, err_1,
                            (num_nodes_con.sum(), num_nodes_var.sum())))
-
+    
         con_node_features_2 = F.relu(
             self.var_con_2(var_node_features_1, con_node_features_1, edge_index_var, edge_features_var, rhs,
                            (num_nodes_var.sum(), num_nodes_con.sum())))
