@@ -53,12 +53,12 @@ class VarConBipartiteLayer(MessagePassing):
         new_source = self.joint_var(torch.cat([source,var_assignment], dim=-1))
 
         tmp = self.propagate(edge_index, x=new_source, var_assignment=var_assignment, edge_attr=edge_embedding, size=size)
-
         out = self.mlp((1 + self.eps) * target + tmp)
+
 
         return out
 
-    def message(self, x_j, var_assignment_j, edge_attr):
+    def message(self, x_j, var_assignment_j, rhs_j, edge_attr):
         return F.relu(x_j + edge_attr)
 
     def update(self, aggr_out):
@@ -70,6 +70,28 @@ class VarConBipartiteLayer(MessagePassing):
         reset(self.edge_encoder)
         reset(self.mlp)
         self.eps.data.fill_(self.initial_eps)
+
+
+# Update constraint embeddings based on variable embeddings.
+class ErrorLayer(MessagePassing):
+    def __init__(self, dim):
+        super(ErrorLayer, self).__init__(aggr="add", flow="source_to_target")
+
+    def forward(self, source, edge_index, edge_attr, rhs, size):
+        # Map edge features to embeddings with the same number of components as node embeddings.
+
+
+        tmp = self.propagate(edge_index, x=source, edge_attr=edge_attr, size=size)
+        out = tmp - rhs
+
+
+        return out
+
+    def message(self, x_j, edge_attr):
+        return x_j * edge_attr
+
+    def update(self, aggr_out):
+        return aggr_out
 
 
 # Update variable embeddings based on constraint embeddings.
@@ -87,6 +109,9 @@ class ConVarBipartiteLayer(MessagePassing):
     def forward(self, source, target, edge_index, edge_attr, size):
         # Map edge features to embeddings with the same number of components as node embeddings.
         edge_embedding = self.edge_encoder(edge_attr)
+
+        print(edge_attr.size())
+        exit()
 
         tmp = self.propagate(edge_index, x=source, edge_attr=edge_embedding, size=size)
 
@@ -113,6 +138,10 @@ class SimpleNet(torch.nn.Module):
         # Embed initial node features.
         self.var_node_encoder = Sequential(Linear(2, hidden), ReLU(), Linear(hidden, hidden))
         self.con_node_encoder = Sequential(Linear(2, hidden), ReLU(), Linear(hidden, hidden))
+
+        self.var_assigment = Sequential(Linear(hidden, hidden), ReLU(), Linear(hidden, 1), Sigmoid())
+        self.error_1 = ErrorLayer(hidden)
+
 
         # Bipartite GNN architecture.
         self.var_con_1 = VarConBipartiteLayer(1, hidden)
@@ -146,7 +175,6 @@ class SimpleNet(torch.nn.Module):
         self.lin4.reset_parameters()
 
     def forward(self, data):
-
         # Get data of batch.
         var_node_features = data.var_node_features
         con_node_features = data.con_node_features
@@ -161,6 +189,14 @@ class SimpleNet(torch.nn.Module):
         # Compute initial node embeddings.
         var_node_features_0 = self.var_node_encoder(var_node_features)
         con_node_features_0 = self.con_node_encoder(con_node_features)
+
+        x = self.var_assigment(var_node_features_0)
+
+
+        err = self.error_1(x, edge_index_var, edge_features_var, rhs, (num_nodes_var.sum(), num_nodes_con.sum()))
+        print(err.size())
+        print("xxx")
+        exit()
 
 
         con_node_features_1 = F.relu(self.var_con_1(var_node_features_0, con_node_features_0, edge_index_var, edge_features_var, rhs,
