@@ -78,7 +78,6 @@ class ErrorLayer(MessagePassing):
     def forward(self, source, edge_index, edge_attr, rhs, size):
         new_source = self.var_assignment(source)
 
-        # Map edge features to embeddings with the same number of components as node embeddings.
         tmp = self.propagate(edge_index, x=new_source, edge_attr=edge_attr, size=size)
         out = tmp - rhs
 
@@ -302,6 +301,8 @@ class GraphDataset(InMemoryDataset):
             # Right-hand sides of equations.
             feat_rhs = []
 
+            index = []
+
             # Iterate over nodes, and collect features.
             for i, (node, node_data) in enumerate(graph.nodes(data=True)):
                 # Node is a variable node.
@@ -324,6 +325,7 @@ class GraphDataset(InMemoryDataset):
                     rhs = node_data['rhs']
                     feat_rhs.append([rhs])
                     feat_con.append([rhs, graph.degree[i]])
+                    index.append(1)
                 else:
                     print("Error in graph format.")
                     exit(-1)
@@ -367,6 +369,7 @@ class GraphDataset(InMemoryDataset):
             data.edge_features_var = torch.from_numpy(np.array(edge_features_var)).to(torch.float)
             data.num_nodes_var = num_nodes_var
             data.num_nodes_con = num_nodes_con
+            data.index = torch.from_numpy(np.array(index)).to(torch.long)
 
             data_list.append(data)
 
@@ -381,6 +384,8 @@ class MyData(Data):
             return torch.tensor([self.num_nodes_var, self.num_nodes_con]).view(2, 1)
         elif key in ['edge_index_con']:
             return torch.tensor([self.num_nodes_con, self.num_nodes_var]).view(2, 1)
+        elif key in ['index']:
+            return self.num_nodes_con
         else:
             return 0
 
