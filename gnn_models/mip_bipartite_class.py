@@ -58,7 +58,7 @@ class VarConBipartiteLayer(MessagePassing):
 
         return out
 
-    def message(self, x_j, var_assignment_j, rhs_j, edge_attr):
+    def message(self, x_j, var_assignment_j, edge_attr):
         return F.relu(x_j + edge_attr)
 
     def update(self, aggr_out):
@@ -79,13 +79,8 @@ class ErrorLayer(MessagePassing):
 
     def forward(self, source, edge_index, edge_attr, rhs, size):
         # Map edge features to embeddings with the same number of components as node embeddings.
-
-
         tmp = self.propagate(edge_index, x=source, edge_attr=edge_attr, size=size)
-        out = tmp
-
-        print(out.size(), rhs.size())
-        exit()
+        out = tmp - rhs
 
         return out
 
@@ -95,7 +90,6 @@ class ErrorLayer(MessagePassing):
         return msg
 
     def update(self, aggr_out):
-        print(aggr_out.size())
         return aggr_out
 
 
@@ -115,8 +109,7 @@ class ConVarBipartiteLayer(MessagePassing):
         # Map edge features to embeddings with the same number of components as node embeddings.
         edge_embedding = self.edge_encoder(edge_attr)
 
-        print(edge_attr.size())
-        exit()
+
 
         tmp = self.propagate(edge_index, x=source, edge_attr=edge_embedding, size=size)
 
@@ -198,10 +191,6 @@ class SimpleNet(torch.nn.Module):
         x = self.var_assigment(var_node_features_0)
 
         err = self.error_1(x, edge_index_var, edge_features_var, rhs, (num_nodes_var.sum(), num_nodes_con.sum()))
-        print(err.size())
-        print("xxx")
-        exit()
-
 
         con_node_features_1 = F.relu(self.var_con_1(var_node_features_0, con_node_features_0, edge_index_var, edge_features_var, rhs,
                            (num_nodes_var.sum(), num_nodes_con.sum())))
