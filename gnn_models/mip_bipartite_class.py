@@ -82,15 +82,20 @@ class ErrorLayer(MessagePassing):
 
 
         tmp = self.propagate(edge_index, x=source, edge_attr=edge_attr, size=size)
-        out = tmp - rhs
+        out = tmp
 
+        print(out.size(), rhs.size())
+        exit()
 
         return out
 
     def message(self, x_j, edge_attr):
-        return x_j * edge_attr
+        msg = x_j * edge_attr
+
+        return msg
 
     def update(self, aggr_out):
+        print(aggr_out.size())
         return aggr_out
 
 
@@ -191,7 +196,6 @@ class SimpleNet(torch.nn.Module):
         con_node_features_0 = self.con_node_encoder(con_node_features)
 
         x = self.var_assigment(var_node_features_0)
-
 
         err = self.error_1(x, edge_index_var, edge_features_var, rhs, (num_nodes_var.sum(), num_nodes_con.sum()))
         print(err.size())
@@ -309,7 +313,7 @@ class GraphDataset(InMemoryDataset):
                     num_nodes_con += 1
 
                     rhs = node_data['rhs']
-                    feat_rhs.append(rhs)
+                    feat_rhs.append([rhs])
                     feat_con.append([rhs, graph.degree[i]])
                 else:
                     print("Error in graph format.")
