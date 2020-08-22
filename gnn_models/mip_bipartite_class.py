@@ -19,7 +19,6 @@ from torch.nn import BatchNorm1d as BN
 from torch.nn import Sequential, Linear, ReLU, Sigmoid
 from torch_geometric.nn import MessagePassing
 from torch_geometric.nn.inits import reset
-from torch_geometric.utils import softmax
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -85,7 +84,7 @@ class ErrorLayer(MessagePassing):
         out = tmp - rhs
 
         # TODO: Change
-        #out = softmax(out, index)
+        # out = softmax(out, index)
 
         return out
 
@@ -106,6 +105,8 @@ class ConVarBipartiteLayer(MessagePassing):
         self.edge_encoder = Sequential(Linear(edge_dim, dim), ReLU(), Linear(dim, dim), ReLU(),
                                        BN(dim))
 
+        self.joint_con_encoder = Sequential(Linear(2 * dim, dim), ReLU(), Linear(dim, dim), ReLU(), BN(dim))
+
         self.mlp = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim), ReLU(), BN(dim))
         self.eps = torch.nn.Parameter(torch.Tensor([0]))
         self.initial_eps = 0
@@ -114,13 +115,13 @@ class ConVarBipartiteLayer(MessagePassing):
         # Map edge features to embeddings with the same number of components as node embeddings.
         edge_embedding = self.edge_encoder(edge_attr)
 
-        tmp = self.propagate(edge_index, x=source, edge_attr=edge_embedding, size=size)
+        joint_con = self.joint_con_encoder(torch.cat([source, error_con], dim=-1))
+        tmp = self.propagate(edge_index, x=joint_con, error=error_con, edge_attr=edge_embedding, size=size)
 
         out = self.mlp((1 + self.eps) * target + tmp)
-
         return out
 
-    def message(self, x_j, edge_attr):
+    def message(self, x_j, error_j, edge_attr):
         return F.relu(x_j + edge_attr)
 
     def update(self, aggr_out):
@@ -129,6 +130,7 @@ class ConVarBipartiteLayer(MessagePassing):
     def reset_parameters(self):
         reset(self.node_encoder)
         reset(self.edge_encoder)
+        reset(self.joint_con_encoder)
         reset(self.mlp)
         self.eps.data.fill_(self.initial_eps)
 
@@ -208,8 +210,6 @@ class SimpleNet(torch.nn.Module):
         err_1 = self.error_1(var_node_features_0, edge_index_var, edge_features_var, rhs, index,
                              (num_nodes_var.sum(), num_nodes_con.sum()))
 
-
-
         var_node_features_1 = F.relu(
             self.con_var_1(con_node_features_1, var_node_features_0, edge_index_con, edge_features_con, err_1,
                            (num_nodes_con.sum(), num_nodes_var.sum())))
@@ -219,7 +219,6 @@ class SimpleNet(torch.nn.Module):
                            (num_nodes_var.sum(), num_nodes_con.sum())))
         err_2 = self.error_1(var_node_features_1, edge_index_var, edge_features_var, rhs, index,
                              (num_nodes_var.sum(), num_nodes_con.sum()))
-
 
         var_node_features_2 = F.relu(
             self.con_var_2(con_node_features_2, var_node_features_1, edge_index_con, edge_features_con, err_2,
