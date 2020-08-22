@@ -19,6 +19,7 @@ from torch.nn import BatchNorm1d as BN
 from torch.nn import Sequential, Linear, ReLU, Sigmoid
 from torch_geometric.nn import MessagePassing
 from torch_geometric.nn.inits import reset
+from torch_geometric.utils import softmax
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -84,7 +85,8 @@ class ErrorLayer(MessagePassing):
         out = tmp - rhs
 
         # TODO: Change
-        # out = softmax(out, index)
+        out = self.error_encoder(out)
+        out = softmax(out, index)
 
         return out
 
