@@ -36,23 +36,29 @@ class VarConBipartiteLayer(MessagePassing):
 
         # Maps variable embeddings to scalar variable assigment.
         self.var_assigment = Sequential(Linear(dim, dim), ReLU(), Linear(dim, 1), Sigmoid())
+        # Maps variable embeddings + assignment to joint embedding.
+        self.joint_var = Sequential(Linear(dim+1, dim), ReLU(), Linear(dim, dim), ReLU(),
+                                       BN(dim))
 
-        self.mlp = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim), ReLU(), BN(dim))
+        self.mlp = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim), ReLU(),
+                                       BN(dim))
         self.eps = torch.nn.Parameter(torch.Tensor([0]))
         self.initial_eps = 0
 
     def forward(self, source, target, edge_index, edge_attr, size):
         # Map edge features to embeddings with the same number of components as node embeddings.
         edge_embedding = self.edge_encoder(edge_attr)
-        var_assignment = self.var_assigment(target)
+        var_assignment = self.var_assigment(source)
 
-        tmp = self.propagate(edge_index, x=source, edge_attr=edge_embedding, size=size)
+        new_source = self.joint_var(torch.cat([source,var_assignment], dim=-1))
+
+        tmp = self.propagate(edge_index, x=new_source, var_assignment=var_assignment, edge_attr=edge_embedding, size=size)
 
         out = self.mlp((1 + self.eps) * target + tmp)
 
         return out
 
-    def message(self, x_j, edge_attr):
+    def message(self, x_j, var_assignment_j, edge_attr):
         return F.relu(x_j + edge_attr)
 
     def update(self, aggr_out):
