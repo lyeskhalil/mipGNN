@@ -23,9 +23,43 @@ from torch_geometric.nn.inits import reset
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
-class SimpleBipartiteLayer(MessagePassing):
+class ConVarBipartiteLayer(MessagePassing):
     def __init__(self, edge_dim, dim):
-        super(SimpleBipartiteLayer, self).__init__(aggr="add", flow="source_to_target")
+        super(ConVarBipartiteLayer, self).__init__(aggr="add", flow="source_to_target")
+
+        self.edge_encoder = Sequential(Linear(edge_dim, dim), ReLU(), Linear(dim, dim), ReLU(),
+                                       BN(dim))
+
+        self.mlp = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim), ReLU(), BN(dim))
+        self.eps = torch.nn.Parameter(torch.Tensor([0]))
+        self.initial_eps = 0
+
+    def forward(self, source, target, edge_index, edge_attr, size):
+        # Map edge features to embeddings with the same number of components as node embeddings.
+        edge_embedding = self.edge_encoder(edge_attr)
+
+        tmp = self.propagate(edge_index, x=source, edge_attr=edge_embedding, size=size)
+
+        out = self.mlp((1 + self.eps) * target + tmp)
+
+        return out
+
+    def message(self, x_j, edge_attr):
+        return F.relu(x_j + edge_attr)
+
+    def update(self, aggr_out):
+        return aggr_out
+
+    def reset_parameters(self):
+        reset(self.node_encoder)
+        reset(self.edge_encoder)
+        reset(self.mlp)
+        self.eps.data.fill_(self.initial_eps)
+
+
+class VarConBipartiteLayer(MessagePassing):
+    def __init__(self, edge_dim, dim):
+        super(VarConBipartiteLayer, self).__init__(aggr="add", flow="source_to_target")
 
         self.edge_encoder = Sequential(Linear(edge_dim, dim), ReLU(), Linear(dim, dim), ReLU(),
                                        BN(dim))
@@ -66,14 +100,14 @@ class SimpleNet(torch.nn.Module):
         self.con_node_encoder = Sequential(Linear(2, hidden), ReLU(), Linear(hidden, hidden))
 
         # Bipartite GNN architecture.
-        self.var_con_1 = SimpleBipartiteLayer(1, hidden)
-        self.con_var_1 = SimpleBipartiteLayer(1, hidden)
-        self.var_con_2 = SimpleBipartiteLayer(1, hidden)
-        self.con_var_2 = SimpleBipartiteLayer(1, hidden)
-        self.var_con_3 = SimpleBipartiteLayer(1, hidden)
-        self.con_var_3 = SimpleBipartiteLayer(1, hidden)
-        self.var_con_4 = SimpleBipartiteLayer(1, hidden)
-        self.con_var_4 = SimpleBipartiteLayer(1, hidden)
+        self.var_con_1 = VarConBipartiteLayer(1, hidden)
+        self.con_var_1 = ConVarBipartiteLayer(1, hidden)
+        self.var_con_2 = VarConBipartiteLayer(1, hidden)
+        self.con_var_2 = ConVarBipartiteLayer(1, hidden)
+        self.var_con_3 = VarConBipartiteLayer(1, hidden)
+        self.con_var_3 = ConVarBipartiteLayer(1, hidden)
+        self.var_con_4 = VarConBipartiteLayer(1, hidden)
+        self.con_var_4 = ConVarBipartiteLayer(1, hidden)
 
         # MLP used for classification.
         self.lin1 = Linear(5*hidden, hidden)
