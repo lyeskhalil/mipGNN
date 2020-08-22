@@ -21,8 +21,6 @@ from torch_geometric.nn import MessagePassing
 from torch_geometric.nn.inits import reset
 from torch_geometric.utils import softmax
 
-from torch_scatter import scatter
-
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
@@ -78,7 +76,7 @@ class ErrorLayer(MessagePassing):
         super(ErrorLayer, self).__init__(aggr="add", flow="source_to_target")
         self.var_assignment = var_assignment
         self.error_encoder = Sequential(Linear(1, dim), ReLU(), Linear(dim, dim), ReLU(),
-                                       BN(dim))
+                                        BN(dim))
 
     def forward(self, source, edge_index, edge_attr, rhs, index, size):
         new_source = self.var_assignment(source)
@@ -87,7 +85,7 @@ class ErrorLayer(MessagePassing):
         out = tmp - rhs
 
         # TODO: Change
-        out = softmax(out,index)
+        #out = softmax(out, index)
 
         return out
 
@@ -204,13 +202,14 @@ class SimpleNet(torch.nn.Module):
         var_node_features_0 = self.var_node_encoder(var_node_features)
         con_node_features_0 = self.con_node_encoder(con_node_features)
 
-
-
         con_node_features_1 = F.relu(
             self.var_con_1(var_node_features_0, con_node_features_0, edge_index_var, edge_features_var, rhs,
                            (num_nodes_var.sum(), num_nodes_con.sum())))
         err_1 = self.error_1(var_node_features_0, edge_index_var, edge_features_var, rhs, index,
-                           (num_nodes_var.sum(), num_nodes_con.sum()))
+                             (num_nodes_var.sum(), num_nodes_con.sum()))
+
+
+
         var_node_features_1 = F.relu(
             self.con_var_1(con_node_features_1, var_node_features_0, edge_index_con, edge_features_con, err_1,
                            (num_nodes_con.sum(), num_nodes_var.sum())))
@@ -219,7 +218,8 @@ class SimpleNet(torch.nn.Module):
             self.var_con_2(var_node_features_1, con_node_features_1, edge_index_var, edge_features_var, rhs,
                            (num_nodes_var.sum(), num_nodes_con.sum())))
         err_2 = self.error_1(var_node_features_1, edge_index_var, edge_features_var, rhs, index,
-                           (num_nodes_var.sum(), num_nodes_con.sum()))
+                             (num_nodes_var.sum(), num_nodes_con.sum()))
+
 
         var_node_features_2 = F.relu(
             self.con_var_2(con_node_features_2, var_node_features_1, edge_index_con, edge_features_con, err_2,
@@ -442,7 +442,7 @@ print(len(test_dataset))
 print(1 - test_dataset.data.y.sum().item() / test_dataset.data.y.size(-1))
 
 # Prepare batch loaders.
-batch_size = 128
+batch_size = 64
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
