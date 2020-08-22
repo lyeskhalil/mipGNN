@@ -16,13 +16,57 @@ from torch_geometric.data import DataLoader
 import torch
 import torch.nn.functional as F
 from torch.nn import BatchNorm1d as BN
-from torch.nn import Sequential, Linear, ReLU
+from torch.nn import Sequential, Linear, ReLU, Sigmoid
 from torch_geometric.nn import MessagePassing
 from torch_geometric.nn.inits import reset
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
+
+
+# Update constraint embeddings based on variable embeddings.
+class VarConBipartiteLayer(MessagePassing):
+    def __init__(self, edge_dim, dim):
+        super(VarConBipartiteLayer, self).__init__(aggr="add", flow="source_to_target")
+
+        # Maps edge features to the same number of components as node features.
+        self.edge_encoder = Sequential(Linear(edge_dim, dim), ReLU(), Linear(dim, dim), ReLU(),
+                                       BN(dim))
+
+        # Maps variable embeddings to scalar variable assigment.
+        self.var_assigment = Sequential(Linear(dim, dim), ReLU(), Linear(dim, 1), Sigmoid())
+
+        self.mlp = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim), ReLU(), BN(dim))
+        self.eps = torch.nn.Parameter(torch.Tensor([0]))
+        self.initial_eps = 0
+
+    def forward(self, source, target, edge_index, edge_attr, size):
+        # Map edge features to embeddings with the same number of components as node embeddings.
+        edge_embedding = self.edge_encoder(edge_attr)
+        var_assignment = self.var_assigment(target)
+
+        tmp = self.propagate(edge_index, x=source, edge_attr=edge_embedding, size=size)
+
+        out = self.mlp((1 + self.eps) * target + tmp)
+
+        return out
+
+    def message(self, x_j, edge_attr):
+        return F.relu(x_j + edge_attr)
+
+    def update(self, aggr_out):
+        return aggr_out
+
+    def reset_parameters(self):
+        reset(self.node_encoder)
+        reset(self.var_assigment)
+        reset(self.edge_encoder)
+        reset(self.mlp)
+        self.eps.data.fill_(self.initial_eps)
+
+
+# Update variable embeddings based on constraint embeddings.
 class ConVarBipartiteLayer(MessagePassing):
     def __init__(self, edge_dim, dim):
         super(ConVarBipartiteLayer, self).__init__(aggr="add", flow="source_to_target")
@@ -55,41 +99,6 @@ class ConVarBipartiteLayer(MessagePassing):
         reset(self.edge_encoder)
         reset(self.mlp)
         self.eps.data.fill_(self.initial_eps)
-
-
-class VarConBipartiteLayer(MessagePassing):
-    def __init__(self, edge_dim, dim):
-        super(VarConBipartiteLayer, self).__init__(aggr="add", flow="source_to_target")
-
-        self.edge_encoder = Sequential(Linear(edge_dim, dim), ReLU(), Linear(dim, dim), ReLU(),
-                                       BN(dim))
-
-        self.mlp = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim), ReLU(), BN(dim))
-        self.eps = torch.nn.Parameter(torch.Tensor([0]))
-        self.initial_eps = 0
-
-    def forward(self, source, target, edge_index, edge_attr, size):
-        # Map edge features to embeddings with the same number of components as node embeddings.
-        edge_embedding = self.edge_encoder(edge_attr)
-
-        tmp = self.propagate(edge_index, x=source, edge_attr=edge_embedding, size=size)
-
-        out = self.mlp((1 + self.eps) * target + tmp)
-
-        return out
-
-    def message(self, x_j, edge_attr):
-        return F.relu(x_j + edge_attr)
-
-    def update(self, aggr_out):
-        return aggr_out
-
-    def reset_parameters(self):
-        reset(self.node_encoder)
-        reset(self.edge_encoder)
-        reset(self.mlp)
-        self.eps.data.fill_(self.initial_eps)
-
 
 class SimpleNet(torch.nn.Module):
     def __init__(self, hidden):
