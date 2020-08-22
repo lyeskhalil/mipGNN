@@ -45,7 +45,7 @@ class VarConBipartiteLayer(MessagePassing):
         self.eps = torch.nn.Parameter(torch.Tensor([0]))
         self.initial_eps = 0
 
-    def forward(self, source, target, edge_index, edge_attr, size):
+    def forward(self, source, target, edge_index, edge_attr, rhs, size):
         # Map edge features to embeddings with the same number of components as node embeddings.
         edge_embedding = self.edge_encoder(edge_attr)
         var_assignment = self.var_assigment(source)
@@ -156,28 +156,29 @@ class SimpleNet(torch.nn.Module):
         edge_features_con = data.edge_features_con
         num_nodes_var = data.num_nodes_var
         num_nodes_con = data.num_nodes_con
+        rhs = data.rhs
 
         # Compute initial node embeddings.
         var_node_features_0 = self.var_node_encoder(var_node_features)
         con_node_features_0 = self.con_node_encoder(con_node_features)
 
 
-        con_node_features_1 = F.relu(self.var_con_1(var_node_features_0, con_node_features_0, edge_index_var, edge_features_var,
+        con_node_features_1 = F.relu(self.var_con_1(var_node_features_0, con_node_features_0, edge_index_var, edge_features_var, rhs,
                            (num_nodes_var.sum(), num_nodes_con.sum())))
         var_node_features_1 = F.relu(self.con_var_1(con_node_features_1, var_node_features_0, edge_index_con, edge_features_con,
                            (num_nodes_con.sum(), num_nodes_var.sum())))
 
-        con_node_features_2 = F.relu(self.var_con_2(var_node_features_1, con_node_features_1, edge_index_var, edge_features_var,
+        con_node_features_2 = F.relu(self.var_con_2(var_node_features_1, con_node_features_1, edge_index_var, edge_features_var, rhs,
                            (num_nodes_var.sum(), num_nodes_con.sum())))
         var_node_features_2 = F.relu(self.con_var_2(con_node_features_2, var_node_features_1, edge_index_con, edge_features_con,
                            (num_nodes_con.sum(), num_nodes_var.sum())))
 
-        con_node_features_3 = F.relu(self.var_con_3(var_node_features_2, con_node_features_2, edge_index_var, edge_features_var,
+        con_node_features_3 = F.relu(self.var_con_3(var_node_features_2, con_node_features_2, edge_index_var, edge_features_var, rhs,
                            (num_nodes_var.sum(), num_nodes_con.sum())))
         var_node_features_3 = F.relu(self.con_var_3(con_node_features_3, var_node_features_2, edge_index_con, edge_features_con,
                            (num_nodes_con.sum(), num_nodes_var.sum())))
 
-        con_node_features_4 = F.relu(self.var_con_4(var_node_features_3, con_node_features_3, edge_index_var, edge_features_var,
+        con_node_features_4 = F.relu(self.var_con_4(var_node_features_3, con_node_features_3, edge_index_var, edge_features_var, rhs,
                            (num_nodes_var.sum(), num_nodes_con.sum())))
         var_node_features_4 = F.relu(self.con_var_4(con_node_features_4, var_node_features_3, edge_index_con, edge_features_con,
                            (num_nodes_con.sum(), num_nodes_var.sum())))
