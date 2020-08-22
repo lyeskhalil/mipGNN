@@ -23,8 +23,6 @@ from torch_geometric.nn.inits import reset
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
-
-
 # Update constraint embeddings based on variable embeddings.
 class VarConBipartiteLayer(MessagePassing):
     def __init__(self, edge_dim, dim, var_assigment):
@@ -37,11 +35,11 @@ class VarConBipartiteLayer(MessagePassing):
         # Maps variable embeddings to scalar variable assigment.
         self.var_assigment = var_assigment
         # Maps variable embeddings + assignment to joint embedding.
-        self.joint_var = Sequential(Linear(dim+1, dim), ReLU(), Linear(dim, dim), ReLU(),
-                                       BN(dim))
+        self.joint_var = Sequential(Linear(dim + 1, dim), ReLU(), Linear(dim, dim), ReLU(),
+                                    BN(dim))
 
         self.mlp = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim), ReLU(),
-                                       BN(dim))
+                              BN(dim))
         self.eps = torch.nn.Parameter(torch.Tensor([0]))
         self.initial_eps = 0
 
@@ -49,12 +47,11 @@ class VarConBipartiteLayer(MessagePassing):
         # Map edge features to embeddings with the same number of components as node embeddings.
         edge_embedding = self.edge_encoder(edge_attr)
         var_assignment = self.var_assigment(source)
+        new_source = self.joint_var(torch.cat([source, var_assignment], dim=-1))
 
-        new_source = self.joint_var(torch.cat([source,var_assignment], dim=-1))
-
-        tmp = self.propagate(edge_index, x=new_source, var_assignment=var_assignment, edge_attr=edge_embedding, size=size)
+        tmp = self.propagate(edge_index, x=new_source, var_assignment=var_assignment, edge_attr=edge_embedding,
+                             size=size)
         out = self.mlp((1 + self.eps) * target + tmp)
-
 
         return out
 
@@ -80,7 +77,6 @@ class ErrorLayer(MessagePassing):
 
     def forward(self, source, edge_index, edge_attr, rhs, size):
         new_source = self.var_assignment(source)
-
 
         # Map edge features to embeddings with the same number of components as node embeddings.
         tmp = self.propagate(edge_index, x=new_source, edge_attr=edge_attr, size=size)
@@ -113,8 +109,6 @@ class ConVarBipartiteLayer(MessagePassing):
         # Map edge features to embeddings with the same number of components as node embeddings.
         edge_embedding = self.edge_encoder(edge_attr)
 
-
-
         tmp = self.propagate(edge_index, x=source, edge_attr=edge_embedding, size=size)
 
         out = self.mlp((1 + self.eps) * target + tmp)
@@ -133,6 +127,7 @@ class ConVarBipartiteLayer(MessagePassing):
         reset(self.mlp)
         self.eps.data.fill_(self.initial_eps)
 
+
 class SimpleNet(torch.nn.Module):
     def __init__(self, hidden):
         super(SimpleNet, self).__init__()
@@ -145,21 +140,27 @@ class SimpleNet(torch.nn.Module):
         self.var_assigment_2 = Sequential(Linear(hidden, hidden), ReLU(), Linear(hidden, 1), Sigmoid())
         self.var_assigment_3 = Sequential(Linear(hidden, hidden), ReLU(), Linear(hidden, 1), Sigmoid())
         self.var_assigment_4 = Sequential(Linear(hidden, hidden), ReLU(), Linear(hidden, 1), Sigmoid())
-        self.error_1 = ErrorLayer(hidden, self.var_assigment_1)
-
 
         # Bipartite GNN architecture.
         self.var_con_1 = VarConBipartiteLayer(1, hidden, self.var_assigment_1)
+        self.error_1 = ErrorLayer(hidden, self.var_assigment_1)
+
         self.con_var_1 = ConVarBipartiteLayer(1, hidden)
         self.var_con_2 = VarConBipartiteLayer(1, hidden, self.var_assigment_2)
+        self.error_1 = ErrorLayer(hidden, self.var_assigment_1)
+
         self.con_var_2 = ConVarBipartiteLayer(1, hidden)
         self.var_con_3 = VarConBipartiteLayer(1, hidden, self.var_assigment_3)
+        self.error_1 = ErrorLayer(hidden, self.var_assigment_1)
+
         self.con_var_3 = ConVarBipartiteLayer(1, hidden)
         self.var_con_4 = VarConBipartiteLayer(1, hidden, self.var_assigment_4)
+        self.error_1 = ErrorLayer(hidden, self.var_assigment_1)
+
         self.con_var_4 = ConVarBipartiteLayer(1, hidden)
 
         # MLP used for classification.
-        self.lin1 = Linear(5*hidden, hidden)
+        self.lin1 = Linear(5 * hidden, hidden)
         self.lin2 = Linear(hidden, hidden)
         self.lin3 = Linear(hidden, hidden)
         self.lin4 = Linear(hidden, 2)
@@ -197,41 +198,53 @@ class SimpleNet(torch.nn.Module):
 
         var_node_features_0
 
-        err = self.error_1(var_node_features_0, edge_index_var, edge_features_var, rhs, (num_nodes_var.sum(), num_nodes_con.sum()))
+        err = self.error_1(var_node_features_0, edge_index_var, edge_features_var, rhs,
+                           (num_nodes_var.sum(), num_nodes_con.sum()))
 
-        con_node_features_1 = F.relu(self.var_con_1(var_node_features_0, con_node_features_0, edge_index_var, edge_features_var, rhs,
+        con_node_features_1 = F.relu(
+            self.var_con_1(var_node_features_0, con_node_features_0, edge_index_var, edge_features_var, rhs,
                            (num_nodes_var.sum(), num_nodes_con.sum())))
-        var_node_features_1 = F.relu(self.con_var_1(con_node_features_1, var_node_features_0, edge_index_con, edge_features_con,
+        var_node_features_1 = F.relu(
+            self.con_var_1(con_node_features_1, var_node_features_0, edge_index_con, edge_features_con,
                            (num_nodes_con.sum(), num_nodes_var.sum())))
 
-        con_node_features_2 = F.relu(self.var_con_2(var_node_features_1, con_node_features_1, edge_index_var, edge_features_var, rhs,
+        con_node_features_2 = F.relu(
+            self.var_con_2(var_node_features_1, con_node_features_1, edge_index_var, edge_features_var, rhs,
                            (num_nodes_var.sum(), num_nodes_con.sum())))
-        var_node_features_2 = F.relu(self.con_var_2(con_node_features_2, var_node_features_1, edge_index_con, edge_features_con,
+        var_node_features_2 = F.relu(
+            self.con_var_2(con_node_features_2, var_node_features_1, edge_index_con, edge_features_con,
                            (num_nodes_con.sum(), num_nodes_var.sum())))
 
-        con_node_features_3 = F.relu(self.var_con_3(var_node_features_2, con_node_features_2, edge_index_var, edge_features_var, rhs,
+        con_node_features_3 = F.relu(
+            self.var_con_3(var_node_features_2, con_node_features_2, edge_index_var, edge_features_var, rhs,
                            (num_nodes_var.sum(), num_nodes_con.sum())))
-        var_node_features_3 = F.relu(self.con_var_3(con_node_features_3, var_node_features_2, edge_index_con, edge_features_con,
+        var_node_features_3 = F.relu(
+            self.con_var_3(con_node_features_3, var_node_features_2, edge_index_con, edge_features_con,
                            (num_nodes_con.sum(), num_nodes_var.sum())))
 
-        con_node_features_4 = F.relu(self.var_con_4(var_node_features_3, con_node_features_3, edge_index_var, edge_features_var, rhs,
+        con_node_features_4 = F.relu(
+            self.var_con_4(var_node_features_3, con_node_features_3, edge_index_var, edge_features_var, rhs,
                            (num_nodes_var.sum(), num_nodes_con.sum())))
-        var_node_features_4 = F.relu(self.con_var_4(con_node_features_4, var_node_features_3, edge_index_con, edge_features_con,
+        var_node_features_4 = F.relu(
+            self.con_var_4(con_node_features_4, var_node_features_3, edge_index_con, edge_features_con,
                            (num_nodes_con.sum(), num_nodes_var.sum())))
 
-        x = torch.cat([var_node_features_0,var_node_features_1,var_node_features_2,var_node_features_3,var_node_features_4], dim=-1)
+        x = torch.cat(
+            [var_node_features_0, var_node_features_1, var_node_features_2, var_node_features_3, var_node_features_4],
+            dim=-1)
 
         x = F.relu(self.lin1(x))
-        #x = F.dropout(x, p=0.5, training=self.training)
+        # x = F.dropout(x, p=0.5, training=self.training)
         x = F.relu(self.lin2(x))
-        #x = F.dropout(x, p=0.5, training=self.training)
+        # x = F.dropout(x, p=0.5, training=self.training)
         x = F.relu(self.lin3(x))
-        #x = F.dropout(x, p=0.5, training=self.training)
+        # x = F.dropout(x, p=0.5, training=self.training)
         x = self.lin4(x)
         return F.log_softmax(x, dim=-1)
 
     def __repr__(self):
         return self.__class__.__name__
+
 
 # Preprocessing to create Torch dataset.
 class GraphDataset(InMemoryDataset):
@@ -412,7 +425,6 @@ train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
-
 print("### DATA LOADED.")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = SimpleNet(hidden=128).to(device)
@@ -423,6 +435,7 @@ scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
                                                        factor=0.8, patience=10,
                                                        min_lr=0.0000001)
 print("### SETUP DONE.")
+
 
 def train(epoch):
     model.train()
@@ -477,6 +490,6 @@ for epoch in range(1, 100):
     print(lr)
     print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
           'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
-                                                       train_acc, val_acc, test_acc))
+                                                                        train_acc, val_acc, test_acc))
 
 torch.save(model.state_dict(), "trained_model_er_200_SET2_1k")
