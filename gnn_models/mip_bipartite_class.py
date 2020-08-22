@@ -27,7 +27,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # Update constraint embeddings based on variable embeddings.
 class VarConBipartiteLayer(MessagePassing):
-    def __init__(self, edge_dim, dim):
+    def __init__(self, edge_dim, dim, var_assigment):
         super(VarConBipartiteLayer, self).__init__(aggr="add", flow="source_to_target")
 
         # Maps edge features to the same number of components as node features.
@@ -35,7 +35,7 @@ class VarConBipartiteLayer(MessagePassing):
                                        BN(dim))
 
         # Maps variable embeddings to scalar variable assigment.
-        self.var_assigment = Sequential(Linear(dim, dim), ReLU(), Linear(dim, 1), Sigmoid())
+        self.var_assigment = var_assigment
         # Maps variable embeddings + assignment to joint embedding.
         self.joint_var = Sequential(Linear(dim+1, dim), ReLU(), Linear(dim, dim), ReLU(),
                                        BN(dim))
@@ -137,18 +137,18 @@ class SimpleNet(torch.nn.Module):
         self.var_node_encoder = Sequential(Linear(2, hidden), ReLU(), Linear(hidden, hidden))
         self.con_node_encoder = Sequential(Linear(2, hidden), ReLU(), Linear(hidden, hidden))
 
-        self.var_assigment = Sequential(Linear(hidden, hidden), ReLU(), Linear(hidden, 1), Sigmoid())
+        self.var_assigment_1 = Sequential(Linear(hidden, hidden), ReLU(), Linear(hidden, 1), Sigmoid())
         self.error_1 = ErrorLayer(hidden)
 
 
         # Bipartite GNN architecture.
-        self.var_con_1 = VarConBipartiteLayer(1, hidden)
+        self.var_con_1 = VarConBipartiteLayer(1, hidden, self.var_assigment_1)
         self.con_var_1 = ConVarBipartiteLayer(1, hidden)
-        self.var_con_2 = VarConBipartiteLayer(1, hidden)
+        self.var_con_2 = VarConBipartiteLayer(1, hidden, self.var_assigment_1)
         self.con_var_2 = ConVarBipartiteLayer(1, hidden)
-        self.var_con_3 = VarConBipartiteLayer(1, hidden)
+        self.var_con_3 = VarConBipartiteLayer(1, hidden, self.var_assigment_1)
         self.con_var_3 = ConVarBipartiteLayer(1, hidden)
-        self.var_con_4 = VarConBipartiteLayer(1, hidden)
+        self.var_con_4 = VarConBipartiteLayer(1, hidden, self.var_assigment_1)
         self.con_var_4 = ConVarBipartiteLayer(1, hidden)
 
         # MLP used for classification.
@@ -188,7 +188,7 @@ class SimpleNet(torch.nn.Module):
         var_node_features_0 = self.var_node_encoder(var_node_features)
         con_node_features_0 = self.con_node_encoder(con_node_features)
 
-        x = self.var_assigment(var_node_features_0)
+        x = self.var_assigment_1(var_node_features_0)
 
         err = self.error_1(x, edge_index_var, edge_features_var, rhs, (num_nodes_var.sum(), num_nodes_con.sum()))
 
