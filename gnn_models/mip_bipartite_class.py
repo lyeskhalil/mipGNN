@@ -153,6 +153,8 @@ class SimpleNet(torch.nn.Module):
         self.var_assigment_2 = Sequential(Linear(hidden, hidden), ReLU(), Linear(hidden, 1), Sigmoid())
         self.var_assigment_3 = Sequential(Linear(hidden, hidden), ReLU(), Linear(hidden, 1), Sigmoid())
         self.var_assigment_4 = Sequential(Linear(hidden, hidden), ReLU(), Linear(hidden, 1), Sigmoid())
+        self.var_assigment_5 = Sequential(Linear(hidden, hidden), ReLU(), Linear(hidden, 1), Sigmoid())
+        self.var_assigment_6 = Sequential(Linear(hidden, hidden), ReLU(), Linear(hidden, 1), Sigmoid())
 
         # Bipartite GNN architecture.
         self.var_con_1 = VarConBipartiteLayer(1, hidden, self.var_assigment_1)
@@ -169,6 +171,8 @@ class SimpleNet(torch.nn.Module):
         self.con_var_3 = ConVarBipartiteLayer(1, hidden)
         self.var_con_4 = VarConBipartiteLayer(1, hidden, self.var_assigment_4)
         self.error_4 = ErrorLayer(hidden, self.var_assigment_4)
+
+
 
         self.con_var_4 = ConVarBipartiteLayer(1, hidden)
 
@@ -256,11 +260,11 @@ class SimpleNet(torch.nn.Module):
             dim=-1)
 
         x = F.relu(self.lin1(x))
-        # x = F.dropout(x, p=0.5, training=self.training)
+        x = F.dropout(x, p=0.5, training=self.training)
         x = F.relu(self.lin2(x))
-        # x = F.dropout(x, p=0.5, training=self.training)
+        x = F.dropout(x, p=0.5, training=self.training)
         x = F.relu(self.lin3(x))
-        # x = F.dropout(x, p=0.5, training=self.training)
+        x = F.dropout(x, p=0.5, training=self.training)
         x = self.lin4(x)
         return F.log_softmax(x, dim=-1)
 
