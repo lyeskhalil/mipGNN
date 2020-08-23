@@ -70,7 +70,7 @@ class VarConBipartiteLayer(MessagePassing):
         self.eps.data.fill_(self.initial_eps)
 
 
-# Update constraint embeddings based on variable embeddings.
+# Compute error signal.
 class ErrorLayer(MessagePassing):
     def __init__(self, dim, var_assignment):
         super(ErrorLayer, self).__init__(aggr="add", flow="source_to_target")
@@ -428,17 +428,17 @@ data_path = '../gisp_generator/DATA/er_200_SET2_1k/'
 # Threshold for computing class labels.
 bias_threshold = 0.05
 # Create dataset.
-dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform()).shuffle()
+dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform())#.shuffle()
 len(dataset)
 
 # Split data.
-train_index, rest = train_test_split(list(range(0, 1000)), test_size=0.2)
+train_index, rest = list(range(0,800)),list(range(800,1000)) #train_test_split(list(range(0, 1000)), test_size=0.2)
 val_index = rest[0:100]
 test_index = rest[100:]
 
-train_dataset = dataset[train_index].shuffle()
-val_dataset = dataset[val_index].shuffle()
-test_dataset = dataset[test_index].shuffle()
+train_dataset = dataset[train_index]#.shuffle()
+val_dataset = dataset[val_index]#.shuffle()
+test_dataset = dataset[test_index]#.shuffle()
 
 # TODO: Do not change this.
 # np.savetxt("index_er_200_SET2_1k_20", test_index, delimiter=",", fmt="%d")
