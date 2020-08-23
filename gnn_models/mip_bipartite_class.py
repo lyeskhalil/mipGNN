@@ -75,6 +75,8 @@ class ErrorLayer(MessagePassing):
     def __init__(self, dim, var_assignment):
         super(ErrorLayer, self).__init__(aggr="add", flow="source_to_target")
         self.var_assignment = var_assignment
+
+
         self.error_encoder = Sequential(Linear(1, dim), ReLU(), Linear(dim, dim), ReLU(),
                                         BN(dim))
 
@@ -513,7 +515,6 @@ for epoch in range(1, 100):
     if lr < 0.000001:
         break
 
-    print(lr)
     print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
           'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
                                                                         train_acc, val_acc, test_acc))

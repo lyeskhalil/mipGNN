@@ -321,7 +321,7 @@ print(len(test_dataset))
 print(1 - test_dataset.data.y.sum().item() / test_dataset.data.y.size(-1))
 
 # Prepare batch loaders.
-batch_size = 128
+batch_size = 64
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
@@ -388,7 +388,6 @@ for epoch in range(1, 100):
     if lr < 0.000001:
         break
 
-    print(lr)
     print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
           'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
                                                        train_acc, val_acc, test_acc))
