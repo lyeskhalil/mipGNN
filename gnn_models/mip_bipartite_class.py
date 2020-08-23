@@ -86,7 +86,7 @@ class ErrorLayer(MessagePassing):
         tmp = self.propagate(edge_index, x=new_source, edge_attr=edge_attr, size=size)
         out = tmp - rhs
         # TODO
-        #out = self.error_encoder(out)
+        out = self.error_encoder(out)
 
         # TODO: Change.
         out = softmax(out, index)
@@ -110,7 +110,7 @@ class ConVarBipartiteLayer(MessagePassing):
         self.edge_encoder = Sequential(Linear(edge_dim, dim), ReLU(), Linear(dim, dim), ReLU(),
                                        BN(dim))
 
-        self.joint_con_encoder = Sequential(Linear(dim+1, dim), ReLU(), Linear(dim, dim), ReLU(), BN(dim))
+        self.joint_con_encoder = Sequential(Linear(dim+dim, dim), ReLU(), Linear(dim, dim), ReLU(), BN(dim))
 
         self.mlp = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim), ReLU(), BN(dim))
         self.eps = torch.nn.Parameter(torch.Tensor([0]))
