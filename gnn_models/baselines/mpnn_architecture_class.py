@@ -28,10 +28,13 @@ class Net(torch.nn.Module):
         nn3 = Seq(Lin(2, dim), ReLU(), Lin(dim, dim * dim))
         self.conv3 = NNConv(dim, dim, nn3, aggr='mean', root_weight=True)
 
+        nn4 = Seq(Lin(2, dim), ReLU(), Lin(dim, dim * dim))
+        self.conv4 = NNConv(dim, dim, nn4, aggr='mean', root_weight=True)
+
         # Final MLP for regression.
-        self.fc1 = Lin(1 * dim, dim)
+        self.fc1 = Lin(4 * dim, dim)
         self.fc2 = Lin(dim, dim)
-        # self.fc3 = Lin(dim, dim)
+        self.fc3 = Lin(dim, dim)
         # self.fc4 = Lin(dim, dim)
         # self.fc5 = Lin(dim, dim)
         self.fc6 = Lin(dim, 2)
@@ -48,14 +51,15 @@ class Net(torch.nn.Module):
         xs.append(F.relu(self.conv1(xs[-1], data.edge_index, data.edge_types)))
         xs.append(F.relu(self.conv2(xs[-1], data.edge_index, data.edge_types)))
         xs.append(F.relu(self.conv3(xs[-1], data.edge_index, data.edge_types)))
+        xs.append(F.relu(self.conv4(xs[-1], data.edge_index, data.edge_types)))
 
-        x = xs[-1]
+        x = torch.cat(xs, dim=-1)
         x = x[data.assoc_var]
 
         x = F.relu(self.fc1(x))
         # x = F.dropout(x, p=0.5, training=self.training)
         x = F.relu(self.fc2(x))
-        # x = F.relu(self.fc3(x))
+        x = F.relu(self.fc3(x))
         # x = F.relu(self.fc4(x))
         # x = F.relu(self.fc5(x))
         x = F.log_softmax(self.fc6(x), dim=1)
