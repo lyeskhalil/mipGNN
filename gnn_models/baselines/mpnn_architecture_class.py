@@ -47,7 +47,7 @@ class Net(torch.nn.Module):
         x = x.scatter_(0, data.assoc_var.view(-1, 1).expand_as(n), n)
         x = x.scatter_(0, data.assoc_con.view(-1, 1).expand_as(e), e)
 
-        xs = [x]
+        xs = []
         xs.append(F.relu(self.conv1(xs[-1], data.edge_index, data.edge_types)))
         xs.append(F.relu(self.conv2(xs[-1], data.edge_index, data.edge_types)))
         xs.append(F.relu(self.conv3(xs[-1], data.edge_index, data.edge_types)))
