@@ -304,6 +304,7 @@ bias_threshold = 0.05
 dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform()).shuffle()
 len(dataset)
 
+
 # Split data.
 train_index, rest = train_test_split(list(range(0, 1000)), test_size=0.2)
 val_index = rest[0:100]
@@ -371,7 +372,7 @@ def test(loader):
 
 best_val = 0.0
 test_acc = 0.0
-for epoch in range(1, 100):
+for epoch in range(1, 50):
 
     train_loss = train(epoch)
     train_acc = test(train_loader)

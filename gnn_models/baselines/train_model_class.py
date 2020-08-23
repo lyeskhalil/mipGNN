@@ -138,11 +138,16 @@ val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
 print("### DATA LOADED.")
+
+print("### DATA LOADED.")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = Net(dim=64).to(device)
-optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
-scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-    optimizer, mode='min', factor=0.7, patience=3, min_lr=0.00001)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+
+# Play with this.
+scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
+                                                       factor=0.8, patience=10,
+                                                       min_lr=0.0000001)
 print("### SETUP DONE.")
 
 
@@ -168,45 +173,37 @@ def test(loader):
     correct = 0
     l = 0
 
-    rec = 0.0
-    pre = 0.0
-
     for data in loader:
         data = data.to(device)
         pred = model(data).max(dim=1)[1]
         correct += pred.eq(data.y).float().mean().item()
-        # rec += metrics.recall_score(data.y.tolist(), pred.tolist())
-        # pre += metrics.precision_score(data.y.tolist(), pred.tolist())
         l += 1
 
-    # print(rec/l, pre/l)
     return correct / l
 
 
 best_val = 0.0
 test_acc = 0.0
 for epoch in range(1, 50):
-    if epoch == 20:
-        for param_group in optimizer.param_groups:
-            param_group['lr'] = 0.1 * param_group['lr']
-
-    if epoch == 200:
-        for param_group in optimizer.param_groups:
-            param_group['lr'] = 0.1 * param_group['lr']
 
     train_loss = train(epoch)
     train_acc = test(train_loader)
 
     val_acc = test(val_loader)
+    scheduler.step(val_acc)
+    lr = scheduler.optimizer.param_groups[0]['lr']
+
     if val_acc > best_val:
         best_val = val_acc
         test_acc = test(test_loader)
 
-    print('Epoch: {:03d}, Train Loss: {:.7f}, '
-          'Train Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, train_loss,
-                                                       train_acc, test_acc))
+    # Break if learning rate is smaller 10**-6.
+    if lr < 0.000001:
+        break
 
+    print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
+          'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
+                                                                        train_acc, val_acc, test_acc))
 
-torch.save(model.state_dict(), "trained_model_er_200_SET2_1k_SIMPLE")
-
+torch.save(model.state_dict(), "trained_model_er_200_SET2_1k")
 
