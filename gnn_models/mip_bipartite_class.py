@@ -215,7 +215,6 @@ class SimpleNet(torch.nn.Module):
         err_1 = self.error_1(var_node_features_0, edge_index_var, edge_features_var, rhs, index,
                              (num_nodes_var.sum(), num_nodes_con.sum()))
 
-        print(err_1.size())
 
         var_node_features_1 = F.relu(
             self.con_var_1(con_node_features_1, var_node_features_0, edge_index_con, edge_features_con, err_1,
