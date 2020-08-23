@@ -27,7 +27,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # Update constraint embeddings based on variable embeddings.
 class VarConBipartiteLayer(MessagePassing):
     def __init__(self, edge_dim, dim, var_assigment):
-        super(VarConBipartiteLayer, self).__init__(aggr="mean", flow="source_to_target")
+        super(VarConBipartiteLayer, self).__init__(aggr="add", flow="source_to_target")
 
         # Maps edge features to the same number of components as node features.
         self.edge_encoder = Sequential(Linear(edge_dim, dim), ReLU(), Linear(dim, dim), ReLU(),
@@ -105,7 +105,7 @@ class ErrorLayer(MessagePassing):
 # Update variable embeddings based on constraint embeddings.
 class ConVarBipartiteLayer(MessagePassing):
     def __init__(self, edge_dim, dim):
-        super(ConVarBipartiteLayer, self).__init__(aggr="mean", flow="source_to_target")
+        super(ConVarBipartiteLayer, self).__init__(aggr="add", flow="source_to_target")
 
         self.edge_encoder = Sequential(Linear(edge_dim, dim), ReLU(), Linear(dim, dim), ReLU(),
                                        BN(dim))
