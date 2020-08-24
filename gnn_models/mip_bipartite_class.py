@@ -66,6 +66,7 @@ class VarConBipartiteLayer(MessagePassing):
         reset(self.node_encoder)
         reset(self.var_assigment)
         reset(self.edge_encoder)
+        reset(self.joint_var)
         reset(self.mlp)
         self.eps.data.fill_(self.initial_eps)
 
@@ -84,6 +85,8 @@ class ErrorLayer(MessagePassing):
         new_source = self.var_assignment(source)
 
         tmp = self.propagate(edge_index, x=new_source, edge_attr=edge_attr, size=size)
+
+        # Compute residual, i.e., Ax-b
         out = tmp - rhs
         # TODO
         out = self.error_encoder(out)
@@ -154,8 +157,7 @@ class SimpleNet(torch.nn.Module):
         self.var_assigment_2 = Sequential(Linear(hidden, hidden), ReLU(), Linear(hidden, 1), Sigmoid())
         self.var_assigment_3 = Sequential(Linear(hidden, hidden), ReLU(), Linear(hidden, 1), Sigmoid())
         self.var_assigment_4 = Sequential(Linear(hidden, hidden), ReLU(), Linear(hidden, 1), Sigmoid())
-        self.var_assigment_5 = Sequential(Linear(hidden, hidden), ReLU(), Linear(hidden, 1), Sigmoid())
-        self.var_assigment_6 = Sequential(Linear(hidden, hidden), ReLU(), Linear(hidden, 1), Sigmoid())
+
 
         # Bipartite GNN architecture.
         self.var_con_1 = VarConBipartiteLayer(1, hidden, self.var_assigment_1)
@@ -173,8 +175,6 @@ class SimpleNet(torch.nn.Module):
         self.var_con_4 = VarConBipartiteLayer(1, hidden, self.var_assigment_4)
         self.error_4 = ErrorLayer(hidden, self.var_assigment_4)
 
-
-
         self.con_var_4 = ConVarBipartiteLayer(1, hidden)
 
         # MLP used for classification.
@@ -184,6 +184,13 @@ class SimpleNet(torch.nn.Module):
         self.lin4 = Linear(hidden, 2)
 
     def reset_parameters(self):
+        self.var_node_encoder.reset_parameters()
+        self.con_node_encoder.reset_parameters()
+        self.var_assigment_1.reset_parameters()
+        self.var_assigment_2.reset_parameters()
+        self.var_assigment_3.reset_parameters()
+        self.var_assigment_4.reset_parameters()
+
         self.var_con_1.reset_parameters()
         self.con_var_1.reset_parameters()
         self.var_con_2.reset_parameters()
