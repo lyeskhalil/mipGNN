@@ -298,7 +298,6 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = SimpleNet(hidden=128).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
-# Play with this.
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
                                                        factor=0.8, patience=10,
                                                        min_lr=0.0000001)
