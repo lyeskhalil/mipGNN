@@ -120,6 +120,7 @@ class ConVarBipartiteLayer(MessagePassing):
         # Map edge features to embeddings with the same number of components as node embeddings.
         edge_embedding = self.edge_encoder(edge_attr)
 
+        # TODO: change this somwe
         joint_con = self.joint_con_encoder(torch.cat([source, error_con], dim=-1))
         tmp = self.propagate(edge_index, x=joint_con, error=error_con, edge_attr=edge_embedding, size=size)
 
@@ -260,11 +261,11 @@ class SimpleNet(torch.nn.Module):
             dim=-1)
 
         x = F.relu(self.lin1(x))
-        x = F.dropout(x, p=0.5, training=self.training)
+        #x = F.dropout(x, p=0.5, training=self.training)
         x = F.relu(self.lin2(x))
-        x = F.dropout(x, p=0.5, training=self.training)
+        #x = F.dropout(x, p=0.5, training=self.training)
         x = F.relu(self.lin3(x))
-        x = F.dropout(x, p=0.5, training=self.training)
+        #x = F.dropout(x, p=0.5, training=self.training)
         x = self.lin4(x)
         return F.log_softmax(x, dim=-1)
 
