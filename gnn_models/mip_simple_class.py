@@ -99,8 +99,6 @@ class SimpleNet(torch.nn.Module):
         n = self.var_node_encoder(var_node_features)
         e = self.con_node_encoder(con_node_features)
 
-        print(data.num_nodes)
-
         x = e.new_zeros((data.num_nodes, n.size(-1)))
         x = x.scatter_(0, assoc_var.view(-1, 1).expand_as(n), n)
         x = x.scatter_(0, assoc_con.view(-1, 1).expand_as(e), e)
