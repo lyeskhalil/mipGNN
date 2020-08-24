@@ -89,7 +89,7 @@ class ErrorLayer(MessagePassing):
         # Compute residual, i.e., Ax-b
         out = tmp - rhs
         # TODO
-        out = self.error_encoder(out)
+        #out = self.error_encoder(out)
 
         # TODO: Change.
         out = softmax(out, index)
@@ -113,7 +113,7 @@ class ConVarBipartiteLayer(MessagePassing):
         self.edge_encoder = Sequential(Linear(edge_dim, dim), ReLU(), Linear(dim, dim), ReLU(),
                                        BN(dim))
 
-        self.joint_con_encoder = Sequential(Linear(dim+dim, dim), ReLU(), Linear(dim, dim), ReLU(), BN(dim))
+        self.joint_con_encoder = Sequential(Linear(dim+1, dim), ReLU(), Linear(dim, dim), ReLU(), BN(dim))
 
         self.mlp = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim), ReLU(), BN(dim))
         self.eps = torch.nn.Parameter(torch.Tensor([0]))
@@ -227,6 +227,8 @@ class SimpleNet(torch.nn.Module):
                            (num_nodes_var.sum(), num_nodes_con.sum())))
         err_1 = self.error_1(var_node_features_0, edge_index_var, edge_features_var, rhs, index,
                              (num_nodes_var.sum(), num_nodes_con.sum()))
+
+        print(err_1)
 
 
         var_node_features_1 = F.relu(
