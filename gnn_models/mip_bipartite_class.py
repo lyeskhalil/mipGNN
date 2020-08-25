@@ -191,6 +191,7 @@ class SimpleNet(torch.nn.Module):
     def reset_parameters(self):
         self.var_node_encoder.reset_parameters()
         self.con_node_encoder.reset_parameters()
+
         self.var_assigment_1.reset_parameters()
         self.var_assigment_2.reset_parameters()
         self.var_assigment_3.reset_parameters()
@@ -198,10 +199,13 @@ class SimpleNet(torch.nn.Module):
 
         self.var_con_1.reset_parameters()
         self.con_var_1.reset_parameters()
+
         self.var_con_2.reset_parameters()
         self.con_var_2.reset_parameters()
+
         self.var_con_3.reset_parameters()
         self.con_var_3.reset_parameters()
+
         self.var_con_4.reset_parameters()
         self.con_var_4.reset_parameters()
 
@@ -447,12 +451,12 @@ data_path = '../gisp_generator/DATA/er_200_SET2_1k/'
 # Threshold for computing class labels.
 bias_threshold = 0.05
 # Create dataset.
-dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform())#.shuffle()
+dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform()).shuffle()
 len(dataset)
 
 # Split data.
 # TODO: Fixed split for testing purposes.
-train_index, rest = list(range(0,800)),list(range(800,1000)) #train_test_split(list(range(0, 1000)), test_size=0.2)
+train_index, rest = train_test_split(list(range(0, 1000)), test_size=0.2)
 val_index = rest[0:100]
 test_index = rest[100:]
 
@@ -479,8 +483,9 @@ model = SimpleNet(hidden=128).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 # Play with this.
+# TODO: Change
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
-                                                       factor=0.8, patience=10,
+                                                       factor=0.5, patience=5,
                                                        min_lr=0.0000001)
 print("### SETUP DONE.")
 
