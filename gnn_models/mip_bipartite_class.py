@@ -520,7 +520,6 @@ def test(loader):
 
     return correct / l
 
-
 best_val = 0.0
 test_acc = 0.0
 for epoch in range(1, 50):
