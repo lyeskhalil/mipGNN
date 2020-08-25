@@ -47,9 +47,12 @@ class VarConBipartiteLayer(MessagePassing):
     def forward(self, source, target, edge_index, edge_attr, rhs, size):
         # Map edge features to embeddings with the same number of components as node embeddings.
         edge_embedding = self.edge_encoder(edge_attr)
+        # Compute scalar variable assignment.
         var_assignment = self.var_assigment(source)
+        # Compute joint embedding of variable embeddings and scalar variable assignment.
         new_source = self.joint_var(torch.cat([source, var_assignment], dim=-1))
 
+        # Do the acutal message passing.
         tmp = self.propagate(edge_index, x=new_source, var_assignment=var_assignment, edge_attr=edge_embedding,
                              size=size)
         out = self.mlp((1 + self.eps) * target + tmp)
@@ -63,9 +66,9 @@ class VarConBipartiteLayer(MessagePassing):
         return aggr_out
 
     def reset_parameters(self):
-        reset(self.node_encoder)
-        reset(self.var_assigment)
         reset(self.edge_encoder)
+        reset(self.var_assigment)
+        reset(self.node_encoder)
         reset(self.joint_var)
         reset(self.mlp)
         self.eps.data.fill_(self.initial_eps)
@@ -76,19 +79,18 @@ class ErrorLayer(MessagePassing):
     def __init__(self, dim, var_assignment):
         super(ErrorLayer, self).__init__(aggr="add", flow="source_to_target")
         self.var_assignment = var_assignment
-
-
         self.error_encoder = Sequential(Linear(1, dim), ReLU(), Linear(dim, dim), ReLU(),
                                         BN(dim))
 
     def forward(self, source, edge_index, edge_attr, rhs, index, size):
+        # Compute scalar variable assignment.
         new_source = self.var_assignment(source)
-
         tmp = self.propagate(edge_index, x=new_source, edge_attr=edge_attr, size=size)
 
-        # Compute residual, i.e., Ax-b
+        # Compute residual, i.e., Ax-b.
         out = tmp - rhs
-        # TODO
+
+        # TODO: Think here.
         #out = self.error_encoder(out)
 
         # TODO: Change.
@@ -110,9 +112,11 @@ class ConVarBipartiteLayer(MessagePassing):
     def __init__(self, edge_dim, dim):
         super(ConVarBipartiteLayer, self).__init__(aggr="add", flow="source_to_target")
 
+        # Maps edge features to the same number of components as node features.
         self.edge_encoder = Sequential(Linear(edge_dim, dim), ReLU(), Linear(dim, dim), ReLU(),
                                        BN(dim))
 
+        # Learn joint representation of contraint embedding and error.
         self.joint_con_encoder = Sequential(Linear(dim+1, dim-1), ReLU(), Linear(dim-1, dim-1), ReLU(), BN(dim-1))
 
         self.mlp = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim), ReLU(), BN(dim))
@@ -123,7 +127,7 @@ class ConVarBipartiteLayer(MessagePassing):
         # Map edge features to embeddings with the same number of components as node embeddings.
         edge_embedding = self.edge_encoder(edge_attr)
 
-        # TODO: change this somwe
+        # TODO
         joint_con = torch.cat([self.joint_con_encoder(torch.cat([source, error_con], dim=-1)), error_con], dim=-1)
         tmp = self.propagate(edge_index, x=joint_con, error=error_con, edge_attr=edge_embedding, size=size)
 
@@ -153,11 +157,12 @@ class SimpleNet(torch.nn.Module):
         self.var_node_encoder = Sequential(Linear(2, hidden), ReLU(), Linear(hidden, hidden))
         self.con_node_encoder = Sequential(Linear(2, hidden), ReLU(), Linear(hidden, hidden))
 
+        # Compute variable assignement.
+        # TODO: Just one shared assignment for all layers?
         self.var_assigment_1 = Sequential(Linear(hidden, hidden), ReLU(), Linear(hidden, 1), Sigmoid())
         self.var_assigment_2 = Sequential(Linear(hidden, hidden), ReLU(), Linear(hidden, 1), Sigmoid())
         self.var_assigment_3 = Sequential(Linear(hidden, hidden), ReLU(), Linear(hidden, 1), Sigmoid())
         self.var_assigment_4 = Sequential(Linear(hidden, hidden), ReLU(), Linear(hidden, 1), Sigmoid())
-
 
         # Bipartite GNN architecture.
         self.var_con_1 = VarConBipartiteLayer(1, hidden, self.var_assigment_1)
