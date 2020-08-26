@@ -518,7 +518,8 @@ def test(loader):
 
     for data in loader:
         data = data.to(device)
-        pred, _  = model(data).max(dim=1)[1]
+        pred, _  = model(data)
+        pred = pred.max(dim=1)[1]
         correct += pred.eq(data.y).float().mean().item()
         l += 1
 
