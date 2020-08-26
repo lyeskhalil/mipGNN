@@ -278,12 +278,7 @@ class SimpleNet(torch.nn.Module):
         var = self.var_assigment_4(var_node_features_4)
 
         cost = torch.mul(var, obj)
-
-        print(cost.size())
-
-
-        print(var.size(), data.index_var.size())
-        cost = scatter_add(var, index=data.index_var, dim=0)
+        cost = scatter_add(cost, index=data.index_var, dim=0)
 
         exit()
 
