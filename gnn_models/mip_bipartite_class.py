@@ -353,6 +353,7 @@ class GraphDataset(InMemoryDataset):
             feat_rhs = []
 
             index = []
+            obj = []
 
             # Iterate over nodes, and collect features.
             for i, (node, node_data) in enumerate(graph.nodes(data=True)):
@@ -367,6 +368,7 @@ class GraphDataset(InMemoryDataset):
                         y.append(1)
 
                     feat_var.append([node_data['objcoeff'], graph.degree[i]])
+                    obj.append([node_data['objcoeff']])
 
                 # Node is constraint node.
                 elif node_data['bipartite'] == 1:
@@ -501,9 +503,9 @@ def train(epoch):
     for data in train_loader:
         data = data.to(device)
         optimizer.zero_grad()
-        output, err  = model(data)
+        output, err = model(data)
 
-        loss = F.nll_loss(output, data.y) -err
+        loss = F.nll_loss(output, data.y)
         loss.backward()
         loss_all += batch_size * loss.item()
         optimizer.step()
