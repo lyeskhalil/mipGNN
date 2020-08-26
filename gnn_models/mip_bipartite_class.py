@@ -273,14 +273,9 @@ class SimpleNet(torch.nn.Module):
         err_4 = self.error_1(var_node_features_3, edge_index_var, edge_features_var, rhs, index,
                              (num_nodes_var.sum(), num_nodes_con.sum()))
 
-        print(err_4.min(), err_4.max())
-
         var_node_features_4 = F.relu(
             self.con_var_4(con_node_features_4, var_node_features_3, edge_index_con, edge_features_con, err_4,
                            (num_nodes_con.sum(), num_nodes_var.sum())))
-
-
-        var = self.var_assigment_4(var_node_features_4)
 
         #print(err_1.min(), print(err_1.max()))
 
@@ -295,7 +290,7 @@ class SimpleNet(torch.nn.Module):
         x = F.relu(self.lin3(x))
         #x = F.dropout(x, p=0.5, training=self.training)
         x = self.lin4(x)
-        return F.log_softmax(x, dim=-1)
+        return [F.log_softmax(x, dim=-1), err_4.mean()]
 
     def __repr__(self):
         return self.__class__.__name__
@@ -506,7 +501,7 @@ def train(epoch):
     for data in train_loader:
         data = data.to(device)
         optimizer.zero_grad()
-        output = model(data)
+        output, _  = model(data)
 
         loss = F.nll_loss(output, data.y)
         loss.backward()
