@@ -420,6 +420,7 @@ class GraphDataset(InMemoryDataset):
             data.var_node_features = torch.from_numpy(np.array(feat_var)).to(torch.float)
             data.con_node_features = torch.from_numpy(np.array(feat_con)).to(torch.float)
             data.rhs = torch.from_numpy(np.array(feat_rhs)).to(torch.float)
+            data.obj = torch.from_numpy(np.array(obj)).to(torch.float)
             data.edge_features_con = torch.from_numpy(np.array(edge_features_con)).to(torch.float)
             data.edge_features_var = torch.from_numpy(np.array(edge_features_var)).to(torch.float)
             data.num_nodes_var = num_nodes_var
