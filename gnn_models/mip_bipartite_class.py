@@ -228,7 +228,7 @@ class SimpleNet(torch.nn.Module):
         index = data.index
 
 
-        print(rhs)
+        print(rhs.max(), rhs.min())
         exit()
 
         # Compute initial node embeddings.
