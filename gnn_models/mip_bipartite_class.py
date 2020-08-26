@@ -20,6 +20,8 @@ from torch.nn import Sequential, Linear, ReLU, Sigmoid
 from torch_geometric.nn import MessagePassing
 from torch_geometric.nn.inits import reset
 
+from torch_scatter import scatter_add
+
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
@@ -277,6 +279,10 @@ class SimpleNet(torch.nn.Module):
 
         cost = torch.matmul(var.flatten(), obj.flatten())/data.num_nodes_var.sum()
 
+        print(var.size(), obj.size())
+        exit()
+        scatter_add()
+
 
         # print(err_1.min(), print(err_1.max()))
 
@@ -533,7 +539,7 @@ def test(loader):
         err_total += err.item()
 
     # print(err_total / l)
-    print(cost_total)
+    print(cost_total / l)
 
     return correct / l
 
