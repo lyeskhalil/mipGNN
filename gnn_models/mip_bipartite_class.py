@@ -96,7 +96,7 @@ class ErrorLayer(MessagePassing):
 
         # TODO: Change.
         out = softmax(out, index)
-        test = scatter(out, index, dim=0, reduce="sum")
+        test = scatter(out, index, dim=1, reduce="sum")
         print(test)
         exit()
 
