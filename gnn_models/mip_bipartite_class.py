@@ -281,7 +281,7 @@ class SimpleNet(torch.nn.Module):
 
         print(var.size(), obj.size())
         exit()
-        scatter_add()
+        scatter_add(var, index=index)
 
 
         # print(err_1.min(), print(err_1.max()))
