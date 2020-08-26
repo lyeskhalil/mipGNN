@@ -277,7 +277,6 @@ class SimpleNet(torch.nn.Module):
 
         cost = torch.matmul(var.flatten(), obj.flatten())
 
-        print(cost.size(), data.num_nodes_var.size())
 
         # print(err_1.min(), print(err_1.max()))
 
