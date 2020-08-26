@@ -97,9 +97,9 @@ class ErrorLayer(MessagePassing):
         # TODO: Change.
         out = softmax(out, index)
         test = scatter(out, index, dim=0, reduce="sum")
-
+        print(test)
         exit()
-        print(torch.sum(out, index))
+
 
         return out
 
