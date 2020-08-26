@@ -524,7 +524,7 @@ def test(loader):
         correct += pred.eq(data.y).float().mean().item()
         l += 1
 
-        err_total += err
+        err_total += err.item()
 
     print(err_total/l)
 
