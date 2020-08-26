@@ -96,9 +96,9 @@ class ErrorLayer(MessagePassing):
         #out = self.error_encoder(out)
 
         # TODO: Change.
-        out = softmax(out, index)
+        #out = softmax(out, index)
 
-        print(out)
+
 
         return out
 
@@ -184,6 +184,8 @@ class SimpleNet(torch.nn.Module):
         self.var_con_4 = VarConBipartiteLayer(1, hidden, self.var_assigment_4)
         self.error_4 = ErrorLayer(hidden, self.var_assigment_4)
 
+
+
         self.con_var_4 = ConVarBipartiteLayer(1, hidden)
 
         # MLP used for classification.
@@ -241,8 +243,6 @@ class SimpleNet(torch.nn.Module):
         err_1 = self.error_1(var_node_features_0, edge_index_var, edge_features_var, rhs, index,
                              (num_nodes_var.sum(), num_nodes_con.sum()))
 
-
-
         var_node_features_1 = F.relu(
             self.con_var_1(con_node_features_1, var_node_features_0, edge_index_con, edge_features_con, err_1,
                            (num_nodes_con.sum(), num_nodes_var.sum())))
@@ -272,6 +272,8 @@ class SimpleNet(torch.nn.Module):
                            (num_nodes_var.sum(), num_nodes_con.sum())))
         err_4 = self.error_1(var_node_features_3, edge_index_var, edge_features_var, rhs, index,
                              (num_nodes_var.sum(), num_nodes_con.sum()))
+
+        print(err_4.min(), err_4.max())
 
         var_node_features_4 = F.relu(
             self.con_var_4(con_node_features_4, var_node_features_3, edge_index_con, edge_features_con, err_4,
