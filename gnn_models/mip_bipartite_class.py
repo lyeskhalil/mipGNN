@@ -19,8 +19,6 @@ from torch.nn import BatchNorm1d as BN
 from torch.nn import Sequential, Linear, ReLU, Sigmoid
 from torch_geometric.nn import MessagePassing
 from torch_geometric.nn.inits import reset
-from torch_geometric.utils import softmax
-from torch_scatter import scatter
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -93,12 +91,10 @@ class ErrorLayer(MessagePassing):
         out = tmp - rhs
 
         # TODO: Think here.
-        #out = self.error_encoder(out)
+        # out = self.error_encoder(out)
 
         # TODO: Change.
-        #out = softmax(out, index)
-
-
+        # out = softmax(out, index)
 
         return out
 
@@ -121,7 +117,8 @@ class ConVarBipartiteLayer(MessagePassing):
                                        BN(dim))
 
         # Learn joint representation of contraint embedding and error.
-        self.joint_con_encoder = Sequential(Linear(dim+1, dim-1), ReLU(), Linear(dim-1, dim-1), ReLU(), BN(dim-1))
+        self.joint_con_encoder = Sequential(Linear(dim + 1, dim - 1), ReLU(), Linear(dim - 1, dim - 1), ReLU(),
+                                            BN(dim - 1))
 
         self.mlp = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim), ReLU(), BN(dim))
         self.eps = torch.nn.Parameter(torch.Tensor([0]))
@@ -276,27 +273,24 @@ class SimpleNet(torch.nn.Module):
             self.con_var_4(con_node_features_4, var_node_features_3, edge_index_con, edge_features_con, err_4,
                            (num_nodes_con.sum(), num_nodes_var.sum())))
 
-
         var = self.var_assigment_4(var_node_features_4)
 
-        cost = torch.matmul(var.flatten(),obj.flatten())
-        print(cost)
+        cost = torch.matmul(var.flatten(), obj.flatten()) / data.num_nodes_var
 
-
-        #print(err_1.min(), print(err_1.max()))
+        # print(err_1.min(), print(err_1.max()))
 
         x = torch.cat(
             [var_node_features_0, var_node_features_1, var_node_features_2, var_node_features_3, var_node_features_4],
             dim=-1)
 
         x = F.relu(self.lin1(x))
-        #x = F.dropout(x, p=0.5, training=self.training)
+        # x = F.dropout(x, p=0.5, training=self.training)
         x = F.relu(self.lin2(x))
-        #x = F.dropout(x, p=0.5, training=self.training)
+        # x = F.dropout(x, p=0.5, training=self.training)
         x = F.relu(self.lin3(x))
-        #x = F.dropout(x, p=0.5, training=self.training)
+        # x = F.dropout(x, p=0.5, training=self.training)
         x = self.lin4(x)
-        return [F.log_softmax(x, dim=-1), err_4.mean()]
+        return [F.log_softmax(x, dim=-1), err_4.mean(), cost]
 
     def __repr__(self):
         return self.__class__.__name__
@@ -510,7 +504,7 @@ def train(epoch):
     for data in train_loader:
         data = data.to(device)
         optimizer.zero_grad()
-        output, err = model(data)
+        output, err, cost = model(data)
 
         loss = F.nll_loss(output, data.y)
         loss.backward()
@@ -526,18 +520,22 @@ def test(loader):
     l = 0
 
     err_total = 0.0
+    cost_total = 0.0
     for data in loader:
         data = data.to(device)
-        pred, err  = model(data)
+        pred, err, cost = model(data)
         pred = pred.max(dim=1)[1]
         correct += pred.eq(data.y).float().mean().item()
         l += 1
 
+        cost_total += cost.item()
         err_total += err.item()
 
-    print(err_total/l)
+    # print(err_total / l)
+    print(cost_total)
 
     return correct / l
+
 
 best_val = 0.0
 test_acc = 0.0
