@@ -501,9 +501,9 @@ def train(epoch):
     for data in train_loader:
         data = data.to(device)
         optimizer.zero_grad()
-        output, _  = model(data)
+        output, err  = model(data)
 
-        loss = F.nll_loss(output, data.y)
+        loss = F.nll_loss(output, data.y) -err
         loss.backward()
         loss_all += batch_size * loss.item()
         optimizer.step()
