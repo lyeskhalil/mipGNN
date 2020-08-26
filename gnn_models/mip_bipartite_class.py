@@ -283,7 +283,7 @@ class SimpleNet(torch.nn.Module):
 
 
         print(var.size())
-        #cost = scatter_add(var, index=index)
+        cost = scatter_add(var, index=index, dim=0)
 
         exit()
 
