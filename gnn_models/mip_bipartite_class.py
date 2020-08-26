@@ -474,7 +474,7 @@ data_path = '../gisp_generator/DATA/er_200_SET2_1k/'
 bias_threshold = 0.05
 # Create dataset.
 dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform()).shuffle()
-print(dataset.data.var_index())
+print(dataset.var_index())
 exit()
 len(dataset)
 
