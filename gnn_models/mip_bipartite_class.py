@@ -227,10 +227,6 @@ class SimpleNet(torch.nn.Module):
         rhs = data.rhs
         index = data.index
 
-
-        print(rhs.max(), rhs.min())
-        exit()
-
         # Compute initial node embeddings.
         var_node_features_0 = self.var_node_encoder(var_node_features)
         con_node_features_0 = self.con_node_encoder(con_node_features)
@@ -241,8 +237,7 @@ class SimpleNet(torch.nn.Module):
         err_1 = self.error_1(var_node_features_0, edge_index_var, edge_features_var, rhs, index,
                              (num_nodes_var.sum(), num_nodes_con.sum()))
 
-        #print(err_1)
-
+        print(err_1.min(), print(err_1.max()))
 
         var_node_features_1 = F.relu(
             self.con_var_1(con_node_features_1, var_node_features_0, edge_index_con, edge_features_con, err_1,
