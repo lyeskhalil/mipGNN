@@ -281,7 +281,6 @@ class SimpleNet(torch.nn.Module):
 
 
         var = self.var_assigment_4(var_node_features_4)
-        print(var.mean())
 
         #print(err_1.min(), print(err_1.max()))
 
