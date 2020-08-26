@@ -83,6 +83,7 @@ class ErrorLayer(MessagePassing):
         self.error_encoder = Sequential(Linear(1, dim), ReLU(), Linear(dim, dim), ReLU(),
                                         BN(dim))
 
+    # TODO: Change back!
     def forward(self, source, edge_index, edge_attr, rhs, index, size):
         # Compute scalar variable assignment.
         new_source = self.var_assignment(source)
@@ -96,10 +97,8 @@ class ErrorLayer(MessagePassing):
 
         # TODO: Change.
         out = softmax(out, index)
-        test = scatter(out, index, dim=1, reduce="sum")
-        print(test)
-        exit()
 
+        print(out)
 
         return out
 
