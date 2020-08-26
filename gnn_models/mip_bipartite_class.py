@@ -364,6 +364,7 @@ class GraphDataset(InMemoryDataset):
             feat_rhs = []
 
             index = []
+            index_var = []
             obj = []
 
             # Iterate over nodes, and collect features.
@@ -380,6 +381,7 @@ class GraphDataset(InMemoryDataset):
 
                     feat_var.append([node_data['objcoeff'], graph.degree[i]])
                     obj.append([node_data['objcoeff']])
+                    index_var.append(0)
 
                 # Node is constraint node.
                 elif node_data['bipartite'] == 1:
@@ -435,6 +437,7 @@ class GraphDataset(InMemoryDataset):
             data.num_nodes_var = num_nodes_var
             data.num_nodes_con = num_nodes_con
             data.index = torch.from_numpy(np.array(index)).to(torch.long)
+            data.index_var = torch.from_numpy(np.array(index_var)).to(torch.long)
 
             data_list.append(data)
 
