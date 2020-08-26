@@ -280,8 +280,9 @@ class SimpleNet(torch.nn.Module):
         cost = torch.mul(var, obj)
 
         print(var.size(), obj.size())
-        exit()
+        
         scatter_add(var, index=index)
+        exit()
 
 
         # print(err_1.min(), print(err_1.max()))
