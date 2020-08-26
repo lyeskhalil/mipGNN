@@ -184,8 +184,6 @@ class SimpleNet(torch.nn.Module):
         self.var_con_4 = VarConBipartiteLayer(1, hidden, self.var_assigment_4)
         self.error_4 = ErrorLayer(hidden, self.var_assigment_4)
 
-
-
         self.con_var_4 = ConVarBipartiteLayer(1, hidden)
 
         # MLP used for classification.
@@ -276,6 +274,10 @@ class SimpleNet(torch.nn.Module):
         var_node_features_4 = F.relu(
             self.con_var_4(con_node_features_4, var_node_features_3, edge_index_con, edge_features_con, err_4,
                            (num_nodes_con.sum(), num_nodes_var.sum())))
+
+
+        var = self.var_assigment_4(var_node_features_4)
+        print(var.size(), data.obj.size())
 
         #print(err_1.min(), print(err_1.max()))
 
