@@ -20,6 +20,7 @@ from torch.nn import Sequential, Linear, ReLU, Sigmoid
 from torch_geometric.nn import MessagePassing
 from torch_geometric.nn.inits import reset
 from torch_geometric.utils import softmax
+from torch_scatter import scatter
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -95,6 +96,10 @@ class ErrorLayer(MessagePassing):
 
         # TODO: Change.
         out = softmax(out, index)
+        test = scatter(out, index, dim=0, reduce="sum")
+
+        exit()
+        print(torch.sum(out, index))
 
         return out
 
@@ -276,7 +281,7 @@ class SimpleNet(torch.nn.Module):
 
         var = self.var_assigment_4(var_node_features_4)
         print(var.mean())
-        print(data.y.float().mean())
+
         #print(err_1.min(), print(err_1.max()))
 
         x = torch.cat(
