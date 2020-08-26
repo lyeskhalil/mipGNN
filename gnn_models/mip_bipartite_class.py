@@ -538,6 +538,7 @@ def test(loader):
     cost_total = 0.0
     for data in loader:
         print(data.index_var)
+        print(data.index_var.unique().size())
         exit()
 
         data = data.to(device)
