@@ -230,7 +230,7 @@ class SimpleNet(torch.nn.Module):
         num_nodes_con = data.num_nodes_con
         rhs = data.rhs
         index = data.index
-        obj = data.obj.size()
+        obj = data.obj
 
         # Compute initial node embeddings.
         var_node_features_0 = self.var_node_encoder(var_node_features)
