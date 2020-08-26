@@ -450,10 +450,10 @@ class MyData(Data):
             return torch.tensor([self.num_nodes_var, self.num_nodes_con]).view(2, 1)
         elif key in ['edge_index_con']:
             return torch.tensor([self.num_nodes_con, self.num_nodes_var]).view(2, 1)
-        elif key in ['index']:
-            return torch.tensor(self.num_nodes_con)
-        elif key in ['index_var']:
-            return torch.tensor(self.num_nodes_var)
+        # elif key in ['index']:
+        #     return torch.tensor(self.num_nodes_con)
+        # elif key in ['index_var']:
+        #     return torch.tensor(self.num_nodes_var)
         else:
             return 0
 
