@@ -516,12 +516,17 @@ def test(loader):
     correct = 0
     l = 0
 
+    err_total = 0.0
     for data in loader:
         data = data.to(device)
-        pred, _  = model(data)
+        pred, err  = model(data)
         pred = pred.max(dim=1)[1]
         correct += pred.eq(data.y).float().mean().item()
         l += 1
+
+        err_total += err
+
+    print(err_total/l)
 
     return correct / l
 
