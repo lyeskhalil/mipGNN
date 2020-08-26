@@ -230,6 +230,7 @@ class SimpleNet(torch.nn.Module):
         num_nodes_con = data.num_nodes_con
         rhs = data.rhs
         index = data.index
+        obj = data.obj.size()
 
         # Compute initial node embeddings.
         var_node_features_0 = self.var_node_encoder(var_node_features)
@@ -277,7 +278,10 @@ class SimpleNet(torch.nn.Module):
 
 
         var = self.var_assigment_4(var_node_features_4)
-        print(var.size(), data.obj.size())
+
+        cost = torch.matmul(var,obj)
+        print(cost.size())
+
 
         #print(err_1.min(), print(err_1.max()))
 
