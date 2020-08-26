@@ -276,6 +276,7 @@ class SimpleNet(torch.nn.Module):
         var = self.var_assigment_4(var_node_features_4)
 
         cost = torch.matmul(var.flatten(), obj.flatten()) / data.num_nodes_var
+        print(cost)
 
         # print(err_1.min(), print(err_1.max()))
 
