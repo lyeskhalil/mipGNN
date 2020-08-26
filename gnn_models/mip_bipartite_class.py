@@ -474,8 +474,7 @@ data_path = '../gisp_generator/DATA/er_200_SET2_1k/'
 bias_threshold = 0.05
 # Create dataset.
 dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform()).shuffle()
-print(dataset.var_index())
-exit()
+
 len(dataset)
 
 # Split data.
@@ -538,6 +537,9 @@ def test(loader):
     err_total = 0.0
     cost_total = 0.0
     for data in loader:
+        print(data.index_var)
+        exit()
+
         data = data.to(device)
         pred, err, cost = model(data)
         pred = pred.max(dim=1)[1]
