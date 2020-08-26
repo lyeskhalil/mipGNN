@@ -227,6 +227,10 @@ class SimpleNet(torch.nn.Module):
         rhs = data.rhs
         index = data.index
 
+
+        print(rhs)
+        exit()
+
         # Compute initial node embeddings.
         var_node_features_0 = self.var_node_encoder(var_node_features)
         con_node_features_0 = self.con_node_encoder(con_node_features)
@@ -455,7 +459,6 @@ dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform())
 len(dataset)
 
 # Split data.
-# TODO: Fixed split for testing purposes.
 train_index, rest = train_test_split(list(range(0, 1000)), test_size=0.2)
 val_index = rest[0:100]
 test_index = rest[100:]
@@ -483,7 +486,7 @@ model = SimpleNet(hidden=128).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 # Play with this.
-# TODO: Change
+# TODO: Change back
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
                                                        factor=0.5, patience=5,
                                                        min_lr=0.0000001)
