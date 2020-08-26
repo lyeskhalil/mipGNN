@@ -275,8 +275,8 @@ class SimpleNet(torch.nn.Module):
 
 
         var = self.var_assigment_4(var_node_features_4)
-        print(var.min(), print(var.max()))
-        print(err_1.min(), print(err_1.max()))
+        print(print(var.max()))
+        #print(err_1.min(), print(err_1.max()))
 
         x = torch.cat(
             [var_node_features_0, var_node_features_1, var_node_features_2, var_node_features_3, var_node_features_4],
