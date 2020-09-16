@@ -548,7 +548,7 @@ def test(loader):
         # err_total += err.item()
 
     # print(err_total / l)
-    print(cost_total / l)
+    #print(cost_total / l)
 
     return correct / l
 
