@@ -28,7 +28,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # Update constraint embeddings based on variable embeddings.
 class VarConBipartiteLayer(MessagePassing):
     def __init__(self, edge_dim, dim, var_assigment):
-        super(VarConBipartiteLayer, self).__init__(aggr="add", flow="source_to_target")
+        super(VarConBipartiteLayer, self).__init__(aggr="mean", flow="source_to_target")
 
         # Maps edge features to the same number of components as node features.
         self.edge_encoder = Sequential(Linear(edge_dim, dim), ReLU(), Linear(dim, dim), ReLU(),
@@ -270,7 +270,7 @@ class SimpleNet(torch.nn.Module):
             self.var_con_4(var_node_features_3, con_node_features_3, edge_index_var, edge_features_var, rhs,
                            (var_node_features_3.size(0), con_node_features_3.size(0))))
         err_4 = self.error_1(var_node_features_3, edge_index_var, edge_features_var, rhs, index,
-                             (var_node_features_3.size(0), con_node_features_4.size(0)))
+                             (var_node_features_3.size(0), con_node_features_3.size(0)))
 
         var_node_features_4 = F.relu(
             self.con_var_4(con_node_features_4, var_node_features_3, edge_index_con, edge_features_con, err_4,
