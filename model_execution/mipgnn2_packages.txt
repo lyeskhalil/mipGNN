@@ -1,0 +1,9 @@
+conda create -n mipgnn3 python=3.7 numpy networkx
+conda activate mipgnn3
+python /Applications/CPLEX_Studio1210/python/setup.py install
+conda install pytorch==1.4.0 -c pytorch
+pip install torch-scatter==latest+cpu -f https://pytorch-geometric.com/whl/torch-1.4.0.html
+pip install torch-sparse==latest+cpu -f https://pytorch-geometric.com/whl/torch-1.4.0.html
+pip install torch-cluster==latest+cpu -f https://pytorch-geometric.com/whl/torch-1.4.0.html
+pip install torch-spline-conv==latest+cpu -f https://pytorch-geometric.com/whl/torch-1.4.0.html
+pip install torch-geometric
