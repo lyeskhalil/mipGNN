@@ -119,8 +119,8 @@ class ConVarBipartiteLayer(MessagePassing):
                                        BN(dim))
 
         # Learn joint representation of contraint embedding and error.
-        self.joint_con_encoder = Sequential(Linear(dim + 1, dim - 1), ReLU(), Linear(dim - 1, dim - 1), ReLU(),
-                                            BN(dim - 1))
+        self.joint_con_encoder = Sequential(Linear(dim * 2, dim), ReLU(), Linear(dim, dim), ReLU(),
+                                            BN(dim))
 
         self.mlp = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim), ReLU(), BN(dim))
         self.eps = torch.nn.Parameter(torch.Tensor([0]))
@@ -130,8 +130,8 @@ class ConVarBipartiteLayer(MessagePassing):
         # Map edge features to embeddings with the same number of components as node embeddings.
         edge_embedding = self.edge_encoder(edge_attr)
 
-        # TODO
-        joint_con = torch.cat([self.joint_con_encoder(torch.cat([source, error_con], dim=-1)), error_con], dim=-1)
+        #joint_con = torch.cat([self.joint_con_encoder(torch.cat([source, error_con], dim=-1)), error_con], dim=-1)
+        joint_con = self.joint_con_encoder(torch.cat([source, error_con], dim=-1))
         tmp = self.propagate(edge_index, x=joint_con, error=error_con, edge_attr=edge_embedding, size=size)
 
         out = self.mlp((1 + self.eps) * target + tmp)
@@ -277,20 +277,18 @@ class SimpleNet(torch.nn.Module):
 
         var = self.var_assigment_4(var_node_features_4)
 
-        cost = torch.mul(var, obj)
-        print(cost.size())
-        print(data.index_var)
-        cost = scatter_add(cost, index=data.index_var, dim=0)
-
-        print(cost.size())
-        exit()
+        # cost = torch.mul(var, obj)
+        # print(cost.size())
+        # print(data.index_var)
+        # cost = scatter_add(cost, index=data.index_var, dim=0)
+        #
+        # print(cost.size())
+        # exit()
 
 
         # print(err_1.min(), print(err_1.max()))
 
-        x = torch.cat(
-            [var_node_features_0, var_node_features_1, var_node_features_2, var_node_features_3, var_node_features_4],
-            dim=-1)
+        x = torch.cat([var_node_features_0, var_node_features_1, var_node_features_2, var_node_features_3, var_node_features_4], dim=-1)
 
         x = F.relu(self.lin1(x))
         # x = F.dropout(x, p=0.5, training=self.training)
@@ -299,7 +297,7 @@ class SimpleNet(torch.nn.Module):
         x = F.relu(self.lin3(x))
         # x = F.dropout(x, p=0.5, training=self.training)
         x = self.lin4(x)
-        return [F.log_softmax(x, dim=-1), err_4.mean(), cost]
+        return F.log_softmax(x, dim=-1)
 
     def __repr__(self):
         return self.__class__.__name__
@@ -450,8 +448,8 @@ class MyData(Data):
             return torch.tensor([self.num_nodes_var, self.num_nodes_con]).view(2, 1)
         elif key in ['edge_index_con']:
             return torch.tensor([self.num_nodes_con, self.num_nodes_var]).view(2, 1)
-        # elif key in ['index']:
-        #     return torch.tensor(self.num_nodes_con)
+        elif key in ['index']:
+             return torch.tensor(self.num_nodes_con)
         elif key in ['index_var']:
              return torch.tensor(self.num_nodes_var)
         else:
@@ -519,7 +517,8 @@ def train(epoch):
     for data in train_loader:
         data = data.to(device)
         optimizer.zero_grad()
-        output, err, cost = model(data)
+        # output, err, cost = model(data)
+        output = model(data)
 
         loss = F.nll_loss(output, data.y)
         loss.backward()
@@ -537,11 +536,10 @@ def test(loader):
     err_total = 0.0
     cost_total = 0.0
     for data in loader:
-        print(data.index_var)
-        print(data.index_var.unique().size())
-        exit()
+
 
         data = data.to(device)
+        # pred, err, cost = model(data)
         pred, err, cost = model(data)
         pred = pred.max(dim=1)[1]
         correct += pred.eq(data.y).float().mean().item()
