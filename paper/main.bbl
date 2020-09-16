@@ -1,4 +1,4 @@
-\begin{thebibliography}{1}
+\begin{thebibliography}{38}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -10,5 +10,256 @@ S.~Arora, E.~Hazan, and S.~Kale.
 \newblock The multiplicative weights update method: a meta-algorithm and
   applications.
 \newblock \emph{Theory of Computing}, 8\penalty0 (1):\penalty0 121--164, 2012.
+
+\bibitem[Barcel{\'{o}} et~al.(2020)Barcel{\'{o}}, Kostylev, Monet, P{\'{e}}rez,
+  Reutter, and Silva]{Bar+2020}
+P.~Barcel{\'{o}}, E.~V. Kostylev, M.~Monet, J.~P{\'{e}}rez, J.~L. Reutter, and
+  J.~Pablo Silva.
+\newblock The logical expressiveness of graph neural networks.
+\newblock In \emph{International Conference on Learning Representations}, 2020.
+
+\bibitem[Bengio et~al.(2019)Bengio, Frejinger, Lodi, Patel, and
+  Sankaranarayanan]{Ben+2019}
+Y.~Bengio, E.~Frejinger, A.~Lodi, R.~Patel, and S.~Sankaranarayanan.
+\newblock A learning-based algorithm to quickly compute good primal solutions
+  for stochastic integer programs.
+\newblock \emph{CoRR}, abs/1912.08112, 2019.
+\newblock URL \url{http://arxiv.org/abs/1912.08112}.
+
+\bibitem[Bengio et~al.(2018)Bengio, Lodi, and Prouvost]{Ben+2018}
+Z.~Bengio, A.~Lodi, and A.~Prouvost.
+\newblock Machine learning for combinatorial optimization: a methodological
+  tour d'horizon.
+\newblock \emph{CoRR}, abs/1811.06128, 2018.
+\newblock URL \url{http://arxiv.org/abs/1811.06128}.
+
+\bibitem[Bonami et~al.(2018)Bonami, Lodi, and Zarpellon]{Bon+2018}
+P.~Bonami, A.~Lodi, and G.~Zarpellon.
+\newblock Learning a classification of mixed-integer quadratic programming
+  problems.
+\newblock In \emph{Integration of Constraint Programming, Artificial
+  Intelligence, and Operations Research}, volume 10848 of \emph{Lecture Notes
+  in Computer Science}, pages 595--604, 2018.
+
+\bibitem[Bruna et~al.(2014)Bruna, Zaremba, Szlam, and LeCun]{Bru+2014}
+J.~Bruna, W.~Zaremba, A.~Szlam, and Y.~LeCun.
+\newblock Spectral networks and deep locally connected networks on graphs.
+\newblock In \emph{International Conference on Learning Representation}, 2014.
+
+\bibitem[Chami et~al.(2020)Chami, Abu{-}El{-}Haija, Perozzi, R{\'{e}}, and
+  Murphy]{Cha+2020}
+I.~Chami, S.~Abu{-}El{-}Haija, B.~Perozzi, C.~R{\'{e}}, and K.~Murphy.
+\newblock Machine learning on graphs: {A} model and comprehensive taxonomy.
+\newblock \emph{CoRR}, abs/2005.03675, 2020.
+
+\bibitem[Chen et~al.(2019)Chen, Villar, Chen, and Bruna]{Che+2019}
+Z.~Chen, S.~Villar, L.~Chen, and J.~Bruna.
+\newblock On the equivalence between graph isomorphism testing and function
+  approximation with {GNN}s.
+\newblock In \emph{Advances in Neural Information Processing Systems}, pages
+  15868--15876, 2019.
+
+\bibitem[Defferrard et~al.(2016)Defferrard, X., and Vandergheynst]{Def+2015}
+M.~Defferrard, Bresson X., and P.~Vandergheynst.
+\newblock Convolutional neural networks on graphs with fast localized spectral
+  filtering.
+\newblock In \emph{Advances in Neural Information Processing Systems}, pages
+  3844--3852, 2016.
+
+\bibitem[Duvenaud et~al.(2015)Duvenaud, Maclaurin, Iparraguirre, Bombarell,
+  Hirzel, Aspuru-Guzik, and Adams]{Duv+2015}
+D.~K. Duvenaud, D.~Maclaurin, J.~Iparraguirre, R.~Bombarell, T.~Hirzel,
+  A.~Aspuru-Guzik, and R.~P. Adams.
+\newblock Convolutional networks on graphs for learning molecular fingerprints.
+\newblock In \emph{Advances in Neural Information Processing Systems}, pages
+  2224--2232, 2015.
+
+\bibitem[Ferber et~al.(2020)Ferber, Wilder, Dilkina, and Tambe]{Fer+2020}
+A.~Ferber, B.~Wilder, B.~Dilkina, and M.~Tambe.
+\newblock Mipaal: Mixed integer program as a layer.
+\newblock In \emph{{AAAI} Conference on Artificial Intelligence}, pages
+  1504--1511, 2020.
+
+\bibitem[Fischetti et~al.(2019)Fischetti, Lodi, and Zarpellon]{Fis+2019}
+M.~Fischetti, A.~Lodi, and G.~Zarpellon.
+\newblock Learning {MILP} resolution outcomes before reaching time-limit.
+\newblock In \emph{Integration of Constraint Programming, Artificial
+  Intelligence, and Operations Research}, volume 11494 of \emph{Lecture Notes
+  in Computer Science}, pages 275--291, 2019.
+
+\bibitem[Gasse et~al.(2019)Gasse, Ch{\'{e}}telat, Ferroni, Charlin, and
+  Lodi]{Gas+2019}
+M.~Gasse, D.~Ch{\'{e}}telat, N.~Ferroni, L.~Charlin, and A.~Lodi.
+\newblock Exact combinatorial optimization with graph convolutional neural
+  networks.
+\newblock In \emph{Advances in Neural Information Processing Systems}, pages
+  15554--15566, 2019.
+
+\bibitem[Gilmer et~al.(2017)Gilmer, Schoenholz, Riley, Vinyals, and
+  Dahl]{Gil+2017}
+J.~Gilmer, S.~S. Schoenholz, P.~F. Riley, O.~Vinyals, and G.~E. Dahl.
+\newblock Neural message passing for quantum chemistry.
+\newblock In \emph{International Conference on Machine Learning}, 2017.
+
+\bibitem[Gupta et~al.(2020)Gupta, Gasse, Khalil, Kumar, Lodi, and
+  Bengio]{Gup+2020}
+P.~Gupta, M.~Gasse, E.~B. Khalil, M.~P. Kumar, A.~Lodi, and Y.~Bengio.
+\newblock Hybrid models for learning to branch.
+\newblock \emph{CoRR}, abs/2006.15212, 2020.
+\newblock URL \url{https://arxiv.org/abs/2006.15212}.
+
+\bibitem[Hamilton et~al.(2017)Hamilton, Ying, and Leskovec]{Ham+2017}
+W.~L. Hamilton, R.~Ying, and J.~Leskovec.
+\newblock Inductive representation learning on large graphs.
+\newblock In \emph{Advances in Neural Information Processing Systems}, pages
+  1025--1035, 2017.
+
+\bibitem[Khalil et~al.(2016{\natexlab{a}})Khalil, Bodic, Song, Nemhauser, and
+  Dilkina]{Kha+2016}
+E.~B. Khalil, P.~Le Bodic, L.~Song, G.~L. Nemhauser, and B.~Dilkina.
+\newblock Learning to branch in mixed integer programming.
+\newblock In \emph{{AAAI} Conference on Artificial Intelligence}, pages
+  724--731, 2016{\natexlab{a}}.
+
+\bibitem[Khalil et~al.(2016{\natexlab{b}})Khalil, Bodic, Song, Nemhauser, and
+  Dilkina]{Kha+2016b}
+E.~B. Khalil, P.~Le Bodic, L.~Song, G.~L. Nemhauser, and B.~Dilkina.
+\newblock Learning to branch in mixed integer programming.
+\newblock In \emph{{AAAI} Conference on Artificial Intelligence}, pages
+  724--731, 2016{\natexlab{b}}.
+
+\bibitem[Kipf and Welling(2017)]{Kip+2017}
+T.~N. Kipf and M.~Welling.
+\newblock Semi-supervised classification with graph convolutional networks.
+\newblock In \emph{International Conference on Learning Representation}, 2017.
+
+\bibitem[Kireev(1995)]{Kir+1995}
+D.~B. Kireev.
+\newblock Chemnet: A novel neural network based method for graph/property
+  mapping.
+\newblock \emph{Journal of Chemical Information and Computer Sciences},
+  35\penalty0 (2):\penalty0 175--180, 1995.
+
+\bibitem[Larsen et~al.(2018)Larsen, Lachapelle, Bengio, Frejinger,
+  Lacoste{-}Julien, and A]{Lar+2018}
+E.~Larsen, S.~Lachapelle, Y.~Bengio, E.~Frejinger, S.~Lacoste{-}Julien, and
+  Lodi A.
+\newblock Predicting solution summaries to integer linear programs under
+  imperfect information with machine learning.
+\newblock \emph{CoRR}, abs/1807.11876, 2018.
+\newblock URL \url{http://arxiv.org/abs/1807.11876}.
+
+\bibitem[Li et~al.(2018)Li, Chen, and Koltun]{Li+2018b}
+Z.~Li, Q.~Chen, and V.~Koltun.
+\newblock Combinatorial optimization with graph convolutional networks and
+  guided tree search.
+\newblock In \emph{Advances in Neural Information Processing Systems}, pages
+  537--546, 2018.
+
+\bibitem[Maehara and NT(2019)]{Mae+2019}
+T.~Maehara and H.~NT.
+\newblock A simple proof of the universality of invariant/equivariant graph
+  neural networks.
+\newblock \emph{CoRR}, abs/1910.03802, 2019.
+
+\bibitem[Maron et~al.(2019)Maron, Ben{-}Hamu, Serviansky, and Lipman]{Mar+2019}
+H.~Maron, H.~Ben{-}Hamu, H.~Serviansky, and Y.~Lipman.
+\newblock Provably powerful graph networks.
+\newblock In \emph{Advances in Neural Information Processing Systems}, pages
+  2153--2164, 2019.
+
+\bibitem[Merkwirth and Lengauer(2005)]{Mer+2005}
+C.~Merkwirth and T.~Lengauer.
+\newblock Automatic generation of complementary descriptors with molecular
+  graph networks.
+\newblock \emph{Journal of Chemical Information and Modeling}, 45\penalty0
+  (5):\penalty0 1159--1168, 2005.
+
+\bibitem[Monti et~al.(2017)Monti, Boscaini, Masci, Rodol{\`{a}}, Svoboda, and
+  Bronstein]{Mon+2017}
+F.~Monti, D.~Boscaini, J.~Masci, E.~Rodol{\`{a}}, J.~Svoboda, and M.~M.
+  Bronstein.
+\newblock Geometric deep learning on graphs and manifolds using mixture model
+  {CNNs}.
+\newblock In \emph{IEEE Conference on Computer Vision and Pattern Recognition},
+  pages 5425--5434, 2017.
+
+\bibitem[Morris et~al.(2019)Morris, Ritzert, Fey, Hamilton, Lenssen, Rattan,
+  and Grohe]{Mor+2019}
+C.~Morris, M.~Ritzert, M.~Fey, W.~L. Hamilton, Jan~Eric Lenssen, G.~Rattan, and
+  M.~Grohe.
+\newblock {Weisfeiler and Leman} go neural: {H}igher-order graph neural
+  networks.
+\newblock In \emph{AAAI Conference on Artificial Intelligence}, pages
+  4602--4609, 2019.
+
+\bibitem[Scarselli et~al.(2009)Scarselli, Gori, Tsoi, Hagenbuchner, and
+  Monfardini]{Sca+2009}
+F.~Scarselli, M.~Gori, A.~C. Tsoi, M.~Hagenbuchner, and G.~Monfardini.
+\newblock The graph neural network model.
+\newblock \emph{IEEE Transactions on Neural Networks}, 20\penalty0
+  (1):\penalty0 61--80, 2009.
+
+\bibitem[Selsam et~al.(2019)Selsam, Lamm, B{\"{u}}nz, Liang, de~Moura, and
+  Dill]{Sel+2019}
+D.~Selsam, M.~Lamm, B.~B{\"{u}}nz, P.~Liang, L.~de~Moura, and D.~L. Dill.
+\newblock Learning a {SAT} solver from single-bit supervision.
+\newblock In \emph{International Conference on Learning Representations}, 2019.
+
+\bibitem[Song et~al.(2020)Song, Lanka, Yue, and Dilkina]{Son+2020}
+J.~Song, R.~Lanka, Y.~Yue, and B.~Dilkina.
+\newblock A general large neighborhood search framework for solving integer
+  programs.
+\newblock \emph{CoRR}, abs/2004.00422, 2020.
+\newblock URL \url{https://arxiv.org/abs/2004.00422}.
+
+\bibitem[Sperduti and Starita(1997)]{Spe+1997}
+A.~Sperduti and A.~Starita.
+\newblock Supervised neural networks for the classification of structures.
+\newblock \emph{IEEE Transactions on Neural Networks}, 8\penalty0 (2):\penalty0
+  714--35, 1997.
+
+\bibitem[Velickovic et~al.(2018)Velickovic, Cucurull, Casanova, Romero,
+  Li{\`{o}}, and Bengio]{Vel+2018}
+P.~Velickovic, G.~Cucurull, A.~Casanova, A.~Romero, P.~Li{\`{o}}, and
+  Y.~Bengio.
+\newblock Graph attention networks.
+\newblock In \emph{International Conference on Learning Representations}, 2018.
+
+\bibitem[Velickovic et~al.(2020)Velickovic, Ying, Padovano, Hadsell, and
+  Blundell]{Vel+2020}
+P.~Velickovic, R.~Ying, M.~Padovano, R>~Hadsell, and C.~Blundell.
+\newblock Neural execution of graph algorithms.
+\newblock In \emph{International Conference on Learning Representations}, 2020.
+
+\bibitem[Wilder et~al.(2019)Wilder, Dilkina, and Tambe]{Wil+2019}
+B.~Wilder, B.~Dilkina, and M.~Tambe.
+\newblock Melding the data-decisions pipeline: Decision-focused learning for
+  combinatorial optimization.
+\newblock In \emph{{AAAI} Conference on Artificial Intelligence}, pages
+  1658--1665, 2019.
+
+\bibitem[Wu et~al.(2019)Wu, Pan, Chen, Long, Zhang, and Yu]{Wu+2019}
+Z.~Wu, S.~Pan, F.~Chen, G.~Long, C.~Zhang, and P.~S. Yu.
+\newblock A comprehensive survey on graph neural networks.
+\newblock \emph{CoRR}, abs/1901.00596, 2019.
+
+\bibitem[Xu et~al.(2019)Xu, Hu, Leskovec, and Jegelka]{Xu+2018b}
+K.~Xu, W.~Hu, J.~Leskovec, and S.~Jegelka.
+\newblock How powerful are graph neural networks?
+\newblock In \emph{International Conference on Learning Representations}, 2019.
+
+\bibitem[Zarpellon et~al.(2020)Zarpellon, Jo, Lodi, and Bengio]{Zar+2020}
+G.~Zarpellon, J.~Jo, A.~Lodi, and Y.~Bengio.
+\newblock Parameterizing branch-and-bound search trees to learn branching
+  policies.
+\newblock \emph{CoRR}, abs/2002.05120, 2020.
+\newblock URL \url{https://arxiv.org/abs/2002.05120}.
+
+\bibitem[Zhou et~al.(2018)Zhou, Cui, Zhang, Yang, Liu, Wang, Li, and
+  Sun]{Zho+2018}
+J.~Zhou, G.~Cui, Z.~Zhang, C.~Yang, Z.~Liu, L.~Wang, C.~Li, and M.~Sun.
+\newblock Graph neural networks: A review of methods and applications.
+\newblock \emph{CoRR}, abs/1812.08434, 2018.
 
 \end{thebibliography}
