@@ -93,7 +93,7 @@ class ErrorLayer(MessagePassing):
         out = tmp - rhs
 
         # TODO: Think here.
-        out = self.error_encoder(out)
+        #out = self.error_encoder(out)
 
         # TODO: Change.
         #out = softmax(out, index)
@@ -119,8 +119,8 @@ class ConVarBipartiteLayer(MessagePassing):
                                        BN(dim))
 
         # Learn joint representation of contraint embedding and error.
-        self.joint_con_encoder = Sequential(Linear(dim * 2, dim), ReLU(), Linear(dim, dim), ReLU(),
-                                            BN(dim))
+        self.joint_con_encoder = Sequential(Linear(dim + 1, dim), ReLU(), Linear(dim, dim-1), ReLU(),
+                                            BN(dim-1))
 
         self.mlp = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim), ReLU(), BN(dim))
         self.eps = torch.nn.Parameter(torch.Tensor([0]))
@@ -130,8 +130,8 @@ class ConVarBipartiteLayer(MessagePassing):
         # Map edge features to embeddings with the same number of components as node embeddings.
         edge_embedding = self.edge_encoder(edge_attr)
 
-        #joint_con = torch.cat([self.joint_con_encoder(torch.cat([source, error_con], dim=-1)), error_con], dim=-1)
-        joint_con = self.joint_con_encoder(torch.cat([source, error_con], dim=-1))
+        joint_con = torch.cat([self.joint_con_encoder(torch.cat([source, error_con], dim=-1)), error_con], dim=-1)
+        #joint_con = self.joint_con_encoder(torch.cat([source, error_con], dim=-1))
         tmp = self.propagate(edge_index, x=joint_con, error=error_con, edge_attr=edge_embedding, size=size)
 
         out = self.mlp((1 + self.eps) * target + tmp)
