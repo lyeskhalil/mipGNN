@@ -96,7 +96,7 @@ class ErrorLayer(MessagePassing):
         out = self.error_encoder(out)
 
         # TODO: Change.
-        # out = softmax(out, index)
+        #out = softmax(out, index)
 
         return out
 
@@ -112,7 +112,7 @@ class ErrorLayer(MessagePassing):
 # Update variable embeddings based on constraint embeddings.
 class ConVarBipartiteLayer(MessagePassing):
     def __init__(self, edge_dim, dim):
-        super(ConVarBipartiteLayer, self).__init__(aggr="add", flow="source_to_target")
+        super(ConVarBipartiteLayer, self).__init__(aggr="mean", flow="source_to_target")
 
         # Maps edge features to the same number of components as node features.
         self.edge_encoder = Sequential(Linear(edge_dim, dim), ReLU(), Linear(dim, dim), ReLU(),
