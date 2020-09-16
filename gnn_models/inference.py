@@ -12,14 +12,14 @@ import networkx as nx
 import torch
 from torch_geometric.data import (InMemoryDataset, Data)
 from torch_geometric.data import DataLoader
-from gnn_models.mip_bipartite_class import SimpleNet
+from gnn_models.mip_bipartite_arch import SimpleNet
 
 
 
 def get_prediction(model_name, graph, bias_threshold=0.05):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    model = SimpleNet(dim=128).to(device)
+    model = SimpleNet(128).to(device)
     model.load_state_dict(torch.load(model_name, map_location=device))
 
 
