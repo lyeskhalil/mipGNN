@@ -393,4 +393,4 @@ for epoch in range(1, 50):
           'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
                                                        train_acc, val_acc, test_acc))
 
-torch.save(model.state_dict(), "trained_model_er_200_SET2_1k")
+#torch.save(model.state_dict(), "trained_model_er_200_SET2_1k")

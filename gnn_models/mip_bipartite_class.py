@@ -93,7 +93,7 @@ class ErrorLayer(MessagePassing):
         out = tmp - rhs
 
         # TODO: Think here.
-        # out = self.error_encoder(out)
+        out = self.error_encoder(out)
 
         # TODO: Change.
         # out = softmax(out, index)
@@ -471,7 +471,7 @@ path = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
 # Path to raw graph data.
 data_path = '../gisp_generator/DATA/er_200_SET2_1k/'
 # Threshold for computing class labels.
-bias_threshold = 0.05
+bias_threshold = 0.050
 # Create dataset.
 dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform()).shuffle()
 
