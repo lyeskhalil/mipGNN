@@ -19,7 +19,7 @@ from gnn_models.mip_bipartite_class import SimpleNet
 def get_prediction(model_name, graph, bias_threshold=0.05):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    model = SimpleNet(dim=128).to(device)
+    model = SimpleNet(dim=64).to(device)
     model.load_state_dict(torch.load(model_name, map_location=device))
 
 

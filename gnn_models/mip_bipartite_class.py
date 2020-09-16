@@ -539,13 +539,13 @@ def test(loader):
     for data in loader:
         data = data.to(device)
         # pred, err, cost = model(data)
-        pred, err, cost = model(data)
+        pred = model(data)
         pred = pred.max(dim=1)[1]
         correct += pred.eq(data.y).float().mean().item()
         l += 1
 
-        cost_total += cost.item()
-        err_total += err.item()
+        # cost_total += cost.item()
+        # err_total += err.item()
 
     # print(err_total / l)
     print(cost_total / l)
