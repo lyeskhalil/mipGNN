@@ -28,7 +28,7 @@ def get_prediction(model_name, graph, bias_threshold=0.05):
 
     data = data.to(device)
 
-    out = model(data, inference=True).max(dim=1)[1].cpu().detach().numpy()
+    out = model(data).max(dim=1)[1].cpu().detach().numpy()
 
     return out
 
