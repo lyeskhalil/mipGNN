@@ -235,45 +235,46 @@ class SimpleNet(torch.nn.Module):
         var_node_features_0 = self.var_node_encoder(var_node_features)
         con_node_features_0 = self.con_node_encoder(con_node_features)
 
+
         con_node_features_1 = F.relu(
             self.var_con_1(var_node_features_0, con_node_features_0, edge_index_var, edge_features_var, rhs,
-                           (num_nodes_var.sum(), num_nodes_con.sum())))
+                           (var_node_features_0.size(0), con_node_features.size(0))))
         err_1 = self.error_1(var_node_features_0, edge_index_var, edge_features_var, rhs, index,
-                             (num_nodes_var.sum(), num_nodes_con.sum()))
+                             (var_node_features_0.size(0), con_node_features.size(0)))
 
         var_node_features_1 = F.relu(
             self.con_var_1(con_node_features_1, var_node_features_0, edge_index_con, edge_features_con, err_1,
-                           (num_nodes_con.sum(), num_nodes_var.sum())))
+                           (con_node_features_1.size(0), var_node_features_0.size(0))))
 
         con_node_features_2 = F.relu(
             self.var_con_2(var_node_features_1, con_node_features_1, edge_index_var, edge_features_var, rhs,
-                           (num_nodes_var.sum(), num_nodes_con.sum())))
+                           (var_node_features_1.size(0), con_node_features_1.size(0))))
         err_2 = self.error_1(var_node_features_1, edge_index_var, edge_features_var, rhs, index,
-                             (num_nodes_var.sum(), num_nodes_con.sum()))
+                             (var_node_features_1.size(0), con_node_features_1.size(0)))
 
         var_node_features_2 = F.relu(
             self.con_var_2(con_node_features_2, var_node_features_1, edge_index_con, edge_features_con, err_2,
-                           (num_nodes_con.sum(), num_nodes_var.sum())))
+                           (con_node_features_2.size(0), var_node_features_1.size(0))))
 
         con_node_features_3 = F.relu(
             self.var_con_3(var_node_features_2, con_node_features_2, edge_index_var, edge_features_var, rhs,
-                           (num_nodes_var.sum(), num_nodes_con.sum())))
+                           (var_node_features_2.size(0), con_node_features_2.size(0))))
         err_3 = self.error_1(var_node_features_2, edge_index_var, edge_features_var, rhs, index,
-                             (num_nodes_var.sum(), num_nodes_con.sum()))
+                             (var_node_features_2.size(0), con_node_features_2.size(0)))
 
         var_node_features_3 = F.relu(
             self.con_var_3(con_node_features_3, var_node_features_2, edge_index_con, edge_features_con, err_3,
-                           (num_nodes_con.sum(), num_nodes_var.sum())))
+                           (con_node_features_3.size(0), var_node_features_2.size(0))))
 
         con_node_features_4 = F.relu(
             self.var_con_4(var_node_features_3, con_node_features_3, edge_index_var, edge_features_var, rhs,
-                           (num_nodes_var.sum(), num_nodes_con.sum())))
+                           (var_node_features_3.size(0), con_node_features_3.size(0))))
         err_4 = self.error_1(var_node_features_3, edge_index_var, edge_features_var, rhs, index,
-                             (num_nodes_var.sum(), num_nodes_con.sum()))
+                             (var_node_features_3.size(0), con_node_features_4.size(0)))
 
         var_node_features_4 = F.relu(
             self.con_var_4(con_node_features_4, var_node_features_3, edge_index_con, edge_features_con, err_4,
-                           (num_nodes_con.sum(), num_nodes_var.sum())))
+                           (con_node_features_4.size(0), var_node_features_3.size(0))))
 
         var = self.var_assigment_4(var_node_features_4)
 
@@ -499,7 +500,7 @@ test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
 print("### DATA LOADED.")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = SimpleNet(hidden=128).to(device)
+model = SimpleNet(hidden=64).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 # Play with this.
@@ -515,7 +516,6 @@ def train(epoch):
 
     loss_all = 0
     for data in train_loader:
-        print("####")
         data = data.to(device)
         optimizer.zero_grad()
         # output, err, cost = model(data)
@@ -537,8 +537,6 @@ def test(loader):
     err_total = 0.0
     cost_total = 0.0
     for data in loader:
-
-
         data = data.to(device)
         # pred, err, cost = model(data)
         pred, err, cost = model(data)
