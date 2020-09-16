@@ -78,7 +78,7 @@ class VarConBipartiteLayer(MessagePassing):
 # Compute error signal.
 class ErrorLayer(MessagePassing):
     def __init__(self, dim, var_assignment):
-        super(ErrorLayer, self).__init__(aggr="add", flow="source_to_target")
+        super(ErrorLayer, self).__init__(aggr="mean", flow="source_to_target")
         self.var_assignment = var_assignment
         self.error_encoder = Sequential(Linear(1, dim), ReLU(), Linear(dim, dim), ReLU(),
                                         BN(dim))
