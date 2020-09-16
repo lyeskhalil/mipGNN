@@ -19,7 +19,7 @@ from gnn_models.mip_bipartite_class import SimpleNet
 def get_prediction(model_name, graph, bias_threshold=0.05):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    model = SimpleNet(dim=64).to(device)
+    model = SimpleNet(dim=128).to(device)
     model.load_state_dict(torch.load(model_name, map_location=device))
 
 
@@ -136,5 +136,5 @@ def create_data_object(graph, bias_threshold):
 
 print("TEST")
 graph = nx.read_gpickle("../gisp_generator/DATA/er_200_SET2_1k/er_n=200_m=1867_p=0.10_SET2_setparam=100.00_alpha=0.75_606.pk")
-p = get_prediction(model_name="trained_model_er_200_SET2_1k", graph=graph)
+p = get_prediction(model_name="trained_model_er_200_SET2_1k_new", graph=graph)
 print(p)

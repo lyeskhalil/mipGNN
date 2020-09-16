@@ -493,14 +493,14 @@ print(len(test_dataset))
 print(1 - test_dataset.data.y.sum().item() / test_dataset.data.y.size(-1))
 
 # Prepare batch loaders.
-batch_size = 64
+batch_size = 15
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
 print("### DATA LOADED.")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = SimpleNet(hidden=64).to(device)
+model = SimpleNet(hidden=128).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 # Play with this.
@@ -555,7 +555,7 @@ def test(loader):
 
 best_val = 0.0
 test_acc = 0.0
-for epoch in range(1, 150):
+for epoch in range(1, 50):
 
     train_loss = train(epoch)
     train_acc = test(train_loader)
@@ -576,4 +576,4 @@ for epoch in range(1, 150):
           'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
                                                                         train_acc, val_acc, test_acc))
 
-torch.save(model.state_dict(), "trained_model_er_200_SET2_1k")
+torch.save(model.state_dict(), "trained_model_er_200_SET2_1k_new")
