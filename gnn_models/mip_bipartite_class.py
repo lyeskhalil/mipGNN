@@ -515,6 +515,7 @@ def train(epoch):
 
     loss_all = 0
     for data in train_loader:
+        print("####")
         data = data.to(device)
         optimizer.zero_grad()
         # output, err, cost = model(data)
