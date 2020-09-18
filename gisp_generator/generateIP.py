@@ -6,7 +6,7 @@ import networkx as nx
 from networkx.algorithms import bipartite
 import random
 import time
-# import numpy as np
+import numpy as np
 
 def dimacsToNx(filename):
     g = nx.Graph()
@@ -22,13 +22,12 @@ def generateRevsCosts(g, whichSet, setParam):
         for node in g.nodes():
             g.nodes[node]['revenue'] = random.randint(1,100)
         for u,v,edge in g.edges(data=True):
-            edge['cost'] = (g.nodes[u]['revenue'] + g.nodes[v]['revenue'])/float(setParam)
+            edge['cost'] = np.round((g.nodes[u]['revenue'] + g.nodes[v]['revenue'])/float(setParam))
     elif whichSet == 'SET2':
         for node in g.nodes():
             g.nodes[node]['revenue'] = float(setParam)
         for u,v,edge in g.edges(data=True):
             edge['cost'] = 1.0
-            edge['E2'] = False
 
 def generateE2(g, alphaE2):
     E2 = set()
@@ -36,6 +35,8 @@ def generateE2(g, alphaE2):
         if random.random() <= alphaE2:
             E2.add((u,v))
             edge['E2'] = True
+        else:
+            edge['E2'] = False
     return E2
 
 def createIP(g, E2, ipfilename):  
@@ -75,9 +76,17 @@ def createIP(g, E2, ipfilename):
 
 def extractVCG(g, E2, ip):
     num_solutions = ip.solution.pool.get_num()
+    bias_arr = np.zeros(len(ip.solution.pool.get_values(0)))
+
     for sol_idx in range(ip.solution.pool.get_num()):
         if ip.solution.pool.get_objective_value(sol_idx) <= 0:
             num_solutions -= 1
+        bias_arr += ip.solution.pool.get_values(sol_idx)
+    bias_arr /= num_solutions
+
+    bias_dict = {}
+    for index, name in enumerate(ip.variables.get_names()):
+        bias_dict[name] = bias_arr[index]
 
     print("num_solutions = %d" % num_solutions)
 
@@ -85,19 +94,18 @@ def extractVCG(g, E2, ip):
 
     vcg.add_nodes_from([("x" + str(node), {'objcoeff':-node_data['revenue']}) for node, node_data in g.nodes(data=True)], bipartite=0)
     vcg.add_nodes_from(["y" + str(edge[0]) + "_" + str(edge[1]) for edge in E2], bipartite=0)
-    # vcg.add_nodes_from(["x" + str(node) for node in g.nodes()], bipartite=1)
 
     for node, node_data in g.nodes(data=True):
         node_name = "x" + str(node)
-        bias = 0
-        for sol_idx in range(num_solutions):
-            bias += ip.solution.pool.get_values(sol_idx, node_name) / num_solutions
+        bias = bias_dict[node_name]
+        # for sol_idx in range(num_solutions):
+        #     bias += ip.solution.pool.get_values(sol_idx, node_name) / num_solutions
         vcg.add_node(node_name, bias=bias, objcoeff=-1*node_data['revenue'], bipartite=0)
     for edge in E2:
         node_name = "y" + str(edge[0]) + "_" + str(edge[1])
-        bias = 0
-        for sol_idx in range(num_solutions):
-            bias += ip.solution.pool.get_values(sol_idx, node_name) / num_solutions
+        bias = bias_dict[node_name]
+        # for sol_idx in range(num_solutions):
+        #     bias += ip.solution.pool.get_values(sol_idx, node_name) / num_solutions
         vcg.add_node(node_name, bias=bias, objcoeff=g[edge[0]][edge[1]]['cost'], bipartite=0)
     
     constraint_counter = 0        
@@ -121,13 +129,13 @@ def solveIP(ip, timelimit):
 
     """ https://www.ibm.com/support/knowledgecenter/SSSA5P_12.9.0/ilog.odms.cplex.help/refpythoncplex/html/cplex._internal._subinterfaces.SolnPoolInterface-class.html#get_values """
     # 2 = Moderate: generate a larger number of solutions
-    ip.parameters.mip.pool.intensity = 2
+    ip.parameters.mip.pool.intensity.set(2)
     # Maximum number of solutions generated for the solution pool by populate
-    ip.parameters.mip.limits.populate = 100
+    ip.parameters.mip.limits.populate.set(1000)
     # Replace the solution which has the worst objective
-    # ip.parameters.mip.pool.replace = 1
+    ip.parameters.mip.pool.replace.set(1)
     # Relative gap for the solution pool
-    # ip.parameters.mip.pool.relgap = 0.2
+    ip.parameters.mip.pool.relgap.set(0.2)
 
     # disable all cplex output
 #     ip.set_log_stream(None)
@@ -136,7 +144,7 @@ def solveIP(ip, timelimit):
 #     ip.set_results_stream(None)
 
     try:
-        ip.solve()
+        # ip.solve()
         ip.populate_solution_pool()
     except CplexError as exc:
         print(exc)
