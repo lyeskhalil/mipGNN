@@ -17,6 +17,7 @@ class branch_local_exact(BranchCallback):
         if self.is_root:
             self.is_root = False
 
+            # todo better estimate for L?
             self.make_branch(objective_estimate=0.0, constraints=[(self.coeffs, 'L', float(self.threshold))])
             self.make_branch(objective_estimate=0.0, constraints=[(self.coeffs, 'G', float(self.threshold + 1))])
 

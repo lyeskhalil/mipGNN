@@ -40,12 +40,11 @@ def get_prediction(model_name, graph, bias_threshold=0.05):
 def get_variable_cpxid(graph, node_to_varnode, prediction):
     node_names_list = list(graph.nodes())
     dict_varname_seqid = {}
-    dict_graphid_varname = {}
     for var_graphid, var_seqid in node_to_varnode.items():
+        # print(var_graphid, var_seqid)
         dict_varname_seqid[node_names_list[var_graphid]] = (var_seqid, prediction[var_seqid])
-        dict_graphid_varname[var_seqid] = node_names_list[var_graphid]
 
-    return dict_varname_seqid, dict_graphid_varname
+    return dict_varname_seqid
 
 def create_data_object(graph, bias_threshold):
     # Make graph directed.
@@ -149,119 +148,7 @@ def create_data_object(graph, bias_threshold):
 
     return data, node_to_varnode, node_to_connode
 
-def create_data_object_old(graph):
-    # Make graph directed.
-    graph = nx.convert_node_labels_to_integers(graph)
-    graph = graph.to_directed() if not nx.is_directed(graph) else graph
-    data = Data()
-    edge_index = torch.tensor(list(graph.edges)).t().contiguous()
-    data = Data(edge_index=edge_index)
-
-    #  Map for new nodes in graph.
-
-    # Original node to var nodes
-    var_node = {}
-    # Var node to orignal
-    node_var = {}
-
-    con_node = {}
-
-    assoc_var = []
-    assoc_con = []
-    node_type = []
-    # Number of variables.
-    var_i = 0
-    # Number of constraints.
-    con_i = 0
-    # Targets
-    y = []
-    # Features for variable nodes.
-    var_feat = []
-    # Feature for constraints nodes.
-    con_feat = []
-    # Right-hand sides of equations.
-    rhss = []
-    # Sums over coefficients.
-    a_sum = []
-    for i, (node, node_data) in enumerate(graph.nodes(data=True)):
-        # Node is a variable.
-        if node_data['bipartite'] == 0:
-            var_node[i] = var_i
-            node_type.append(0)
-            assoc_var.append(i)
-            node_var[var_i] = i
-            var_i += 1
-
-            if (node_data['bias'] < 0.05):
-                y.append(0)
-            else:
-                y.append(1)
-            # TODO: Scaling meaingful?
-            var_feat.append([node_data['objcoeff'] / 100.0, graph.degree[i]])
-
-        # Node is constraint.
-        else:
-
-            node_type.append(1)
-            assoc_con.append(i)
-            a = []
-            for e in graph.edges(node, data=True):
-                a.append(graph[e[0]][e[1]]['coeff'])
-            a_sum.append(sum(a))
-
-            con_node[i] = con_i
-            con_i += 1
-
-            rhs = node_data['rhs']
-            rhss.append(rhs)
-            con_feat.append([rhs, graph.degree[i]])
-
-    num_nodes_var = var_i
-    num_nodes_con = con_i
-    # Edge list for var->con graphs.
-    edge_list_var = []
-    # Edge list for con->var graphs.
-    edge_list_con = []
-
-    edge_features_var = []
-    edge_features_con = []
-    for i, (s, t, edge_data) in enumerate(graph.edges(data=True)):
-        # Source node is con, target node is var.
-        if graph.nodes[s]['bipartite'] == 1:
-            edge_list_con.append([con_node[s], var_node[t]])
-            edge_features_con.append([edge_data['coeff']])
-        else:
-            edge_list_var.append([var_node[s], con_node[t]])
-            edge_features_var.append([edge_data['coeff']])
-
-    data.y = torch.from_numpy(np.array(y)).to(torch.long)
-    #data.y = torch.from_numpy(np.array(y)).to(torch.float)
-
-    data.var_node_features = torch.from_numpy(np.array(var_feat)).to(torch.float)
-    data.con_node_features = torch.from_numpy(np.array(con_feat)).to(torch.float)
-    #data.rhs = torch.from_numpy(np.array(rhss)).to(torch.float)
-    #data.edge_features_con = torch.from_numpy(np.array(edge_features_con)).to(torch.float)
-    #data.edge_features_var = torch.from_numpy(np.array(edge_features_var)).to(torch.float)
-    data.asums = torch.from_numpy(np.array(a_sum)).to(torch.float)
-    data.num_nodes_var = num_nodes_var
-    data.num_nodes_con = num_nodes_con
-    data.node_types = torch.from_numpy(np.array(node_type)).to(torch.long)
-    data.assoc_var = torch.from_numpy(np.array(assoc_var)).to(torch.long)
-    data.assoc_con = torch.from_numpy(np.array(assoc_con)).to(torch.long)
-
-    edge_types = []
-    for i, (s, t, edge_data) in enumerate(graph.edges(data=True)):
-
-        if graph.nodes[s]['bipartite']:
-            edge_types.append([0, edge_data['coeff']])
-        else:
-            edge_types.append([1, edge_data['coeff']])
-
-    data.edge_types = torch.from_numpy(np.array(edge_types)).to(torch.float)
-
-    return data, var_node, node_var
-
-def set_cplex_priorities(instance_cpx, prediction, dict_varname_seqid, dict_graphid_varname):
+def set_cplex_priorities(instance_cpx, prediction):
     # score variables based on bias prediction
     scores = np.max((-(1-prediction), -prediction), axis=0)
     priorities = np.argsort(scores)
@@ -269,21 +156,19 @@ def set_cplex_priorities(instance_cpx, prediction, dict_varname_seqid, dict_grap
     # set priorities
     # reference: https://www.ibm.com/support/knowledgecenter/SSSA5P_12.7.1/ilog.odms.cplex.help/refpythoncplex/html/cplex._internal._subinterfaces.OrderInterface-class.html
     order_tuples = []
-    # node_names_list = list(graph.nodes())
-    # for priority, var_idx_model in enumerate(priorities):
-    #     var_idx = node_var[var_idx_model]
-    #     var_name = node_names_list[var_idx]
-    #     order_tuples += [(var_name, priority, instance_cpx.order.branch_direction.up)]
+    var_names = instance_cpx.variables.get_names()
 
-    # for var_name in dict_varname_seqid:
-    #     var_graphid, var_prediction = dict_varname_seqid[var_name]
-    #     order_tuples += [(var_name, priority, instance_cpx.order.branch_direction.up)]
+    cur_priority = 0
+    for priority, var_cpxid in enumerate(priorities):
+        var_name = var_names[var_cpxid]
+        # print(scores[var_cpxid], scores[priorities[priority-1]])
+        if priority > 0 and scores[var_cpxid] > scores[priorities[priority-1]] + 1e-3:
+            cur_priority += 1
+            # print(cur_priority)
+        order_tuples += [(var_name, cur_priority, instance_cpx.order.branch_direction.up)]
 
-    for priority, var_graphid in enumerate(priorities):
-        var_name = dict_graphid_varname[var_graphid]
-        order_tuples += [(var_name, priority, instance_cpx.order.branch_direction.up)]
-
-
+    # print(cur_priority)
+    # z=1/0
     instance_cpx.order.set(order_tuples)
     # print(instance_cpx.order.get())
 
@@ -298,7 +183,7 @@ if __name__ == '__main__':
 
 
     # Parameters for exact local branching
-    parser.add_argument("-elb_threshold", type=int, default=5)
+    parser.add_argument("-lb_threshold", type=int, default=5)
 
     args = parser.parse_args()
 
@@ -313,6 +198,10 @@ if __name__ == '__main__':
         instance_cpx.parameters.mip.limits.cutpasses.set(-1)
         instance_cpx.parameters.mip.strategy.heuristicfreq.set(-1)
         instance_cpx.parameters.preprocessing.presolve.set(0)
+        instance_cpx.parameters.threads.set(1)
+
+        # DFS = 0, BEST-BOUND = 1 (default), BEST-EST = 2, BEST-EST-ALT = 3
+        # instance_cpx.parameters.mip.strategy.nodeselect.set(3)
 
     """ CPLEX output management """
     instance_cpx.set_log_stream(sys.stdout)
@@ -326,30 +215,48 @@ if __name__ == '__main__':
         """ Read in the pickled graph and the trained model """
         graph = nx.read_gpickle("../gisp_generator/DATA/" + instance_name + ".pk")
         prediction, node_to_varnode = get_prediction(model_name=args.model, graph=graph)
-        dict_varname_seqid, dict_graphid_varname = get_variable_cpxid(graph, node_to_varnode, prediction)
-        print(prediction)
+        dict_varname_seqid = get_variable_cpxid(graph, node_to_varnode, prediction)
+        # print(prediction)
         # todo check dimensions of p
 
         num_variables = instance_cpx.variables.get_num()
+        var_names = instance_cpx.variables.get_names()
+        prediction_reord = [dict_varname_seqid[var_name][1] for var_name in var_names]
+        prediction = np.array(prediction_reord)
+
+        # print(prediction_reord)
+        # z=1/0
 
         if 'local_branching' in args.method:
-            scores = np.max(((1-prediction), prediction), axis=0)
-            local_branching_coeffs = [list(range(len(prediction))), scores.tolist()]
+            # coeffs = np.max(((1-prediction), prediction), axis=0)
+            # local_branching_coeffs = [list(range(len(prediction))), coeffs.tolist()]
+            pred_one_coeff = (prediction >= 0.9) * (-1)
+            pred_zero_coeff = (prediction <= 0.1)
+            num_ones = -np.sum(pred_one_coeff)
+            coeffs = pred_one_coeff + pred_zero_coeff
+
+            # np.random.shuffle(coeffs)
+            # local_branching_coeffs = [var_names, coeffs.tolist()]
+            local_branching_coeffs = [list(range(len(prediction))), coeffs.tolist()]
+
+            # print(prediction)
+            # print(num_ones)
+            # print(local_branching_coeffs)
 
         if args.method == 'default_emptycb':
             branch_cb = instance_cpx.register_callback(callbacks_cplex.branch_empty)
-
+            # instance_cpx.parameters.mip.strategy.search.set(1)
             instance_cpx.solve()
 
         elif args.method == 'branching_priorities':
-            set_cplex_priorities(instance_cpx, prediction, dict_varname_seqid, dict_graphid_varname)
+            set_cplex_priorities(instance_cpx, prediction)
             instance_cpx.solve()
 
         elif args.method == 'local_branching_approx':
             instance_cpx.linear_constraints.add(
                 lin_expr=[local_branching_coeffs],
                 senses=['L'],
-                rhs=[args.elb_threshold],
+                rhs=[float(args.lb_threshold - num_ones)],
                 names=['local_branching'])
 
             instance_cpx.solve()
@@ -358,7 +265,7 @@ if __name__ == '__main__':
             branch_cb = instance_cpx.register_callback(callbacks_cplex.branch_local_exact)
 
             branch_cb.coeffs = local_branching_coeffs
-            branch_cb.threshold = args.elb_threshold
+            branch_cb.threshold = args.lb_threshold - num_ones
             branch_cb.is_root = True
 
             instance_cpx.solve()
@@ -371,7 +278,7 @@ if __name__ == '__main__':
             branch_cb = instance_cpx.register_callback(callbacks_cplex.branch_attach_data)
             node_cb = instance_cpx.register_callback(callbacks_cplex.node_selection)
 
-            branch_cb.scoring_function = 'sum'
+            branch_cb.scoring_function = 'sum' #'estimate'
             branch_cb.scores = scores
             branch_cb.rounding = rounding
 
