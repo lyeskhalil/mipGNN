@@ -1,0 +1,47 @@
+ase==3.19.2
+certifi==2020.6.20
+chardet==3.0.4
+cplex==12.10.0.0
+cycler==0.10.0
+decorator==4.4.2
+docloud==1.0.375
+docplex==2.11.176
+enum34==1.1.6
+future==0.18.2
+googledrivedownloader==0.4
+h5py==2.10.0
+idna==2.8
+isodate==0.6.0
+Jinja2==2.11.2
+joblib==0.16.0
+kiwisolver==1.2.0
+llvmlite==0.33.0
+MarkupSafe==1.1.1
+matplotlib==3.3.0
+mkl-fft==1.1.0
+mkl-random==1.1.1
+mkl-service==2.3.0
+networkx @ file:///tmp/build/80754af9/networkx_1594377231366/work
+numba==0.50.1
+numpy @ file:///opt/concourse/worker/volumes/live/3f9886a9-9d2f-4d0a-7e31-acf5536b90f1/volume/numpy_and_numpy_base_1596234665264/work
+olefile==0.46
+pandas==1.1.0
+Pillow @ file:///opt/concourse/worker/volumes/live/dda2ed08-74a0-47b1-4b92-3e662849d96e/volume/pillow_1594307366244/work
+pyparsing==2.4.7
+python-dateutil==2.8.1
+pytz==2020.1
+rdflib==5.0.0
+requests==2.22.0
+scikit-learn==0.23.1
+scipy==1.5.2
+six==1.15.0
+threadpoolctl==2.1.0
+torch==1.6.0
+torch-cluster==1.5.7
+torch-geometric==1.6.0
+torch-scatter==2.0.5
+torch-sparse==0.6.7
+torch-spline-conv==1.2.0
+torchvision==0.7.0
+tqdm==4.48.0
+urllib3==1.25.10
