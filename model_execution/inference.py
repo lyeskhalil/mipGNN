@@ -9,6 +9,7 @@ import os.path as osp
 import numpy as np
 import networkx as nx
 import argparse
+import io
 
 import torch
 from torch_geometric.data import (InMemoryDataset, Data)
@@ -180,7 +181,8 @@ if __name__ == '__main__':
     parser.add_argument("-instance", type=str, default='er_200_SET2_1k/er_n=200_m=1867_p=0.10_SET2_setparam=100.00_alpha=0.75_606')
     parser.add_argument("-model", type=str, default='../gnn_models/trained_model_er_200_SET2_1k_new')
     parser.add_argument("-barebones", type=bool, default=True)
-
+    parser.add_argument("-timelimit", type=float, default=60)
+    parser.add_argument("-logfile", type=str, default='sys.stdout')
 
     # Parameters for exact local branching
     parser.add_argument("-lb_threshold", type=int, default=5)
@@ -193,7 +195,9 @@ if __name__ == '__main__':
     instance_cpx = cplex.Cplex("../gisp_generator/LP/" + instance_name + ".lp")
 
     """ Set CPLEX parameters, if any """
+    instance_cpx.parameters.timelimit.set(args.timelimit)
     instance_cpx.parameters.emphasis.mip.set(1)
+    instance_cpx.parameters.mip.display.set(3)
     if args.barebones:
         instance_cpx.parameters.mip.limits.cutpasses.set(-1)
         instance_cpx.parameters.mip.strategy.heuristicfreq.set(-1)
@@ -203,15 +207,8 @@ if __name__ == '__main__':
         # DFS = 0, BEST-BOUND = 1 (default), BEST-EST = 2, BEST-EST-ALT = 3
         # instance_cpx.parameters.mip.strategy.nodeselect.set(3)
 
-    """ CPLEX output management """
-    instance_cpx.set_log_stream(sys.stdout)
-    instance_cpx.set_results_stream(sys.stdout)
-
     """ Solve CPLEX instance with user-selected method """
-    if args.method == 'default':
-        instance_cpx.solve()
-
-    else:
+    if args.method != 'default':
         """ Read in the pickled graph and the trained model """
         graph = nx.read_gpickle("../gisp_generator/DATA/" + instance_name + ".pk")
         prediction, node_to_varnode = get_prediction(model_name=args.model, graph=graph)
@@ -223,9 +220,6 @@ if __name__ == '__main__':
         var_names = instance_cpx.variables.get_names()
         prediction_reord = [dict_varname_seqid[var_name][1] for var_name in var_names]
         prediction = np.array(prediction_reord)
-
-        # print(prediction_reord)
-        # z=1/0
 
         if 'local_branching' in args.method:
             # coeffs = np.max(((1-prediction), prediction), axis=0)
@@ -246,11 +240,9 @@ if __name__ == '__main__':
         if args.method == 'default_emptycb':
             branch_cb = instance_cpx.register_callback(callbacks_cplex.branch_empty)
             # instance_cpx.parameters.mip.strategy.search.set(1)
-            instance_cpx.solve()
 
         elif args.method == 'branching_priorities':
             set_cplex_priorities(instance_cpx, prediction)
-            instance_cpx.solve()
 
         elif args.method == 'local_branching_approx':
             instance_cpx.linear_constraints.add(
@@ -258,8 +250,6 @@ if __name__ == '__main__':
                 senses=['L'],
                 rhs=[float(args.lb_threshold - num_ones)],
                 names=['local_branching'])
-
-            instance_cpx.solve()
         
         elif args.method == 'local_branching_exact':
             branch_cb = instance_cpx.register_callback(callbacks_cplex.branch_local_exact)
@@ -267,8 +257,6 @@ if __name__ == '__main__':
             branch_cb.coeffs = local_branching_coeffs
             branch_cb.threshold = args.lb_threshold - num_ones
             branch_cb.is_root = True
-
-            instance_cpx.solve()
 
         elif args.method == 'node_selection':
             # score variables based on bias prediction
@@ -282,7 +270,33 @@ if __name__ == '__main__':
             branch_cb.scores = scores
             branch_cb.rounding = rounding
 
-            instance_cpx.solve()
+    """ CPLEX output management """
+    logstring = sys.stdout
+    if args.logfile != 'sys.stdout':
+        logstring = io.StringIO()
+        instance_cpx.set_log_stream(logstring)
+        instance_cpx.set_results_stream(logstring)
+        instance_cpx.set_warning_stream(logstring)
+        instance_cpx.set_error_stream(logstring)
 
+    start_time = instance_cpx.get_time()            
+    instance_cpx.solve()
+    end_time = instance_cpx.get_time()
 
     """ Get solving performance statistics """
+    cplex_status = instance_cpx.solution.get_status_string()
+    best_objval = instance_cpx.solution.get_objective_value()
+    gap = instance_cpx.solution.MIP.get_mip_relative_gap()
+    num_nodes = instance_cpx.solution.progress.get_num_nodes_processed()
+    total_time = end_time - start_time
+
+    logstring.write('solving stats,%s,%g,%g,%g,%i' % (
+        cplex_status, 
+        best_objval,
+        gap,
+        total_time,
+        num_nodes))
+
+    if args.logfile != 'sys.stdout':
+        with open(args.logfile, 'w') as logfile:
+            logfile.write(logstring.getvalue())

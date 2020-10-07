@@ -33,6 +33,7 @@ class node_selection(NodeCallback):
         best_score = -1.0
         best_node = -1
 
+        # todo: use priority queue for nodes
         for node_idx in range(self.get_num_remaining_nodes()):
             node_seqnum = self.get_node_ID(node_idx)
             node_score = self.get_node_data(node_seqnum)
@@ -54,6 +55,11 @@ class branch_attach_data(BranchCallback):
             _, var_info = self.get_branch(0)
             branching_var_idx = var_info[0][0]
 
+        # if self.get_num_nodes() > 0:
+        #     nodesel_score = self.get_node_data()
+
+        # print("nodesel_score", nodesel_score)
+
         # todo combine estimate with plunging; currently too slow due to jumping around tree
         if self.scoring_function == 'estimate':
             lp_values = self.get_values()
@@ -64,9 +70,12 @@ class branch_attach_data(BranchCallback):
         # get variable bounds
         lbs = self.get_lower_bounds()
         ubs = self.get_upper_bounds()
+        # fixed_counter = 0
         for var_idx in range(self.get_num_cols()):
             if self.scoring_function == 'sum':
+                # break
                 if lbs[var_idx] == ubs[var_idx]:
+                    # fixed_counter += 1
                     var_val = lbs[var_idx]
                     var_score = self.scores[var_idx] if self.rounding[var_idx] == var_val else 1 - self.scores[var_idx]
                     nodesel_score += var_score
@@ -77,6 +86,7 @@ class branch_attach_data(BranchCallback):
                         [pseudocosts[var_idx][0]*var_score, 
                         pseudocosts[var_idx][1]*(1-var_score)])
 
+        # print("fixed_counter", fixed_counter)
 
         for branch_idx in range(self.get_num_branches()):
             node_estimate, var_info = self.get_branch(branch_idx)
