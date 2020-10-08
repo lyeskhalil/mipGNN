@@ -19,6 +19,7 @@ from gnn_models.mip_bipartite_arch import SimpleNet
 import cplex
 
 import callbacks_cplex
+import utils
 
 def get_prediction(model_name, graph, bias_threshold=0.05):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -298,5 +299,8 @@ if __name__ == '__main__':
         num_nodes))
 
     if args.logfile != 'sys.stdout':
+        logstring = logstring.getvalue()
         with open(args.logfile, 'w') as logfile:
-            logfile.write(logstring.getvalue())
+            logfile.write(logstring)
+
+        print(utils.parse_cplex_log(logstring))
