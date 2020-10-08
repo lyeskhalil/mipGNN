@@ -299,8 +299,9 @@ if __name__ == '__main__':
         num_nodes))
 
     if args.logfile != 'sys.stdout':
+        _, incumbent_str = utils.parse_cplex_log(logstring.getvalue())
+        logstring.write(incumbent_str)
         logstring = logstring.getvalue()
         with open(args.logfile, 'w') as logfile:
             logfile.write(logstring)
 
-        print(utils.parse_cplex_log(logstring))

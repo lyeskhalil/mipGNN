@@ -3,15 +3,19 @@
 
 def parse_cplex_log(logstring):
 	incumbent_list = []
+	incumbent_str = ""
 	lines = logstring.splitlines()
 	for line in lines:
 		if len(line) > 0 and line[0] == '*':
 			line_vals = line.split()
 			incumbent_list += [[int(line_vals[1]), -1, -1]]
+			incumbent_str += line_vals[1] + ','
 
 		elif "Found" in line:
 			line_vals = line.split()
 			incumbent_list[-1][1] = float(line_vals[6])
 			incumbent_list[-1][2] = float(line_vals[4])
+			incumbent_str += line_vals[6] + ','
+			incumbent_str += line_vals[4] + '\n'
 
-	return incumbent_list
+	return incumbent_list, incumbent_str
