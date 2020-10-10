@@ -10,6 +10,7 @@ import numpy as np
 import networkx as nx
 import argparse
 import io
+import heapq
 
 import torch
 from torch_geometric.data import (InMemoryDataset, Data)
@@ -223,24 +224,15 @@ if __name__ == '__main__':
         prediction = np.array(prediction_reord)
 
         if 'local_branching' in args.method:
-            # coeffs = np.max(((1-prediction), prediction), axis=0)
-            # local_branching_coeffs = [list(range(len(prediction))), coeffs.tolist()]
             pred_one_coeff = (prediction >= 0.9) * (-1)
             pred_zero_coeff = (prediction <= 0.1)
             num_ones = -np.sum(pred_one_coeff)
             coeffs = pred_one_coeff + pred_zero_coeff
 
-            # np.random.shuffle(coeffs)
-            # local_branching_coeffs = [var_names, coeffs.tolist()]
             local_branching_coeffs = [list(range(len(prediction))), coeffs.tolist()]
-
-            # print(prediction)
-            # print(num_ones)
-            # print(local_branching_coeffs)
 
         if args.method == 'default_emptycb':
             branch_cb = instance_cpx.register_callback(callbacks_cplex.branch_empty)
-            # instance_cpx.parameters.mip.strategy.search.set(1)
 
         elif args.method == 'branching_priorities':
             set_cplex_priorities(instance_cpx, prediction)
@@ -264,12 +256,19 @@ if __name__ == '__main__':
             scores = np.max(((1-prediction), prediction), axis=0)
             rounding = np.round(prediction)
 
-            branch_cb = instance_cpx.register_callback(callbacks_cplex.branch_attach_data)
-            node_cb = instance_cpx.register_callback(callbacks_cplex.node_selection)
+            branch_cb = instance_cpx.register_callback(callbacks_cplex.branch_attach_data2)
+            node_cb = instance_cpx.register_callback(callbacks_cplex.node_selection3)
 
             branch_cb.scoring_function = 'sum' #'estimate'
             branch_cb.scores = scores
             branch_cb.rounding = rounding
+
+            node_priority = []
+            branch_cb.node_priority = node_priority
+            node_cb.node_priority = node_priority            
+
+            branch_cb.time = 0
+            node_cb.time = 0
 
     """ CPLEX output management """
     logstring = sys.stdout
@@ -280,28 +279,36 @@ if __name__ == '__main__':
         instance_cpx.set_warning_stream(logstring)
         instance_cpx.set_error_stream(logstring)
 
+    # todo: consider runseeds 
+    #  https://www.ibm.com/support/knowledgecenter/SSSA5P_12.9.0/ilog.odms.cplex.help/refpythoncplex/html/cplex.Cplex-class.html?view=kc#runseeds
     start_time = instance_cpx.get_time()            
     instance_cpx.solve()
     end_time = instance_cpx.get_time()
 
     """ Get solving performance statistics """
-    cplex_status = instance_cpx.solution.get_status_string()
-    best_objval = instance_cpx.solution.get_objective_value()
-    gap = instance_cpx.solution.MIP.get_mip_relative_gap()
-    num_nodes = instance_cpx.solution.progress.get_num_nodes_processed()
-    total_time = end_time - start_time
+    incumbent_str = ''
+    if instance_cpx.solution.is_primal_feasible():
+        cplex_status = instance_cpx.solution.get_status_string()
+        best_objval = instance_cpx.solution.get_objective_value()
+        gap = instance_cpx.solution.MIP.get_mip_relative_gap()
+        num_nodes = instance_cpx.solution.progress.get_num_nodes_processed()
+        total_time = end_time - start_time
 
-    logstring.write('solving stats,%s,%g,%g,%g,%i' % (
-        cplex_status, 
-        best_objval,
-        gap,
-        total_time,
-        num_nodes))
+        logstring.write('solving stats,%s,%g,%g,%g,%i\n' % (
+            cplex_status, 
+            best_objval,
+            gap,
+            total_time,
+            num_nodes))
+    else:
+        logstring.write('solving stats,no solutions found\n')
 
     if args.logfile != 'sys.stdout':
-        _, incumbent_str = utils.parse_cplex_log(logstring.getvalue())
-        logstring.write(incumbent_str)
+        if instance_cpx.solution.is_primal_feasible():
+            _, incumbent_str = utils.parse_cplex_log(logstring.getvalue())
+            logstring.write(incumbent_str)
         logstring = logstring.getvalue()
         with open(args.logfile, 'w') as logfile:
             logfile.write(logstring)
 
+    print(branch_cb.time, node_cb.time)
