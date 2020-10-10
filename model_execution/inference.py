@@ -263,6 +263,9 @@ if __name__ == '__main__':
             branch_cb.scores = scores
             branch_cb.rounding = rounding
 
+            node_cb.last_best = 0
+            node_cb.freq_best = 10
+
             node_priority = []
             branch_cb.node_priority = node_priority
             node_cb.node_priority = node_priority            
@@ -277,7 +280,8 @@ if __name__ == '__main__':
         instance_cpx.set_log_stream(logstring)
         instance_cpx.set_results_stream(logstring)
         instance_cpx.set_warning_stream(logstring)
-        instance_cpx.set_error_stream(logstring)
+        # instance_cpx.set_error_stream(logstring)
+        instance_cpx.set_error_stream(open(os.devnull, 'w'))
 
     # todo: consider runseeds 
     #  https://www.ibm.com/support/knowledgecenter/SSSA5P_12.9.0/ilog.odms.cplex.help/refpythoncplex/html/cplex.Cplex-class.html?view=kc#runseeds
@@ -310,5 +314,3 @@ if __name__ == '__main__':
         logstring = logstring.getvalue()
         with open(args.logfile, 'w') as logfile:
             logfile.write(logstring)
-
-    print(branch_cb.time, node_cb.time)
