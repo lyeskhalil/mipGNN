@@ -180,7 +180,7 @@ if __name__ == '__main__':
     """ Parse arguments """
     parser = argparse.ArgumentParser()
     parser.add_argument("-method", type=str, default='default')
-    parser.add_argument("-instance", type=str, default='er_200_SET2_1k/er_n=200_m=1867_p=0.10_SET2_setparam=100.00_alpha=0.75_606')
+    parser.add_argument("-instance", type=str, default='../gisp_generator/LP/er_200_SET2_1k/er_n=200_m=1867_p=0.10_SET2_setparam=100.00_alpha=0.75_606.lp')
     parser.add_argument("-model", type=str, default='../gnn_models/trained_model_er_200_SET2_1k_new')
     parser.add_argument("-barebones", type=int, default=1)
     parser.add_argument("-timelimit", type=float, default=60)
@@ -191,10 +191,12 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    instance_name = args.instance
+    instance_path_split = args.instance.split('/')
+    instance_name = instance_path_split[-2] + '/' + instance_path_split[-1][:-3]
 
     """ Create CPLEX instance """
-    instance_cpx = cplex.Cplex("../gisp_generator/LP/" + instance_name + ".lp")
+    instance_cpx = cplex.Cplex(args.instance)
+    # instance_cpx = cplex.Cplex("../gisp_generator/LP/" + instance_name + ".lp")
 
     """ Set CPLEX parameters, if any """
     instance_cpx.parameters.timelimit.set(args.timelimit)
