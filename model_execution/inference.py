@@ -182,7 +182,7 @@ if __name__ == '__main__':
     parser.add_argument("-method", type=str, default='default')
     parser.add_argument("-instance", type=str, default='er_200_SET2_1k/er_n=200_m=1867_p=0.10_SET2_setparam=100.00_alpha=0.75_606')
     parser.add_argument("-model", type=str, default='../gnn_models/trained_model_er_200_SET2_1k_new')
-    parser.add_argument("-barebones", type=bool, default=True)
+    parser.add_argument("-barebones", type=int, default=1)
     parser.add_argument("-timelimit", type=float, default=60)
     parser.add_argument("-logfile", type=str, default='sys.stdout')
 
@@ -200,11 +200,11 @@ if __name__ == '__main__':
     instance_cpx.parameters.timelimit.set(args.timelimit)
     instance_cpx.parameters.emphasis.mip.set(1)
     instance_cpx.parameters.mip.display.set(3)
+    instance_cpx.parameters.threads.set(1)
     if args.barebones:
         instance_cpx.parameters.mip.limits.cutpasses.set(-1)
         instance_cpx.parameters.mip.strategy.heuristicfreq.set(-1)
         instance_cpx.parameters.preprocessing.presolve.set(0)
-        instance_cpx.parameters.threads.set(1)
 
         # DFS = 0, BEST-BOUND = 1 (default), BEST-EST = 2, BEST-EST-ALT = 3
         # instance_cpx.parameters.mip.strategy.nodeselect.set(3)

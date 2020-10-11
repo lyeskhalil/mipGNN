@@ -207,11 +207,11 @@ class branch_attach_data2(BranchCallback):
         # print("nodesel_score", nodesel_score)
 
         # todo combine estimate with plunging; currently too slow due to jumping around tree
-        if self.scoring_function == 'estimate':
-            lp_values = self.get_values()
-            lp_obj = self.get_objective_value()
-            pseudocosts = self.get_pseudo_costs()
-            nodesel_score = lp_obj
+        # if self.scoring_function == 'estimate':
+        #     lp_values = self.get_values()
+        #     lp_obj = self.get_objective_value()
+        #     pseudocosts = self.get_pseudo_costs()
+        #     nodesel_score = lp_obj
 
         # get variable bounds
         # if self.get_num_nodes() >= 0:
@@ -251,18 +251,19 @@ class branch_attach_data2(BranchCallback):
 
             var_score = 0.0
 
-            if self.scoring_function == 'sum':
-                var_score = self.scores[var_idx] if self.rounding[var_idx] == var_val else 1 - self.scores[var_idx]
-                nodesel_score_child = (nodesel_score + var_score) #/ (self.get_current_node_depth() + 1.0)
-            elif self.scoring_function == 'estimate':
-                var_is_zero = (int(var_val) == 0)
-                var_score = pseudocosts[var_idx][int(1-var_is_zero)]*(self.scores[var_idx]*var_is_zero + (1-self.scores[var_idx])*(1-var_is_zero))
-                nodesel_score_child = (nodesel_score + var_score)
+            # if self.scoring_function == 'sum':
+            var_score = self.scores[var_idx] if self.rounding[var_idx] == var_val else 1 - self.scores[var_idx]
+            nodesel_score_child = (nodesel_score + var_score) #/ (self.get_current_node_depth() + 1.0)
+            nodesel_score_child_normalized = nodesel_score_child / (self.get_current_node_depth() + 1.0)
+            # elif self.scoring_function == 'estimate':
+            #     var_is_zero = (int(var_val) == 0)
+            #     var_score = pseudocosts[var_idx][int(1-var_is_zero)]*(self.scores[var_idx]*var_is_zero + (1-self.scores[var_idx])*(1-var_is_zero))
+            #     nodesel_score_child = (nodesel_score + var_score)
 
             # print("pre-branch")
             node_seqnum = self.make_cplex_branch(branch_idx, node_data=nodesel_score_child)
             
-            heapq.heappush(self.node_priority, (-nodesel_score_child / (self.get_current_node_depth() + 1.0), node_seqnum))
+            heapq.heappush(self.node_priority, (-nodesel_score_child_normalized, node_seqnum))
             # print("post-branch")
             # print("branching", -nodesel_score_child / (self.get_current_node_depth() + 1.0), node_seqnum)
 
