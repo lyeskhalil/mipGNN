@@ -11,6 +11,7 @@ import networkx as nx
 import argparse
 import io
 import heapq
+from pathlib import Path
 
 import torch
 from torch_geometric.data import (InMemoryDataset, Data)
@@ -193,6 +194,11 @@ if __name__ == '__main__':
 
     instance_path_split = args.instance.split('/')
     instance_name = instance_path_split[-2] + '/' + instance_path_split[-1][:-3]
+
+    # logdir = args.logdir
+    # if logdir != 'sys.stdout':
+    #     logfile_path = logdir + '/' + instance_path_split[-1][:-3] + '.out'
+    #     Path(logdir).mkdir(parents=True, exist_ok=True)
 
     """ Create CPLEX instance """
     instance_cpx = cplex.Cplex(args.instance)
