@@ -25,5 +25,5 @@ python /home/khalile2/software/CPLEX_Studio1210/python/setup.py install
 
 
 ## execution
-#module load python/3.7
-#source /home/khalile2/projects/def-khalile2/khalile2/venvs_elias/mipgnn2/bin/activate
+module load python/3.7
+source /home/khalile2/projects/def-khalile2/khalile2/venvs_elias/mipgnn2/bin/activate
