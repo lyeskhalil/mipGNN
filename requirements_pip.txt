@@ -1,11 +1,11 @@
-ase==3.19.2
+#ase==3.19.2
 certifi==2020.6.20
 chardet==3.0.4
-cplex==12.10.0.0
+#cplex==12.10.0.0
 cycler==0.10.0
 decorator==4.4.2
-docloud==1.0.375
-docplex==2.11.176
+#docloud==1.0.375
+#docplex==2.11.176
 enum34==1.1.6
 future==0.18.2
 googledrivedownloader==0.4
