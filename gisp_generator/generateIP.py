@@ -79,8 +79,8 @@ def extractVCG(g, E2, ip):
     bias_arr = np.zeros(len(ip.solution.pool.get_values(0)))
 
     for sol_idx in range(ip.solution.pool.get_num()):
-        if ip.solution.pool.get_objective_value(sol_idx) <= 0:
-            num_solutions -= 1
+        # if ip.solution.pool.get_objective_value(sol_idx) <= 0:
+        #     num_solutions -= 1
         bias_arr += ip.solution.pool.get_values(sol_idx)
     bias_arr /= num_solutions
 
@@ -123,9 +123,16 @@ def extractVCG(g, E2, ip):
 
 
 def solveIP(ip, timelimit, mipgap, relgap_pool, maxsols, threads):
-    ip.parameters.timelimit.set(timelimit)
-
     ip.parameters.threads.set(threads)
+
+    ip.parameters.timelimit.set(timelimit)
+    
+    ip.solve()
+
+    phase1_gap = 1e9
+    if ip.solution.is_primal_feasible():
+        phase1_gap = ip.solution.MIP.get_mip_relative_gap()
+    phase1_status = ip.solution.get_status_string()
 
     ip.parameters.mip.tolerances.mipgap.set(mipgap) #er_200_SET2_1k was with 0.1
 
@@ -146,13 +153,17 @@ def solveIP(ip, timelimit, mipgap, relgap_pool, maxsols, threads):
 #     ip.set_results_stream(None)
 
     try:
-        # ip.solve()
         ip.populate_solution_pool()
+        if ip.solution.is_primal_feasible():
+            phase2_gap = ip.solution.MIP.get_mip_relative_gap()
+            phase2_bestobj = ip.solution.get_objective_value()
+            phase2_status = ip.solution.get_status_string()
+
     except CplexError as exc:
         print(exc)
         return
 
-    return ip.solution.get_objective_value(), ip.solution.get_status(), ip.solution.MIP.get_mip_relative_gap()
+    return phase1_status, phase1_gap, phase2_status, phase2_gap, phase2_bestobj
 
 if __name__ == "__main__":
     instance = None
@@ -168,7 +179,7 @@ if __name__ == "__main__":
 
     threads = 4
     mipgap = 0.1
-    relgap_pool = 0.2
+    relgap_pool = 0.1
     maxsols = 1000
 
     seed = 0
@@ -249,35 +260,45 @@ if __name__ == "__main__":
     ip, variable_names = createIP(g, E2, lp_dir + "/" + lpname)
 
     if solveInstance:
-        start_time = ip.get_time()            
-        cpx_sol, cpx_status, cpx_gap = solveIP(ip, timelimit, mipgap, relgap_pool, maxsols, threads)
+        start_time = ip.get_time()
+        phase1_status, phase1_gap, phase2_status, phase2_gap, phase2_bestobj = solveIP(ip, timelimit, mipgap, relgap_pool, maxsols, threads)
         end_time = ip.get_time()
         total_time = end_time - start_time
-        
+ 
+        num_solutions = ip.solution.pool.get_num()       
         with open(sol_dir + "/" + lpname + ".sol", "w+") as sol_file:
-            sol_file.write(("%s,%d,%g,%g,%g\n" % (lpname, cpx_status, cpx_gap, cpx_sol, total_time)))
+            sol_file.write(("%s,%s,%g,%s,%g,%g,%d,%g\n" % (
+                lpname, 
+                phase1_status, 
+                phase1_gap, 
+                phase2_status, 
+                phase2_gap, 
+                phase2_bestobj, 
+                num_solutions, 
+                total_time)))
 
-        # Collect solutions from pool
-        solutions_matrix = np.zeros((ip.solution.pool.get_num(), len(ip.solution.pool.get_values(0))))
-        objval_arr = np.zeros(ip.solution.pool.get_num())
-        for sol_idx in range(ip.solution.pool.get_num()):
-            sol_objval = ip.solution.pool.get_objective_value(sol_idx)
-            objval_arr[sol_idx] = sol_objval 
-            # if sol_objval > 0:
-            solutions_matrix[sol_idx] = ip.solution.pool.get_values(sol_idx)
-        solutions_obj_matrix = np.concatenate((np.expand_dims(objval_arr, axis=0).T, solutions_matrix), axis=1)
-        # with open(sol_dir + "/" + lpname + ".sol", "ab") as sol_file:
-            # np.savetxt(sol_file, solutions_obj_matrix, fmt="%2.f")
-        with open(sol_dir + "/" + lpname + ".npz", 'wb') as f:
-            np.savez_compressed(f, solutions=solutions_obj_matrix)
-        # with open(sol_dir + "/" + lpname + ".npz", 'rb') as f:
-        #     a = np.load(f)
-        #     print(a["solutions"].shape)
+        if num_solutions >= 1:
+            # Collect solutions from pool
+            solutions_matrix = np.zeros((num_solutions, len(ip.solution.pool.get_values(0))))
+            objval_arr = np.zeros(num_solutions)
+            for sol_idx in range(num_solutions):
+                sol_objval = ip.solution.pool.get_objective_value(sol_idx)
+                objval_arr[sol_idx] = sol_objval 
+                # if sol_objval > 0:
+                solutions_matrix[sol_idx] = ip.solution.pool.get_values(sol_idx)
+            solutions_obj_matrix = np.concatenate((np.expand_dims(objval_arr, axis=0).T, solutions_matrix), axis=1)
+            # with open(sol_dir + "/" + lpname + ".sol", "ab") as sol_file:
+                # np.savetxt(sol_file, solutions_obj_matrix, fmt="%2.f")
+            with open(sol_dir + "/" + lpname + ".npz", 'wb') as f:
+                np.savez_compressed(f, solutions=solutions_obj_matrix)
+            # with open(sol_dir + "/" + lpname + ".npz", 'rb') as f:
+            #     a = np.load(f)
+            #     print(a["solutions"].shape)
 
-        # Create variable-constraint graph
-        vcg = extractVCG(g, E2, ip)
+            # Create variable-constraint graph
+            vcg = extractVCG(g, E2, ip)
 
-        nx.write_gpickle(vcg, data_dir + "/" + lpname + ".pk")
+            nx.write_gpickle(vcg, data_dir + "/" + lpname + ".pk")
 
-        vcg2=nx.read_gpickle(data_dir + "/" + lpname + ".pk")
-        print(["(%s, %g)" % (n, d['bias']) for n, d in vcg2.nodes(data=True) if d['bipartite']==0])
+            vcg2=nx.read_gpickle(data_dir + "/" + lpname + ".pk")
+            # print(["(%s, %g)" % (n, d['bias']) for n, d in vcg2.nodes(data=True) if d['bipartite']==0])
