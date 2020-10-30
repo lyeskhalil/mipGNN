@@ -249,7 +249,7 @@ if __name__ == "__main__":
     ip, variable_names = createIP(g, E2, lp_dir + "/" + lpname)
 
     if solveInstance:
-        cpx_sol, cpx_status, cpx_gap = solveIP(ip, timelimit, mipgap, relgap_pool, maxsols)
+        cpx_sol, cpx_status, cpx_gap = solveIP(ip, timelimit, mipgap, relgap_pool, maxsols, threads)
         with open(sol_dir + "/" + lpname + ".sol", "w+") as sol_file:
             sol_file.write(("%s,%d,%g,%g\n" % (lpname, cpx_status, cpx_gap, cpx_sol)))
 
