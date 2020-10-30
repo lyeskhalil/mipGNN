@@ -122,20 +122,20 @@ def extractVCG(g, E2, ip):
     return vcg
 
 
-def solveIP(ip, timelimit):
+def solveIP(ip, timelimit, mipgap, relgap_pool, maxsols):
     ip.parameters.timelimit.set(timelimit)
 
-    ip.parameters.mip.tolerances.mipgap.set(0.1)
+    ip.parameters.mip.tolerances.mipgap.set(mipgap) #er_200_SET2_1k was with 0.1
 
     """ https://www.ibm.com/support/knowledgecenter/SSSA5P_12.9.0/ilog.odms.cplex.help/refpythoncplex/html/cplex._internal._subinterfaces.SolnPoolInterface-class.html#get_values """
     # 2 = Moderate: generate a larger number of solutions
     ip.parameters.mip.pool.intensity.set(2)
-    # Maximum number of solutions generated for the solution pool by populate
-    ip.parameters.mip.limits.populate.set(1000)
     # Replace the solution which has the worst objective
     ip.parameters.mip.pool.replace.set(1)
+    # Maximum number of solutions generated for the solution pool by populate
+    ip.parameters.mip.limits.populate.set(maxsols)
     # Relative gap for the solution pool
-    ip.parameters.mip.pool.relgap.set(0.2)
+    ip.parameters.mip.pool.relgap.set(relgap_pool) #er_200_SET2_1k was with 0.2
 
     # disable all cplex output
 #     ip.set_log_stream(None)
@@ -163,6 +163,11 @@ if __name__ == "__main__":
     alphaE2 = 0.75
     timelimit = 120.0
     solveInstance = True
+
+    mipgap = 0.1
+    relgap_pool = 0.2
+    maxsols = 1000
+
     seed = 0
     for i in range(1, len(sys.argv), 2):
         if sys.argv[i] == '-instance':
@@ -215,7 +220,6 @@ if __name__ == "__main__":
         
     # Seed generator
     random.seed(seed)
-    # np.random.seed(seed)
 
     print(whichSet)
     print(setParam)
@@ -242,9 +246,26 @@ if __name__ == "__main__":
     ip, variable_names = createIP(g, E2, lp_dir + "/" + lpname)
 
     if solveInstance:
-        cpx_sol, cpx_status, cpx_gap = solveIP(ip, timelimit)
+        cpx_sol, cpx_status, cpx_gap = solveIP(ip, timelimit, mipgap, relgap_pool, maxsols)
         with open(sol_dir + "/" + lpname + ".sol", "w+") as sol_file:
-            sol_file.write(("%s,%d,%g,%g" % (lpname, cpx_status, cpx_gap, cpx_sol)))
+            sol_file.write(("%s,%d,%g,%g\n" % (lpname, cpx_status, cpx_gap, cpx_sol)))
+
+    # Collect solutions from pool
+    solutions_matrix = np.zeros((ip.solution.pool.get_num(), len(ip.solution.pool.get_values(0))))
+    objval_arr = np.zeros(ip.solution.pool.get_num())
+    for sol_idx in range(ip.solution.pool.get_num()):
+        sol_objval = ip.solution.pool.get_objective_value(sol_idx)
+        objval_arr[sol_idx] = sol_objval 
+        # if sol_objval > 0:
+        solutions_matrix[sol_idx] = ip.solution.pool.get_values(sol_idx)
+    solutions_obj_matrix = np.concatenate((np.expand_dims(objval_arr, axis=0).T, solutions_matrix), axis=1)
+    # with open(sol_dir + "/" + lpname + ".sol", "ab") as sol_file:
+        # np.savetxt(sol_file, solutions_obj_matrix, fmt="%2.f")
+    with open(sol_dir + "/" + lpname + ".npz", 'wb') as f:
+        np.savez_compressed(f, solutions=solutions_obj_matrix)
+    # with open(sol_dir + "/" + lpname + ".npz", 'rb') as f:
+    #     a = np.load(f)
+    #     print(a["solutions"].shape)
 
     # Create variable-constraint graph
     vcg = extractVCG(g, E2, ip)
