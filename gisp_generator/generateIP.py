@@ -122,8 +122,10 @@ def extractVCG(g, E2, ip):
     return vcg
 
 
-def solveIP(ip, timelimit, mipgap, relgap_pool, maxsols):
+def solveIP(ip, timelimit, mipgap, relgap_pool, maxsols, threads):
     ip.parameters.timelimit.set(timelimit)
+
+    ip.parameters.threads.set(threads)
 
     ip.parameters.mip.tolerances.mipgap.set(mipgap) #er_200_SET2_1k was with 0.1
 
@@ -164,6 +166,7 @@ if __name__ == "__main__":
     timelimit = 120.0
     solveInstance = True
 
+    threads = 4
     mipgap = 0.1
     relgap_pool = 0.2
     maxsols = 1000
