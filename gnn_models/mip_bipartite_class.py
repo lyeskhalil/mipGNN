@@ -476,7 +476,6 @@ dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform())
 
 len(dataset)
 
-exit()
 
 # Split data.
 train_index, rest = train_test_split(list(range(0, 1000)), test_size=0.2)
