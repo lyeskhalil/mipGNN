@@ -315,11 +315,11 @@ class GraphDataset(InMemoryDataset):
 
     @property
     def raw_file_names(self):
-        return "gisp_generator_DATA_er_SET1_400_400_alpha_0.5_setParam_100"
+        return "gisp_generator_DATA_er_SET2_200_200_alpha_0.5_setParam_100"
 
     @property
     def processed_file_names(self):
-        return "gisp_generator_DATA_er_SET1_400_400_alpha_0.5_setParam_100"
+        return "gisp_generator_DATA_er_SET2_200_200_alpha_0.5_setParam_100"
 
     def download(self):
         pass
