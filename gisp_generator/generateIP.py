@@ -134,7 +134,7 @@ def solveIP(ip, timelimit, mipgap, relgap_pool, maxsols, threads):
         phase1_gap = ip.solution.MIP.get_mip_relative_gap()
     phase1_status = ip.solution.get_status_string()
 
-    ip.parameters.mip.tolerances.mipgap.set(mipgap) #er_200_SET2_1k was with 0.1
+    ip.parameters.mip.tolerances.mipgap.set(max([phase1_gap, mipgap])) #er_200_SET2_1k was with 0.1
 
     """ https://www.ibm.com/support/knowledgecenter/SSSA5P_12.9.0/ilog.odms.cplex.help/refpythoncplex/html/cplex._internal._subinterfaces.SolnPoolInterface-class.html#get_values """
     # 2 = Moderate: generate a larger number of solutions
