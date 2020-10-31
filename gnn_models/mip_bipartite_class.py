@@ -478,9 +478,13 @@ len(dataset)
 
 
 # Split data.
-train_index, rest = train_test_split(list(range(0, 1000)), test_size=0.2)
-val_index = rest[0:100]
-test_index = rest[100:]
+# train_index, rest = train_test_split(list(range(0, 1000)), test_size=0.2)
+# val_index = rest[0:100]
+# test_index = rest[100:]
+
+train_index, rest = train_test_split(list(range(0, 541)), test_size=0.2)
+val_index = rest[0:26]
+test_index = rest[26:]
 
 train_dataset = dataset[train_index].shuffle()
 val_dataset = dataset[val_index].shuffle()
