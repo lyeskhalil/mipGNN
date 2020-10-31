@@ -315,11 +315,11 @@ class GraphDataset(InMemoryDataset):
 
     @property
     def raw_file_names(self):
-        return "SET2_bi_class"
+        return "gisp_generator_DATA_er_SET1_400_400_alpha_0.75_setParam_100"
 
     @property
     def processed_file_names(self):
-        return "SET2_bi_class"
+        return "gisp_generator_DATA_er_SET1_400_400_alpha_0.75_setParam_100"
 
     def download(self):
         pass
@@ -468,7 +468,7 @@ class MyTransform(object):
 # Prepare data.
 path = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
 # Path to raw graph data.
-data_path = '../gisp_generator/DATA/er_200_SET2_1k/'
+data_path = '../gisp_generator/DATA/er_SET1/400_400/alpha_0.75_setParam_100/train/'
 # Threshold for computing class labels.
 bias_threshold = 0.050
 # Create dataset.
@@ -476,17 +476,20 @@ dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform())
 
 len(dataset)
 
+
 # Split data.
-train_index, rest = train_test_split(list(range(0, 1000)), test_size=0.2)
-val_index = rest[0:100]
-test_index = rest[100:]
+# train_index, rest = train_test_split(list(range(0, 1000)), test_size=0.2)
+# val_index = rest[0:100]
+# test_index = rest[100:]
+
+train_index, rest = train_test_split(list(range(0, 541)), test_size=0.2)
+val_index = rest[0:26]
+test_index = rest[26:]
 
 train_dataset = dataset[train_index].shuffle()
 val_dataset = dataset[val_index].shuffle()
 test_dataset = dataset[test_index].shuffle()
 
-# TODO: Do not change this.
-# np.savetxt("index_er_200_SET2_1k_20", test_index, delimiter=",", fmt="%d")
 
 print(len(val_dataset))
 print(len(test_dataset))
@@ -576,4 +579,6 @@ for epoch in range(1, 50):
           'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
                                                                         train_acc, val_acc, test_acc))
 
-torch.save(model.state_dict(), "trained_model_er_200_SET2_1k_new")
+torch.save(model.state_dict(), "gisp_generator_DATA_er_SET1_400_400_alpha_0.75_setParam_100")
+# gisp_generator_DATA_er_SET2_200_200_alpha_0.5_setParam_100
+# gisp_generator_DATA_er_SET2_200_200_alpha_0.25_setParam_100
