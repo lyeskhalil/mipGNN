@@ -203,7 +203,7 @@ if __name__ == "__main__":
         if sys.argv[i] == '-timelimit':
             timelimit = float(sys.argv[i + 1])
         if sys.argv[i] == '-solve':
-            solveInstance = bool(sys.argv[i + 1])
+            solveInstance = int(sys.argv[i + 1])
         if sys.argv[i] == '-seed':
             seed = int(sys.argv[i + 1])
     assert exp_dir is not None
