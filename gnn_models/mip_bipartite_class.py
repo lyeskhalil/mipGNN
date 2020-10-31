@@ -315,11 +315,11 @@ class GraphDataset(InMemoryDataset):
 
     @property
     def raw_file_names(self):
-        return "gisp_generator_DATA_er_SET2_200_200_alpha_0.5_setParam_100"
+        return "gisp_generator_DATA_er_SET2_200_200_alpha_0.25_setParam_100"
 
     @property
     def processed_file_names(self):
-        return "gisp_generator_DATA_er_SET2_200_200_alpha_0.5_setParam_100"
+        return "gisp_generator_DATA_er_SET2_200_200_alpha_0.25_setParam_100"
 
     def download(self):
         pass
@@ -468,7 +468,7 @@ class MyTransform(object):
 # Prepare data.
 path = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
 # Path to raw graph data.
-data_path = '../gisp_generator/DATA/er_SET2/200_200/alpha_0.5_setParam_100/train/'
+data_path = '../gisp_generator/DATA/er_SET2/200_200/alpha_0.25_setParam_100/train/'
 # Threshold for computing class labels.
 bias_threshold = 0.050
 # Create dataset.
@@ -575,4 +575,5 @@ for epoch in range(1, 50):
           'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
                                                                         train_acc, val_acc, test_acc))
 
-torch.save(model.state_dict(), "gisp_generator_DATA_er_SET2_200_200_alpha_0.5_setParam_100")
+torch.save(model.state_dict(), "gisp_generator_DATA_er_SET2_200_200_alpha_0.25_setParam_100")
+# gisp_generator_DATA_er_SET2_200_200_alpha_0.5_setParam_100
