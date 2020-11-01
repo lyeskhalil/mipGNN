@@ -74,7 +74,6 @@ def createIP(g, E2, ipfilename):
         rows.append(row)
         
     ip = cplex.Cplex()
-    # disable_output_cpx(ip)
     ip.set_problem_name(ipfilename)
     ip.objective.set_sense(ip.objective.sense.maximize)
     ip.variables.add(obj=objective_coeffs, types=variable_types, names=variable_names)
@@ -83,7 +82,7 @@ def createIP(g, E2, ipfilename):
     ip.write(ipfilename + '.lp')
     return ip, variable_names
 
-def extractVCG(g, E2, ip, set_biases):
+def extractVCG(g, E2, ip, set_biases, gap=None, bestobj=None):
     num_solutions = 0
     if set_biases:
         num_solutions = ip.solution.pool.get_num()
@@ -101,7 +100,7 @@ def extractVCG(g, E2, ip, set_biases):
 
         print("num_solutions = %d" % num_solutions)
 
-    vcg = nx.Graph(num_solutions=num_solutions)
+    vcg = nx.Graph(num_solutions=num_solutions, gap=gap, bestobj=bestobj)
 
     vcg.add_nodes_from([("x" + str(node), {'objcoeff':-node_data['revenue']}) for node, node_data in g.nodes(data=True)], bipartite=0)
     vcg.add_nodes_from(["y" + str(edge[0]) + "_" + str(edge[1]) for edge in E2], bipartite=0)
@@ -192,6 +191,7 @@ if __name__ == "__main__":
     parser.add_argument("-relgap_pool", type=float, default=0.1)
     parser.add_argument("-maxsols", type=int, default=1000)
     parser.add_argument("-overwrite_data", type=int, default=0)
+    parser.add_argument("-cpx_output", type=int, default=0)
 
     args = parser.parse_args()
     print(args)
@@ -248,11 +248,14 @@ if __name__ == "__main__":
     ip, variable_names = createIP(g, E2, lp_dir + "/" + lpname)
     print("Created MIP instance.")
 
-
     # disable all cplex output
-    # disable_output_cpx(ip)
+    if not args.cpx_output:
+        disable_output_cpx(ip)
 
     num_solutions = 0
+    phase1_gap = None
+    phase2_bestobj = None
+
     if args.solve:
         start_time = ip.get_time()
         phase1_status, phase1_gap, phase2_status, phase2_gap, phase2_bestobj = solveIP(
@@ -298,7 +301,7 @@ if __name__ == "__main__":
             print("Wrote npz file.")
 
             # Create variable-constraint graph
-    vcg = extractVCG(g, E2, ip, set_biases=(args.solve and num_solutions >= 1))
+    vcg = extractVCG(g, E2, ip, set_biases=(args.solve and num_solutions >= 1), gap=phase1_gap, bestobj=phase2_bestobj)
 
     nx.write_gpickle(vcg, data_dir + "/" + lpname + ".pk")
     print("Wrote graph pickle file.")
