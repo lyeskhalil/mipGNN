@@ -9,6 +9,13 @@ import time
 import numpy as np
 import argparse
 
+
+def disable_output_cpx(instance_cpx):
+    instance_cpx.set_log_stream(None)
+    # instance_cpx.set_error_stream(None)
+    instance_cpx.set_warning_stream(None)
+    # instance_cpx.set_results_stream(None)
+
 def dimacsToNx(filename):
     g = nx.Graph()
     with open(filename, 'r') as f:
@@ -122,6 +129,7 @@ def extractVCG(g, E2, ip, set_biases):
 
 
 def solveIP(ip, timelimit, mipgap, relgap_pool, maxsols, threads, memlimit):
+    ip.parameters.emphasis.mip.set(1)
     ip.parameters.threads.set(threads)
     ip.parameters.workmem.set(memlimit)
     ip.parameters.timelimit.set(timelimit)
@@ -144,12 +152,6 @@ def solveIP(ip, timelimit, mipgap, relgap_pool, maxsols, threads, memlimit):
     ip.parameters.mip.limits.populate.set(maxsols)
     # Relative gap for the solution pool
     ip.parameters.mip.pool.relgap.set(relgap_pool) #er_200_SET2_1k was with 0.2
-
-    # disable all cplex output
-#     ip.set_log_stream(None)
-#     ip.set_error_stream(None)
-#     ip.set_warning_stream(None)
-#     ip.set_results_stream(None)
 
     try:
         ip.populate_solution_pool()
@@ -186,6 +188,7 @@ if __name__ == "__main__":
     parser.add_argument("-overwrite_data", type=int, default=0)
 
     args = parser.parse_args()
+    print(args)
 
     assert(args.max_n >= args.min_n)
 
@@ -213,10 +216,6 @@ if __name__ == "__main__":
     # Seed generator
     random.seed(args.seed)
 
-    print(args.whichSet)
-    print(args.setParam)
-    print(args.alphaE2)
-    
     if args.instance == '':
         # Generate random graph
         numnodes = random.randint(args.min_n, args.max_n+1)
@@ -241,6 +240,9 @@ if __name__ == "__main__":
     # Create IP, write it to file, and solve it with CPLEX
     print(lpname)
     ip, variable_names = createIP(g, E2, lp_dir + "/" + lpname)
+
+    # disable all cplex output
+    disable_output_cpx(ip)
 
     num_solutions = 0
     if args.solve:
