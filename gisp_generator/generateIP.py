@@ -11,7 +11,7 @@ import argparse
 
 
 def disable_output_cpx(instance_cpx):
-    # instance_cpx.set_log_stream(None)
+    instance_cpx.set_log_stream(None)
     # instance_cpx.set_error_stream(None)
     instance_cpx.set_warning_stream(None)
     instance_cpx.set_results_stream(None)
