@@ -74,21 +74,23 @@ def createIP(g, E2, ipfilename):
     ip.write(ipfilename + '.lp')
     return ip, variable_names
 
-def extractVCG(g, E2, ip):
-    num_solutions = ip.solution.pool.get_num()
-    bias_arr = np.zeros(len(ip.solution.pool.get_values(0)))
+def extractVCG(g, E2, ip, set_biases):
+    num_solutions = 0
+    if set_biases:
+        num_solutions = ip.solution.pool.get_num()
+        bias_arr = np.zeros(len(ip.solution.pool.get_values(0)))
 
-    for sol_idx in range(ip.solution.pool.get_num()):
-        # if ip.solution.pool.get_objective_value(sol_idx) <= 0:
-        #     num_solutions -= 1
-        bias_arr += ip.solution.pool.get_values(sol_idx)
-    bias_arr /= num_solutions
+        for sol_idx in range(ip.solution.pool.get_num()):
+            # if ip.solution.pool.get_objective_value(sol_idx) <= 0:
+            #     num_solutions -= 1
+            bias_arr += ip.solution.pool.get_values(sol_idx)
+        bias_arr /= num_solutions
 
-    bias_dict = {}
-    for index, name in enumerate(ip.variables.get_names()):
-        bias_dict[name] = bias_arr[index]
+        bias_dict = {}
+        for index, name in enumerate(ip.variables.get_names()):
+            bias_dict[name] = bias_arr[index]
 
-    print("num_solutions = %d" % num_solutions)
+        print("num_solutions = %d" % num_solutions)
 
     vcg = nx.Graph(num_solutions=num_solutions)
 
@@ -97,15 +99,11 @@ def extractVCG(g, E2, ip):
 
     for node, node_data in g.nodes(data=True):
         node_name = "x" + str(node)
-        bias = bias_dict[node_name]
-        # for sol_idx in range(num_solutions):
-        #     bias += ip.solution.pool.get_values(sol_idx, node_name) / num_solutions
+        bias = bias_dict[node_name] if set_biases else 0
         vcg.add_node(node_name, bias=bias, objcoeff=-1*node_data['revenue'], bipartite=0)
     for edge in E2:
         node_name = "y" + str(edge[0]) + "_" + str(edge[1])
-        bias = bias_dict[node_name]
-        # for sol_idx in range(num_solutions):
-        #     bias += ip.solution.pool.get_values(sol_idx, node_name) / num_solutions
+        bias = bias_dict[node_name] if set_biases else 0
         vcg.add_node(node_name, bias=bias, objcoeff=g[edge[0]][edge[1]]['cost'], bipartite=0)
     
     constraint_counter = 0        
@@ -259,6 +257,7 @@ if __name__ == "__main__":
     print(lpname)
     ip, variable_names = createIP(g, E2, lp_dir + "/" + lpname)
 
+    num_solutions = 0
     if solveInstance:
         start_time = ip.get_time()
         phase1_status, phase1_gap, phase2_status, phase2_gap, phase2_bestobj = solveIP(ip, timelimit, mipgap, relgap_pool, maxsols, threads)
@@ -296,9 +295,9 @@ if __name__ == "__main__":
             #     print(a["solutions"].shape)
 
             # Create variable-constraint graph
-            vcg = extractVCG(g, E2, ip)
+    vcg = extractVCG(g, E2, ip, set_biases=(solveInstance and num_solutions >= 1))
 
-            nx.write_gpickle(vcg, data_dir + "/" + lpname + ".pk")
+    nx.write_gpickle(vcg, data_dir + "/" + lpname + ".pk")
 
-            vcg2=nx.read_gpickle(data_dir + "/" + lpname + ".pk")
-            # print(["(%s, %g)" % (n, d['bias']) for n, d in vcg2.nodes(data=True) if d['bipartite']==0])
+    vcg2=nx.read_gpickle(data_dir + "/" + lpname + ".pk")
+    # print(["(%s, %g)" % (n, d['bias']) for n, d in vcg2.nodes(data=True) if d['bipartite']==0])
