@@ -74,7 +74,7 @@ def createIP(g, E2, ipfilename):
         rows.append(row)
         
     ip = cplex.Cplex()
-    disable_output_cpx(ip)
+    # disable_output_cpx(ip)
     ip.set_problem_name(ipfilename)
     ip.objective.set_sense(ip.objective.sense.maximize)
     ip.variables.add(obj=objective_coeffs, types=variable_types, names=variable_names)
@@ -129,11 +129,13 @@ def extractVCG(g, E2, ip, set_biases):
     return vcg
 
 
-def solveIP(ip, timelimit, mipgap, relgap_pool, maxsols, threads, memlimit):
+def solveIP(ip, timelimit, mipgap, relgap_pool, maxsols, threads, memlimit, treememlimit):
     ip.parameters.emphasis.mip.set(1)
     ip.parameters.threads.set(threads)
     ip.parameters.workmem.set(memlimit)
     ip.parameters.timelimit.set(timelimit)
+    ip.parameters.mip.limits.treememory.set(treememlimit)
+    ip.parameters.mip.strategy.file.set(2)
     
     ip.solve()
     print("Finished Phase I.")
@@ -184,6 +186,7 @@ if __name__ == "__main__":
     parser.add_argument("-solve", type=int, default=1)
     parser.add_argument("-threads", type=int, default=4)
     parser.add_argument("-memlimit", type=int, default=2000)
+    parser.add_argument("-treememlimit", type=int, default=20000)
     parser.add_argument("-seed", type=int, default=0)
     parser.add_argument("-mipgap", type=float, default=0.1)
     parser.add_argument("-relgap_pool", type=float, default=0.1)
@@ -247,12 +250,20 @@ if __name__ == "__main__":
 
 
     # disable all cplex output
-    disable_output_cpx(ip)
+    # disable_output_cpx(ip)
 
     num_solutions = 0
     if args.solve:
         start_time = ip.get_time()
-        phase1_status, phase1_gap, phase2_status, phase2_gap, phase2_bestobj = solveIP(ip, args.timelimit, args.mipgap, args.relgap_pool, args.maxsols, args.threads, args.memlimit)
+        phase1_status, phase1_gap, phase2_status, phase2_gap, phase2_bestobj = solveIP(
+            ip, 
+            args.timelimit, 
+            args.mipgap, 
+            args.relgap_pool, 
+            args.maxsols, 
+            args.threads, 
+            args.memlimit, 
+            args.treememlimit)
         end_time = ip.get_time()
         total_time = end_time - start_time
  
