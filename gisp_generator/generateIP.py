@@ -11,10 +11,10 @@ import argparse
 
 
 def disable_output_cpx(instance_cpx):
-    instance_cpx.set_log_stream(None)
+    # instance_cpx.set_log_stream(None)
     # instance_cpx.set_error_stream(None)
     instance_cpx.set_warning_stream(None)
-    # instance_cpx.set_results_stream(None)
+    instance_cpx.set_results_stream(None)
 
 def dimacsToNx(filename):
     g = nx.Graph()
@@ -74,6 +74,7 @@ def createIP(g, E2, ipfilename):
         rows.append(row)
         
     ip = cplex.Cplex()
+    disable_output_cpx(ip)
     ip.set_problem_name(ipfilename)
     ip.objective.set_sense(ip.objective.sense.maximize)
     ip.variables.add(obj=objective_coeffs, types=variable_types, names=variable_names)
@@ -135,6 +136,7 @@ def solveIP(ip, timelimit, mipgap, relgap_pool, maxsols, threads, memlimit):
     ip.parameters.timelimit.set(timelimit)
     
     ip.solve()
+    print("Finished Phase I.")
 
     phase1_gap = 1e9
     if ip.solution.is_primal_feasible():
@@ -159,6 +161,7 @@ def solveIP(ip, timelimit, mipgap, relgap_pool, maxsols, threads, memlimit):
             phase2_gap = ip.solution.MIP.get_mip_relative_gap()
             phase2_bestobj = ip.solution.get_objective_value()
             phase2_status = ip.solution.get_status_string()
+        print("Finished Phase II.")
 
     except CplexError as exc:
         print(exc)
@@ -240,6 +243,8 @@ if __name__ == "__main__":
     # Create IP, write it to file, and solve it with CPLEX
     print(lpname)
     ip, variable_names = createIP(g, E2, lp_dir + "/" + lpname)
+    print("Created MIP instance.")
+
 
     # disable all cplex output
     disable_output_cpx(ip)
@@ -251,9 +256,8 @@ if __name__ == "__main__":
         end_time = ip.get_time()
         total_time = end_time - start_time
  
-        num_solutions = ip.solution.pool.get_num()       
-        with open(sol_dir + "/" + lpname + ".sol", "w+") as sol_file:
-            sol_file.write(("%s,%s,%g,%s,%g,%g,%d,%g\n" % (
+        num_solutions = ip.solution.pool.get_num()
+        results_str = ("%s,%s,%g,%s,%g,%g,%d,%g\n" % (
                 lpname, 
                 phase1_status, 
                 phase1_gap, 
@@ -261,7 +265,11 @@ if __name__ == "__main__":
                 phase2_gap, 
                 phase2_bestobj, 
                 num_solutions, 
-                total_time)))
+                total_time))
+        print(results_str)
+
+        with open(sol_dir + "/" + lpname + ".sol", "w+") as sol_file:
+            sol_file.write(results_str)
 
         if num_solutions >= 1:
             # Collect solutions from pool
@@ -273,18 +281,17 @@ if __name__ == "__main__":
                 # if sol_objval > 0:
                 solutions_matrix[sol_idx] = ip.solution.pool.get_values(sol_idx)
             solutions_obj_matrix = np.concatenate((np.expand_dims(objval_arr, axis=0).T, solutions_matrix), axis=1)
-            # with open(sol_dir + "/" + lpname + ".sol", "ab") as sol_file:
-                # np.savetxt(sol_file, solutions_obj_matrix, fmt="%2.f")
+
             with open(sol_dir + "/" + lpname + ".npz", 'wb') as f:
                 np.savez_compressed(f, solutions=solutions_obj_matrix)
-            # with open(sol_dir + "/" + lpname + ".npz", 'rb') as f:
-            #     a = np.load(f)
-            #     print(a["solutions"].shape)
+            print("Wrote npz file.")
 
             # Create variable-constraint graph
     vcg = extractVCG(g, E2, ip, set_biases=(args.solve and num_solutions >= 1))
 
     nx.write_gpickle(vcg, data_dir + "/" + lpname + ".pk")
+    print("Wrote graph pickle file.")
 
     vcg2=nx.read_gpickle(data_dir + "/" + lpname + ".pk")
+    print("Read back graph pickle file.")
     # print(["(%s, %g)" % (n, d['bias']) for n, d in vcg2.nodes(data=True) if d['bipartite']==0])
