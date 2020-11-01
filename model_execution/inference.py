@@ -283,8 +283,10 @@ if __name__ == '__main__':
 
     """ CPLEX output management """
     logstring = sys.stdout
+    summary_string = sys.stdout
     if args.logfile != 'sys.stdout':
         logstring = io.StringIO()
+        summary_string = io.StringIO()
         instance_cpx.set_log_stream(logstring)
         instance_cpx.set_results_stream(logstring)
         instance_cpx.set_warning_stream(logstring)
@@ -306,19 +308,19 @@ if __name__ == '__main__':
         num_nodes = instance_cpx.solution.progress.get_num_nodes_processed()
         total_time = end_time - start_time
 
-        logstring.write('solving stats,%s,%g,%g,%g,%i\n' % (
+        summary_string.write('solving stats,%s,%g,%g,%g,%i\n' % (
             cplex_status, 
             best_objval,
             gap,
             total_time,
             num_nodes))
     else:
-        logstring.write('solving stats,no solutions found\n')
+        summary_string.write('solving stats,no solutions found\n')
 
     if args.logfile != 'sys.stdout':
         if instance_cpx.solution.is_primal_feasible():
             _, incumbent_str = utils.parse_cplex_log(logstring.getvalue())
-            logstring.write(incumbent_str)
-        logstring = logstring.getvalue()
+            summary_string.write(incumbent_str)
+        summary_string = summary_string.getvalue()
         with open(args.logfile, 'w') as logfile:
-            logfile.write(logstring)
+            logfile.write(summary_string)

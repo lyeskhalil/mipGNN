@@ -7,6 +7,7 @@ from networkx.algorithms import bipartite
 import random
 import time
 import numpy as np
+import argparse
 
 def dimacsToNx(filename):
     g = nx.Graph()
@@ -120,9 +121,9 @@ def extractVCG(g, E2, ip, set_biases):
     return vcg
 
 
-def solveIP(ip, timelimit, mipgap, relgap_pool, maxsols, threads):
+def solveIP(ip, timelimit, mipgap, relgap_pool, maxsols, threads, memlimit):
     ip.parameters.threads.set(threads)
-
+    ip.parameters.workmem.set(memlimit)
     ip.parameters.timelimit.set(timelimit)
     
     ip.solve()
@@ -164,103 +165,87 @@ def solveIP(ip, timelimit, mipgap, relgap_pool, maxsols, threads):
     return phase1_status, phase1_gap, phase2_status, phase2_gap, phase2_bestobj
 
 if __name__ == "__main__":
-    instance = None
-    exp_dir = None
-    min_n = None
-    max_n = None
-    er_prob = 0.1
-    whichSet = 'SET2'
-    setParam = 100.0
-    alphaE2 = 0.75
-    timelimit = 120.0
-    solveInstance = True
+    """ Parse arguments """
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-exp_dir", type=str)
+    parser.add_argument("-instance", type=str, default='')
+    parser.add_argument("-min_n", type=int)
+    parser.add_argument("-max_n", type=int)
+    parser.add_argument("-er_prob", type=float, default=0.1)
+    parser.add_argument("-whichSet", type=str, default='SET2')
+    parser.add_argument("-setParam", type=float, default=100.0)
+    parser.add_argument("-alphaE2", type=float, default=0.75)
+    parser.add_argument("-timelimit", type=float, default=120.0)
+    parser.add_argument("-solve", type=int, default=1)
+    parser.add_argument("-threads", type=int, default=4)
+    parser.add_argument("-memlimit", type=int, default=2000)
+    parser.add_argument("-seed", type=int, default=0)
+    parser.add_argument("-mipgap", type=float, default=0.1)
+    parser.add_argument("-relgap_pool", type=float, default=0.1)
+    parser.add_argument("-maxsols", type=int, default=1000)
+    parser.add_argument("-overwrite_data", type=int, default=0)
 
-    threads = 4
-    mipgap = 0.1
-    relgap_pool = 0.1
-    maxsols = 1000
+    args = parser.parse_args()
 
-    seed = 0
-    for i in range(1, len(sys.argv), 2):
-        if sys.argv[i] == '-instance':
-            instance = sys.argv[i + 1]
-        if sys.argv[i] == '-exp_dir':
-            exp_dir = sys.argv[i + 1]
-        if sys.argv[i] == '-min_n':
-            min_n = int(sys.argv[i + 1])
-        if sys.argv[i] == '-max_n':
-            max_n = int(sys.argv[i + 1])
-        if sys.argv[i] == '-er_prob':
-            er_prob = float(sys.argv[i + 1])
-        if sys.argv[i] == '-whichSet':
-            whichSet = sys.argv[i + 1]
-        if sys.argv[i] == '-setParam':
-            setParam = float(sys.argv[i + 1])
-        if sys.argv[i] == '-alphaE2':
-            alphaE2 = float(sys.argv[i + 1])
-        if sys.argv[i] == '-timelimit':
-            timelimit = float(sys.argv[i + 1])
-        if sys.argv[i] == '-solve':
-            solveInstance = int(sys.argv[i + 1])
-        if sys.argv[i] == '-seed':
-            seed = int(sys.argv[i + 1])
-    assert exp_dir is not None
-    if instance is None:
-        assert min_n is not None
-        assert max_n is not None
+    assert(args.max_n >= args.min_n)
 
-    lp_dir = "LP/" + exp_dir
+    lp_dir = "LP/" + args.exp_dir
     try: 
         os.makedirs(lp_dir)
     except OSError:
         if not os.path.exists(lp_dir):
             raise
 
-    sol_dir = "SOL/" + exp_dir
+    sol_dir = "SOL/" + args.exp_dir
     try: 
         os.makedirs(sol_dir)
     except OSError:
         if not os.path.exists(sol_dir):
             raise
 
-    data_dir = "DATA/" + exp_dir
+    data_dir = "DATA/" + args.exp_dir
     try: 
         os.makedirs(data_dir)
     except OSError:
         if not os.path.exists(data_dir):
             raise
-        
-    # Seed generator
-    random.seed(seed)
 
-    print(whichSet)
-    print(setParam)
-    print(alphaE2)
+    # Seed generator
+    random.seed(args.seed)
+
+    print(args.whichSet)
+    print(args.setParam)
+    print(args.alphaE2)
     
-    if instance is None:
+    if args.instance == '':
         # Generate random graph
-        numnodes = random.randint(min_n, max_n+1)
-        g = nx.erdos_renyi_graph(n=numnodes, p=er_prob, seed=seed)
-        lpname = ("er_n=%d_m=%d_p=%.2f_%s_setparam=%.2f_alpha=%.2f_%d" % (numnodes, nx.number_of_edges(g), er_prob, whichSet, setParam, alphaE2, seed))
+        numnodes = random.randint(args.min_n, args.max_n+1)
+        g = nx.erdos_renyi_graph(n=numnodes, p=args.er_prob, seed=args.seed)
+        lpname = ("er_n=%d_m=%d_p=%.2f_%s_setparam=%.2f_alpha=%.2f_%d" % (numnodes, nx.number_of_edges(g), args.er_prob, args.whichSet, args.setParam, args.alphaE2, args.seed))
     else:
-        g = dimacsToNx(instance)
+        g = dimacsToNx(args.instance)
         # instanceName = os.path.splitext(instance)[1]
-        instanceName = instance.split('/')[1]
-        lpname = ("%s_%s_%g_%g_%d" % (instanceName, whichSet, alphaE2, setParam, seed))
+        instanceName = args.instance.split('/')[1]
+        lpname = ("%s_%s_%g_%g_%d" % (instanceName, args.whichSet, args.alphaE2, args.setParam, args.seed))
+
+    data_fullpath = data_dir + "/" + lpname + ".pk"
+    if not args.overwrite_data and os.path.isfile(data_fullpath):
+        print("data exists")
+        exit() 
         
     # Generate node revenues and edge costs
-    generateRevsCosts(g, whichSet, setParam)
+    generateRevsCosts(g, args.whichSet, args.setParam)
     # Generate the set of removable edges
-    E2 = generateE2(g, alphaE2)
+    E2 = generateE2(g, args.alphaE2)
 
     # Create IP, write it to file, and solve it with CPLEX
     print(lpname)
     ip, variable_names = createIP(g, E2, lp_dir + "/" + lpname)
 
     num_solutions = 0
-    if solveInstance:
+    if args.solve:
         start_time = ip.get_time()
-        phase1_status, phase1_gap, phase2_status, phase2_gap, phase2_bestobj = solveIP(ip, timelimit, mipgap, relgap_pool, maxsols, threads)
+        phase1_status, phase1_gap, phase2_status, phase2_gap, phase2_bestobj = solveIP(ip, args.timelimit, args.mipgap, args.relgap_pool, args.maxsols, args.threads, args.memlimit)
         end_time = ip.get_time()
         total_time = end_time - start_time
  
@@ -295,7 +280,7 @@ if __name__ == "__main__":
             #     print(a["solutions"].shape)
 
             # Create variable-constraint graph
-    vcg = extractVCG(g, E2, ip, set_biases=(solveInstance and num_solutions >= 1))
+    vcg = extractVCG(g, E2, ip, set_biases=(args.solve and num_solutions >= 1))
 
     nx.write_gpickle(vcg, data_dir + "/" + lpname + ".pk")
 
