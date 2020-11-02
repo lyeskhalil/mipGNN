@@ -128,13 +128,14 @@ def extractVCG(g, E2, ip, set_biases, gap=None, bestobj=None):
     return vcg
 
 
-def solveIP(ip, timelimit, mipgap, relgap_pool, maxsols, threads, memlimit, treememlimit):
+def solveIP(ip, timelimit, mipgap, relgap_pool, maxsols, threads, memlimit, treememlimit, cpx_tmp):
     ip.parameters.emphasis.mip.set(1)
     ip.parameters.threads.set(threads)
     ip.parameters.workmem.set(memlimit)
     ip.parameters.timelimit.set(timelimit)
     ip.parameters.mip.limits.treememory.set(treememlimit)
     ip.parameters.mip.strategy.file.set(2)
+    ip.parameters.workdir.set(cpx_tmp)
     
     ip.solve()
     print("Finished Phase I.")
@@ -192,6 +193,7 @@ if __name__ == "__main__":
     parser.add_argument("-maxsols", type=int, default=1000)
     parser.add_argument("-overwrite_data", type=int, default=0)
     parser.add_argument("-cpx_output", type=int, default=0)
+    parser.add_argument("-cpx_tmp", type=str, default="./tmp/")
 
     args = parser.parse_args()
     print(args)
@@ -266,7 +268,8 @@ if __name__ == "__main__":
             args.maxsols, 
             args.threads, 
             args.memlimit, 
-            args.treememlimit)
+            args.treememlimit,
+            args.cpx_tmp)
         end_time = ip.get_time()
         total_time = end_time - start_time
  
