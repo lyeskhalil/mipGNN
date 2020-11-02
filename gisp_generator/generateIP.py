@@ -133,7 +133,7 @@ def solveIP(ip, timelimit, mipgap, relgap_pool, maxsols, threads, memlimit, tree
     ip.parameters.threads.set(threads)
     ip.parameters.workmem.set(memlimit)
     ip.parameters.timelimit.set(timelimit)
-    ip.parameters.mip.limits.treememory.set(treememlimit)
+    # ip.parameters.mip.limits.treememory.set(treememlimit)
     ip.parameters.mip.strategy.file.set(2)
     ip.parameters.workdir.set(cpx_tmp)
     
