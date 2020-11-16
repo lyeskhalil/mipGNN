@@ -470,15 +470,15 @@ class MyTransform(object):
 
 
 file_list = [
-    "../DATA1/er_SET2/200_200/alpha_0.75_setParam_100/train",
-    "../DATA1/er_SET2/200_200/alpha_0.25_setParam_100/train",
-    "../DATA1/er_SET2/200_200/alpha_0.5_setParam_100/train",
-    "../DATA1/er_SET2/300_300/alpha_0.75_setParam_100/train",
-    "../DATA1/er_SET2/300_300/alpha_0.25_setParam_100/train",
-    "../DATA1/er_SET2/300_300/alpha_0.5_setParam_100/train",
-    "../DATA1/er_SET1/400_400/alpha_0.75_setParam_100/train",
-    "../DATA1/er_SET1/400_400/alpha_0.5_setParam_100/train",
-    "../DATA1/er_SET1/400_400/alpha_0.25_setParam_100/train",
+    "../DATA1/er_SET2/200_200/alpha_0.75_setParam_100/train/",
+    "../DATA1/er_SET2/200_200/alpha_0.25_setParam_100/train/",
+    "../DATA1/er_SET2/200_200/alpha_0.5_setParam_100/train/",
+    "../DATA1/er_SET2/300_300/alpha_0.75_setParam_100/train/",
+    "../DATA1/er_SET2/300_300/alpha_0.25_setParam_100/train/",
+    "../DATA1/er_SET2/300_300/alpha_0.5_setParam_100/train/",
+    "../DATA1/er_SET1/400_400/alpha_0.75_setParam_100/train/",
+    "../DATA1/er_SET1/400_400/alpha_0.5_setParam_100/train/",
+    "../DATA1/er_SET1/400_400/alpha_0.25_setParam_100/train/",
 ]
 
 name_list = [
