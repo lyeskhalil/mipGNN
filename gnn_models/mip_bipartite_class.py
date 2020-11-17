@@ -334,6 +334,9 @@ class GraphDataset(InMemoryDataset):
         # Iterate over instance files and create data objects.
         for num, filename in enumerate(os.listdir(data_path)):
             print(filename, num, num_graphs)
+            if num == 608:
+                continue
+
 
             # Get graph.
             graph = nx.read_gpickle(data_path + filename)
