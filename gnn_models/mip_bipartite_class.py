@@ -25,9 +25,6 @@ from torch_scatter import scatter_add
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-def randomword(length):
-   letters = string.ascii_lowercase
-   return ''.join(random.choice(letters) for i in range(length))
 
 # Update constraint embeddings based on variable embeddings.
 class VarConBipartiteLayer(MessagePassing):
@@ -310,20 +307,21 @@ class SimpleNet(torch.nn.Module):
 
 # Preprocessing to create Torch dataset.
 class GraphDataset(InMemoryDataset):
-    def __init__(self, root, data_path, bias_threshold, transform=None, pre_transform=None,
+    def __init__(self, root, data_path, name, bias_threshold, transform=None, pre_transform=None,
                  pre_filter=None):
         super(GraphDataset, self).__init__(root, transform, pre_transform, pre_filter)
         self.data, self.slices = torch.load(self.processed_paths[0])
         self.data_path = data_path
         self.bias_threshold = bias_threshold
+        self.name = name
 
     @property
     def raw_file_names(self):
-        return randomword(10)
+        return self.name
 
     @property
     def processed_file_names(self):
-        return randomword(10)
+        return self.name
 
     def download(self):
         pass
@@ -504,7 +502,7 @@ for r, f in enumerate(file_list):
     # Threshold for computing class labels.
     bias_threshold = 0.050
     # Create dataset.
-    dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform()).shuffle()
+    dataset = GraphDataset(path, data_path, name_list[r], bias_threshold, transform=MyTransform()).shuffle()
 
     len(dataset)
 
