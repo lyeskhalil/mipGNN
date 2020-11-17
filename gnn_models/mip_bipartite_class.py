@@ -315,13 +315,13 @@ class GraphDataset(InMemoryDataset):
         self.bias_threshold = bias_threshold
         self.sname = sname
 
-    @property
+    #@property
     def raw_file_names(self):
-        return self.sname
+        return sname
 
-    @property
+    #@property
     def processed_file_names(self):
-        return self.sname
+        return sname
 
     def download(self):
         pass
@@ -499,6 +499,7 @@ for r, f in enumerate(file_list):
     path = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
     # Path to raw graph data.
     data_path = f
+    sname = name_list[r]
     # Threshold for computing class labels.
     bias_threshold = 0.050
     # Create dataset.
