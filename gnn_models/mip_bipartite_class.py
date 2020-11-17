@@ -314,11 +314,11 @@ class GraphDataset(InMemoryDataset):
         self.data_path = data_path
         self.bias_threshold = bias_threshold
 
-    #@property
+    @property
     def raw_file_names(self):
         return sname
 
-    #@property
+    @property
     def processed_file_names(self):
         return sname
 
