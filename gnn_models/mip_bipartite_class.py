@@ -307,21 +307,21 @@ class SimpleNet(torch.nn.Module):
 
 # Preprocessing to create Torch dataset.
 class GraphDataset(InMemoryDataset):
-    def __init__(self, root, data_path, name, bias_threshold, transform=None, pre_transform=None,
+    def __init__(self, root, data_path, sname, bias_threshold, transform=None, pre_transform=None,
                  pre_filter=None):
         super(GraphDataset, self).__init__(root, transform, pre_transform, pre_filter)
         self.data, self.slices = torch.load(self.processed_paths[0])
         self.data_path = data_path
         self.bias_threshold = bias_threshold
-        self.name = name
+        self.sname = sname
 
     @property
     def raw_file_names(self):
-        return self.name
+        return self.sname
 
     @property
     def processed_file_names(self):
-        return self.name
+        return self.sname
 
     def download(self):
         pass
