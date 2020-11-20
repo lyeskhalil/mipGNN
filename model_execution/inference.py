@@ -182,6 +182,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-method", type=str, default='default')
     parser.add_argument("-instance", type=str, default='../gisp_generator/LP/er_200_SET2_1k/er_n=200_m=1867_p=0.10_SET2_setparam=100.00_alpha=0.75_606.lp')
+    parser.add_argument("-graph", type=str, default='')
     parser.add_argument("-model", type=str, default='../gnn_models/trained_model_er_200_SET2_1k_new')
     parser.add_argument("-barebones", type=int, default=1)
     parser.add_argument("-timelimit", type=float, default=60)
@@ -220,7 +221,8 @@ if __name__ == '__main__':
     """ Solve CPLEX instance with user-selected method """
     if args.method != 'default':
         """ Read in the pickled graph and the trained model """
-        graph = nx.read_gpickle("../gisp_generator/DATA/" + instance_name + ".pk")
+        # graph = nx.read_gpickle("../gisp_generator/DATA/" + instance_name + ".pk")
+        graph = nx.read_gpickle(args.graph)
         prediction, node_to_varnode = get_prediction(model_name=args.model, graph=graph)
         dict_varname_seqid = get_variable_cpxid(graph, node_to_varnode, prediction)
         # print(prediction)
@@ -238,9 +240,6 @@ if __name__ == '__main__':
             coeffs = pred_one_coeff + pred_zero_coeff
 
             local_branching_coeffs = [list(range(len(prediction))), coeffs.tolist()]
-
-        if args.method == 'default_emptycb':
-            branch_cb = instance_cpx.register_callback(callbacks_cplex.branch_empty)
 
         elif args.method == 'branching_priorities':
             set_cplex_priorities(instance_cpx, prediction)
@@ -280,6 +279,9 @@ if __name__ == '__main__':
 
             branch_cb.time = 0
             node_cb.time = 0
+
+    if args.method == 'default_emptycb':
+        branch_cb = instance_cpx.register_callback(callbacks_cplex.branch_empty)
 
     """ CPLEX output management """
     logstring = sys.stdout
