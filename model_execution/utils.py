@@ -18,7 +18,10 @@ def parse_cplex_log(logstring):
 			if plus_idx != -1:
 				num_nodes = num_nodes[:plus_idx]
 				is_heuristic_solution = 1
-			num_nodes = int(num_nodes)
+			try:
+				num_nodes = int(num_nodes)
+			except ValueError:
+				num_nodes = -1
 
 		elif "Found" in line:
 			line_vals = line.split()
