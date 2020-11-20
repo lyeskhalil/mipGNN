@@ -192,6 +192,7 @@ if __name__ == '__main__':
     parser.add_argument("-lb_threshold", type=int, default=5)
 
     args = parser.parse_args()
+    print(args)
 
     instance_path_split = args.instance.split('/')
     instance_name = instance_path_split[-2] + '/' + instance_path_split[-1][:-3]
