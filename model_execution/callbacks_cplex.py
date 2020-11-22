@@ -187,7 +187,7 @@ class node_selection3(NodeCallback):
 
         # self.select_node((best_node,))
         # print("-- HEREEEE")
-        self.time += time.time() - time_start
+        # self.time += time.time() - time_start
 
 
 class branch_attach_data2(BranchCallback):

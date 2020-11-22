@@ -220,7 +220,7 @@ if __name__ == '__main__':
         # instance_cpx.parameters.mip.strategy.nodeselect.set(3)
 
     """ Solve CPLEX instance with user-selected method """
-    if args.method != 'default':
+    if 'default' not in args.method:
         """ Read in the pickled graph and the trained model """
         # graph = nx.read_gpickle("../gisp_generator/DATA/" + instance_name + ".pk")
         graph = nx.read_gpickle(args.graph)
