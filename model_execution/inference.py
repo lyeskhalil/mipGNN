@@ -166,8 +166,8 @@ def set_cplex_priorities(instance_cpx, prediction):
     for priority, var_cpxid in enumerate(priorities):
         var_name = var_names[var_cpxid]
         # print(scores[var_cpxid], scores[priorities[priority-1]])
-        if priority > 0 and scores[var_cpxid] > scores[priorities[priority-1]] + 1e-3:
-            cur_priority += 1
+        # if priority > 0 and scores[var_cpxid] > scores[priorities[priority-1]] + 1e-3:
+        cur_priority += 1
             # print(cur_priority)
         order_tuples += [(var_name, cur_priority, instance_cpx.order.branch_direction.up)]
 
@@ -259,7 +259,7 @@ if __name__ == '__main__':
             branch_cb.threshold = args.lb_threshold - num_ones
             branch_cb.is_root = True
 
-        elif args.method == 'node_selection':
+        elif 'node_selection' in args.method:
             # score variables based on bias prediction
             scores = np.max(((1-prediction), prediction), axis=0)
             rounding = np.round(prediction)
@@ -280,6 +280,10 @@ if __name__ == '__main__':
 
             branch_cb.time = 0
             node_cb.time = 0
+
+            if 'branching' in args.method:
+                set_cplex_priorities(instance_cpx, prediction)
+
 
     if args.method == 'default_emptycb':
         branch_cb = instance_cpx.register_callback(callbacks_cplex.branch_empty)
