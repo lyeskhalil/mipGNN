@@ -284,6 +284,14 @@ if __name__ == '__main__':
             if 'branching' in args.method:
                 set_cplex_priorities(instance_cpx, prediction)
 
+        elif args.method == 'primal_mipstart':
+            prediction_threshold = np.round(prediction)
+            instance_cpx.MIP_starts.add(
+                start=cplex.SparsePair(
+                    ind=[i for i in range(num_variables)],
+                    val=prediction_threshold.tolist()),
+                effort_level=cplex.MIP_starts.effort_level.repair)
+
 
     if args.method == 'default_emptycb':
         branch_cb = instance_cpx.register_callback(callbacks_cplex.branch_empty)
@@ -302,8 +310,9 @@ if __name__ == '__main__':
 
     # todo: consider runseeds 
     #  https://www.ibm.com/support/knowledgecenter/SSSA5P_12.9.0/ilog.odms.cplex.help/refpythoncplex/html/cplex.Cplex-class.html?view=kc#runseeds
-    start_time = instance_cpx.get_time()            
-    instance_cpx.solve()
+    start_time = instance_cpx.get_time()
+    if 'primal_' not in args.method:            
+        instance_cpx.solve()
     end_time = instance_cpx.get_time()
 
     """ Get solving performance statistics """
