@@ -191,16 +191,14 @@ if __name__ == '__main__':
     # Parameters for exact local branching
     parser.add_argument("-lb_threshold", type=int, default=5)
 
+    # Parameters for primal heuristic mip start
+    parser.add_argument("-rounding_threshold", type=float, default=0.1)
+
     args = parser.parse_args()
     print(args)
 
     instance_path_split = args.instance.split('/')
     instance_name = instance_path_split[-2] + '/' + instance_path_split[-1][:-3]
-
-    # logdir = args.logdir
-    # if logdir != 'sys.stdout':
-    #     logfile_path = logdir + '/' + instance_path_split[-1][:-3] + '.out'
-    #     Path(logdir).mkdir(parents=True, exist_ok=True)
 
     """ Create CPLEX instance """
     instance_cpx = cplex.Cplex(args.instance)
@@ -285,13 +283,23 @@ if __name__ == '__main__':
                 set_cplex_priorities(instance_cpx, prediction)
 
         elif args.method == 'primal_mipstart':
-            prediction_threshold = np.round(prediction)
-            instance_cpx.MIP_starts.add(
-                start=cplex.SparsePair(
-                    ind=[i for i in range(num_variables)],
-                    val=prediction_threshold.tolist()),
-                effort_level=cplex.MIP_starts.effort_level.repair)
+            # instance_cpx.parameters.mip.limits.nodes.set(1)
 
+            # threshold_set = np.minimum(prediction, 1-prediction)
+            # threshold_set = np.sort(np.unique(threshold_set))
+
+            threshold_set = [0.01, 0.05, 0.1, 0.2, 0.4, 0.5]
+
+            # threshold = args.rounding_threshold
+            for threshold in threshold_set:
+                indices_integer = np.where((prediction >= 1-threshold) | (prediction <= threshold))[0]
+                print(len(indices_integer), len(prediction))
+
+                instance_cpx.MIP_starts.add(
+                    cplex.SparsePair(
+                        ind=indices_integer.tolist(),
+                        val=np.round(prediction[indices_integer]).tolist()),
+                    instance_cpx.MIP_starts.effort_level.repair)
 
     if args.method == 'default_emptycb':
         branch_cb = instance_cpx.register_callback(callbacks_cplex.branch_empty)
@@ -311,8 +319,8 @@ if __name__ == '__main__':
     # todo: consider runseeds 
     #  https://www.ibm.com/support/knowledgecenter/SSSA5P_12.9.0/ilog.odms.cplex.help/refpythoncplex/html/cplex.Cplex-class.html?view=kc#runseeds
     start_time = instance_cpx.get_time()
-    if 'primal_' not in args.method:            
-        instance_cpx.solve()
+    # if 'primal_' not in args.method:            
+    instance_cpx.solve()
     end_time = instance_cpx.get_time()
 
     """ Get solving performance statistics """

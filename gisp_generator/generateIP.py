@@ -8,6 +8,7 @@ import random
 import time
 import numpy as np
 import argparse
+from sklearn.datasets import make_regression 
 
 
 def disable_output_cpx(instance_cpx):
@@ -36,6 +37,33 @@ def generateRevsCosts(g, whichSet, setParam):
             g.nodes[node]['revenue'] = float(setParam)
         for u,v,edge in g.edges(data=True):
             edge['cost'] = 1.0
+
+def generateRevsCostsSPO(g, E2, n_features=10, n_informative=10, bias=100):
+    num_nodes = nx.number_of_nodes(g)
+    num_edges = len(E2)
+
+    rng = np.random.RandomState(0)
+    _, _, true_func = make_regression(
+        n_samples=1,
+        n_features=n_features,
+        n_informative=n_features,
+        coef=True,
+        random_state=rng)
+
+    true_func = np.append(true_func, [bias])
+
+    counter = 0
+    for node in g.nodes():
+        g.nodes[node]['features'] = np.append(np.random.rand(n_features), [-1])
+        g.nodes[node]['revenue'] = np.dot(g.nodes[node]['features'], true_func)
+        g.nodes[node]['objcoeff'] = -g.nodes[node]['revenue']
+        counter += 1
+    for u,v,edge in g.edges(data=True):
+        if edge['E2']:
+            edge['features'] = np.append(np.random.rand(n_features), [1])
+            edge['cost'] = np.dot(edge['features'], true_func)
+            edge['objcoeff'] = edge['cost']
+            counter += 1
 
 def generateE2(g, alphaE2):
     E2 = set()
@@ -82,7 +110,7 @@ def createIP(g, E2, ipfilename):
     ip.write(ipfilename + '.lp')
     return ip, variable_names
 
-def extractVCG(g, E2, ip, set_biases, gap=None, bestobj=None):
+def extractVCG(g, E2, ip, set_biases, spo, gap=None, bestobj=None):
     num_solutions = 0
     if set_biases:
         num_solutions = ip.solution.pool.get_num()
@@ -109,10 +137,17 @@ def extractVCG(g, E2, ip, set_biases, gap=None, bestobj=None):
         node_name = "x" + str(node)
         bias = bias_dict[node_name] if set_biases else 0
         vcg.add_node(node_name, bias=bias, objcoeff=-1*node_data['revenue'], bipartite=0)
+
+        if spo:
+            vcg.nodes[node_name]['features'] = node_data['features']
+
     for edge in E2:
         node_name = "y" + str(edge[0]) + "_" + str(edge[1])
         bias = bias_dict[node_name] if set_biases else 0
         vcg.add_node(node_name, bias=bias, objcoeff=g[edge[0]][edge[1]]['cost'], bipartite=0)
+
+        if spo:
+            vcg.nodes[node_name]['features'] = g[edge[0]][edge[1]]['features']
     
     constraint_counter = 0        
     for node1, node2, edge in g.edges(data=True):
@@ -195,6 +230,8 @@ if __name__ == "__main__":
     parser.add_argument("-cpx_output", type=int, default=0)
     parser.add_argument("-cpx_tmp", type=str, default="./tmp/")
 
+    parser.add_argument("-spo", type=int, default=0)    
+
     args = parser.parse_args()
     print(args)
 
@@ -223,6 +260,7 @@ if __name__ == "__main__":
 
     # Seed generator
     random.seed(args.seed)
+    np.random.seed(args.seed)
 
     if args.instance == '':
         # Generate random graph
@@ -239,11 +277,15 @@ if __name__ == "__main__":
     if not args.overwrite_data and os.path.isfile(data_fullpath):
         print("data exists")
         exit() 
-        
+    
     # Generate node revenues and edge costs
     generateRevsCosts(g, args.whichSet, args.setParam)
+
     # Generate the set of removable edges
     E2 = generateE2(g, args.alphaE2)
+
+    if args.spo:
+        generateRevsCostsSPO(g, E2)
 
     # Create IP, write it to file, and solve it with CPLEX
     print(lpname)
@@ -303,8 +345,8 @@ if __name__ == "__main__":
                 np.savez_compressed(f, solutions=solutions_obj_matrix)
             print("Wrote npz file.")
 
-            # Create variable-constraint graph
-    vcg = extractVCG(g, E2, ip, set_biases=(args.solve and num_solutions >= 1), gap=phase1_gap, bestobj=phase2_bestobj)
+    # Create variable-constraint graph
+    vcg = extractVCG(g, E2, ip, spo=args.spo, set_biases=(args.solve and num_solutions >= 1), gap=phase1_gap, bestobj=phase2_bestobj)
 
     nx.write_gpickle(vcg, data_dir + "/" + lpname + ".pk")
     print("Wrote graph pickle file.")
@@ -312,3 +354,5 @@ if __name__ == "__main__":
     vcg2=nx.read_gpickle(data_dir + "/" + lpname + ".pk")
     print("Read back graph pickle file.")
     # print(["(%s, %g)" % (n, d['bias']) for n, d in vcg2.nodes(data=True) if d['bipartite']==0])
+
+    print([d['objcoeff'] for n, d in vcg2.nodes(data=True) if d['bipartite']==0])
