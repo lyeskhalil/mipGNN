@@ -52,6 +52,8 @@ def generateRevsCostsSPO(g, E2, n_features=10, n_informative=10, bias=1000):
 
     true_func = np.expand_dims(np.append(true_func, [bias]), axis=1)
 
+    print(true_func)
+
     feature_matrix = np.random.rand(num_nodes+num_edges, n_features+1)
     feature_matrix[:num_nodes,-1] = -1
     feature_matrix[num_nodes:,-1] = 1
@@ -271,6 +273,14 @@ if __name__ == "__main__":
         if not os.path.exists(data_dir):
             raise
 
+    if args.spo:
+        spodata_dir = "SPO_DATA/" + args.exp_dir
+        try: 
+            os.makedirs(spodata_dir)
+        except OSError:
+            if not os.path.exists(spodata_dir):
+                raise
+
     # Seed generator
     random.seed(args.seed)
     np.random.seed(args.seed)
@@ -299,9 +309,8 @@ if __name__ == "__main__":
 
     if args.spo:
         feature_matrix, output_vector = generateRevsCostsSPO(g, E2)
-        print(feature_matrix.shape, output_vector.shape)
-        print(output_vector)
-        np.savetxt('dataset.out', np.append(feature_matrix, output_vector, 1))
+        spodata_fullpath = spodata_dir + "/" + lpname + ".csv"
+        np.savetxt(spodata_fullpath, np.append(feature_matrix, output_vector, 1), delimiter=',')
 
     # Create IP, write it to file, and solve it with CPLEX
     print(lpname)
