@@ -38,7 +38,7 @@ def generateRevsCosts(g, whichSet, setParam):
         for u,v,edge in g.edges(data=True):
             edge['cost'] = 1.0
 
-def generateRevsCostsSPO(g, E2, n_features=10, n_informative=10, bias=100):
+def generateRevsCostsSPO(g, E2, n_features=10, n_informative=10, bias=1000):
     num_nodes = nx.number_of_nodes(g)
     num_edges = len(E2)
 
@@ -50,20 +50,33 @@ def generateRevsCostsSPO(g, E2, n_features=10, n_informative=10, bias=100):
         coef=True,
         random_state=rng)
 
-    true_func = np.append(true_func, [bias])
+    true_func = np.expand_dims(np.append(true_func, [bias]), axis=1)
+
+    feature_matrix = np.random.rand(num_nodes+num_edges, n_features+1)
+    feature_matrix[:num_nodes,-1] = -1
+    feature_matrix[num_nodes:,-1] = 1
+    output_vector = feature_matrix.dot(true_func) + np.random.normal(loc=10, scale=2, size=(num_nodes+num_edges,1))
 
     counter = 0
     for node in g.nodes():
-        g.nodes[node]['features'] = np.append(np.random.rand(n_features), [-1])
-        g.nodes[node]['revenue'] = np.dot(g.nodes[node]['features'], true_func)
-        g.nodes[node]['objcoeff'] = -g.nodes[node]['revenue']
+        # g.nodes[node]['features'] = np.append(np.random.rand(n_features), [-1]) 
+        # g.nodes[node]['revenue'] = np.dot(g.nodes[node]['features'], true_func) + np.random.normal(loc=10, scale=2)
+        # g.nodes[node]['objcoeff'] = -g.nodes[node]['revenue']
+        g.nodes[node]['features'] = feature_matrix[counter,:].tolist()
+        g.nodes[node]['revenue'] = float(-output_vector[counter])
+        g.nodes[node]['objcoeff'] = float(output_vector[counter])
         counter += 1
     for u,v,edge in g.edges(data=True):
         if edge['E2']:
-            edge['features'] = np.append(np.random.rand(n_features), [1])
-            edge['cost'] = np.dot(edge['features'], true_func)
-            edge['objcoeff'] = edge['cost']
+            # edge['features'] = np.append(np.random.rand(n_features), [1])
+            # edge['cost'] = np.dot(edge['features'], true_func) + np.random.normal(loc=10, scale=2)
+            # edge['objcoeff'] = edge['cost']
+            edge['features'] = feature_matrix[counter,:].tolist()
+            edge['cost'] = float(output_vector[counter])
+            edge['objcoeff'] = float(output_vector[counter])
             counter += 1
+
+    return feature_matrix, output_vector
 
 def generateE2(g, alphaE2):
     E2 = set()
@@ -100,7 +113,7 @@ def createIP(g, E2, ipfilename):
         else:
             row = [["x" + str(node1), "x" + str(node2)],[1,1]]
         rows.append(row)
-        
+
     ip = cplex.Cplex()
     ip.set_problem_name(ipfilename)
     ip.objective.set_sense(ip.objective.sense.maximize)
@@ -285,7 +298,10 @@ if __name__ == "__main__":
     E2 = generateE2(g, args.alphaE2)
 
     if args.spo:
-        generateRevsCostsSPO(g, E2)
+        feature_matrix, output_vector = generateRevsCostsSPO(g, E2)
+        print(feature_matrix.shape, output_vector.shape)
+        print(output_vector)
+        np.savetxt('dataset.out', np.append(feature_matrix, output_vector, 1))
 
     # Create IP, write it to file, and solve it with CPLEX
     print(lpname)
