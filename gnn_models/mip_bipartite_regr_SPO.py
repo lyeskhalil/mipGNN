@@ -568,7 +568,7 @@ for r, f in enumerate(file_list):
         model.train()
         total_loss = 0
         c  = 0
-        mse = torch.nn.MSELoss()
+        mse = torch.nn.L1Loss()
 
         for data in train_loader:
             optimizer.zero_grad()
@@ -590,7 +590,7 @@ for r, f in enumerate(file_list):
 
         total_loss = 0
         c  = 0
-        mse = torch.nn.MSELoss()
+        mse = torch.nn.L1Loss()
 
         err_total = 0.0
         cost_total = 0.0
