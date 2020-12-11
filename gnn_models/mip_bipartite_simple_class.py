@@ -158,11 +158,11 @@ class GraphDataset(InMemoryDataset):
 
     @property
     def raw_file_names(self):
-        return "SET2_bi_class"
+        return "SET2_SPO"
 
     @property
     def processed_file_names(self):
-        return "SET2_bi_class"
+        return "SET2_SPO"
 
     def download(self):
         pass
@@ -303,6 +303,8 @@ bias_threshold = 0.05
 # Create dataset.
 dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform())#.shuffle()
 len(dataset)
+
+exit()
 
 # TODO: Fixed split for testing purposes.
 # Split data.
