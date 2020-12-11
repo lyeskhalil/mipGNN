@@ -307,7 +307,7 @@ class SimpleNet(torch.nn.Module):
         x = F.relu(self.lin3(x))
         # x = F.dropout(x, p=0.5, training=self.training)
         x = self.lin4(x)
-        return x.view(-1)
+        return (x.view(-1), obj_pre)
 
     def __repr__(self):
         return self.__class__.__name__
@@ -571,7 +571,7 @@ for r, f in enumerate(file_list):
         for data in train_loader:
             optimizer.zero_grad()
             data = data.to(device)
-            out = model(data)
+            out, obj = model(data)
 
             loss = mse(out, data.y)
             loss.backward()
@@ -594,7 +594,7 @@ for r, f in enumerate(file_list):
         cost_total = 0.0
         for data in loader:
             data = data.to(device)
-            out = model(data)
+            out, obj = model(data)
             loss = mse(out, data.y)
             loss.backward()
 
