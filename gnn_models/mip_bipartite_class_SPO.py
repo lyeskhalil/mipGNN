@@ -523,6 +523,7 @@ for r, f in enumerate(file_list):
     len(dataset)
 
     print(dataset.data.y.sum()/dataset.data.y.size(-1))
+    print(dataset.data.y)
 
 
     # Split data.
