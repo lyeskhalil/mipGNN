@@ -618,7 +618,7 @@ for r, f in enumerate(file_list):
         scheduler.step(val_acc)
         lr = scheduler.optimizer.param_groups[0]['lr']
 
-        if val_acc > best_val:
+        if val_acc < best_val:
             best_val = val_acc
             test_acc = test(test_loader)
 
