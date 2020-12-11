@@ -178,7 +178,7 @@ def extractVCG(g, E2, ip, set_biases, spo, gap=None, bestobj=None):
     return vcg
 
 
-def solveIP(ip, timelimit, mipgap, relgap_pool, maxsols, threads, memlimit, treememlimit, cpx_tmp):
+def solveIP(ip, pool_bool, timelimit, mipgap, relgap_pool, maxsols, threads, memlimit, treememlimit, cpx_tmp):
     ip.parameters.emphasis.mip.set(1)
     ip.parameters.threads.set(threads)
     ip.parameters.workmem.set(memlimit)
@@ -188,36 +188,40 @@ def solveIP(ip, timelimit, mipgap, relgap_pool, maxsols, threads, memlimit, tree
     ip.parameters.workdir.set(cpx_tmp)
     
     ip.solve()
-    print("Finished Phase I.")
 
     phase1_gap = 1e9
     if ip.solution.is_primal_feasible():
         phase1_gap = ip.solution.MIP.get_mip_relative_gap()
     phase1_status = ip.solution.get_status_string()
+    phase2_bestobj = ip.solution.get_objective_value()
 
-    ip.parameters.mip.tolerances.mipgap.set(max([phase1_gap, mipgap])) #er_200_SET2_1k was with 0.1
+    phase2_status, phase2_gap = -1, -1
+    if pool_bool:
+        print("Finished Phase I.")
 
-    """ https://www.ibm.com/support/knowledgecenter/SSSA5P_12.9.0/ilog.odms.cplex.help/refpythoncplex/html/cplex._internal._subinterfaces.SolnPoolInterface-class.html#get_values """
-    # 2 = Moderate: generate a larger number of solutions
-    ip.parameters.mip.pool.intensity.set(2)
-    # Replace the solution which has the worst objective
-    ip.parameters.mip.pool.replace.set(1)
-    # Maximum number of solutions generated for the solution pool by populate
-    ip.parameters.mip.limits.populate.set(maxsols)
-    # Relative gap for the solution pool
-    ip.parameters.mip.pool.relgap.set(relgap_pool) #er_200_SET2_1k was with 0.2
+        ip.parameters.mip.tolerances.mipgap.set(max([phase1_gap, mipgap])) #er_200_SET2_1k was with 0.1
 
-    try:
-        ip.populate_solution_pool()
-        if ip.solution.is_primal_feasible():
-            phase2_gap = ip.solution.MIP.get_mip_relative_gap()
-            phase2_bestobj = ip.solution.get_objective_value()
-            phase2_status = ip.solution.get_status_string()
-        print("Finished Phase II.")
+        """ https://www.ibm.com/support/knowledgecenter/SSSA5P_12.9.0/ilog.odms.cplex.help/refpythoncplex/html/cplex._internal._subinterfaces.SolnPoolInterface-class.html#get_values """
+        # 2 = Moderate: generate a larger number of solutions
+        ip.parameters.mip.pool.intensity.set(2)
+        # Replace the solution which has the worst objective
+        ip.parameters.mip.pool.replace.set(1)
+        # Maximum number of solutions generated for the solution pool by populate
+        ip.parameters.mip.limits.populate.set(maxsols)
+        # Relative gap for the solution pool
+        ip.parameters.mip.pool.relgap.set(relgap_pool) #er_200_SET2_1k was with 0.2
 
-    except CplexError as exc:
-        print(exc)
-        return
+        try:
+            ip.populate_solution_pool()
+            if ip.solution.is_primal_feasible():
+                phase2_gap = ip.solution.MIP.get_mip_relative_gap()
+                phase2_bestobj = ip.solution.get_objective_value()
+                phase2_status = ip.solution.get_status_string()
+            print("Finished Phase II.")
+
+        except CplexError as exc:
+            print(exc)
+            return
 
     return phase1_status, phase1_gap, phase2_status, phase2_gap, phase2_bestobj
 
@@ -325,10 +329,12 @@ if __name__ == "__main__":
     phase1_gap = None
     phase2_bestobj = None
 
-    if args.solve:
+    pool_bool = (args.solve == 1)
+    if args.solve > 0:
         start_time = ip.get_time()
         phase1_status, phase1_gap, phase2_status, phase2_gap, phase2_bestobj = solveIP(
-            ip, 
+            ip,
+            pool_bool, 
             args.timelimit, 
             args.mipgap, 
             args.relgap_pool, 
@@ -355,7 +361,7 @@ if __name__ == "__main__":
         with open(sol_dir + "/" + lpname + ".sol", "w+") as sol_file:
             sol_file.write(results_str)
 
-        if num_solutions >= 1:
+        if pool_bool and num_solutions >= 1:
             # Collect solutions from pool
             solutions_matrix = np.zeros((num_solutions, len(ip.solution.pool.get_values(0))))
             objval_arr = np.zeros(num_solutions)
@@ -371,7 +377,7 @@ if __name__ == "__main__":
             print("Wrote npz file.")
 
     # Create variable-constraint graph
-    vcg = extractVCG(g, E2, ip, spo=args.spo, set_biases=(args.solve and num_solutions >= 1), gap=phase1_gap, bestobj=phase2_bestobj)
+    vcg = extractVCG(g, E2, ip, spo=args.spo, set_biases=(args.solve == 1 and num_solutions >= 1), gap=phase1_gap, bestobj=phase2_bestobj)
 
     nx.write_gpickle(vcg, data_dir + "/" + lpname + ".pk")
     print("Wrote graph pickle file.")
