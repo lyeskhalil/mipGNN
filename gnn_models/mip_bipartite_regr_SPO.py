@@ -573,6 +573,8 @@ for r, f in enumerate(file_list):
             data = data.to(device)
             out, obj = model(data)
 
+            print(obj.size(), data.obj_var.size())
+
             loss = mse(out, data.y)
             loss.backward()
 
