@@ -43,6 +43,8 @@ class VarConBipartiteLayer(MessagePassing):
 
         self.mlp = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim), ReLU(),
                               BN(dim))
+
+
         self.eps = torch.nn.Parameter(torch.Tensor([0]))
         self.initial_eps = 0
 
@@ -160,6 +162,8 @@ class SimpleNet(torch.nn.Module):
         # Embed initial node features.
         self.var_node_encoder = Sequential(Linear(12, hidden), ReLU(), Linear(hidden, hidden))
         self.con_node_encoder = Sequential(Linear(2, hidden), ReLU(), Linear(hidden, hidden))
+        self.feature_mlp = Sequential(Linear(12, hidden), ReLU(), Linear(hidden, hidden), ReLU(),
+                                      BN(1))
 
         # Compute variable assignement.
         # TODO: Just one shared assignment for all layers?
@@ -202,6 +206,7 @@ class SimpleNet(torch.nn.Module):
         self.var_assigment_4.reset_parameters()
 
         self.var_con_1.reset_parameters()
+        self.feature_mlp.reset_parameters()
         self.con_var_1.reset_parameters()
 
         self.var_con_2.reset_parameters()
@@ -237,6 +242,8 @@ class SimpleNet(torch.nn.Module):
         # Compute initial node embeddings.
         var_node_features_0 = self.var_node_encoder(var_node_features)
         con_node_features_0 = self.con_node_encoder(con_node_features)
+
+        obj_pre = self.feature_mlp(var_node_features)
 
 
         con_node_features_1 = F.relu(
