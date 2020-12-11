@@ -522,7 +522,7 @@ for r, f in enumerate(file_list):
 
     len(dataset)
 
-    print(dataset.data.y.sum()/998)
+    print(dataset.data.y.sum()/dataset.data.y.size(-1))
 
 
     # Split data.
