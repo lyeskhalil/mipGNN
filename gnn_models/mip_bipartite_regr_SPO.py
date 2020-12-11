@@ -522,7 +522,7 @@ for r, f in enumerate(file_list):
     len(dataset)
 
     print(dataset.data.y)
-    print(dataset.data.mean())
+    print(dataset.data.y.mean())
     exit()
 
 
