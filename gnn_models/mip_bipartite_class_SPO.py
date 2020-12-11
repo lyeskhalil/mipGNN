@@ -158,7 +158,7 @@ class SimpleNet(torch.nn.Module):
         super(SimpleNet, self).__init__()
 
         # Embed initial node features.
-        self.var_node_encoder = Sequential(Linear(2, hidden), ReLU(), Linear(hidden, hidden))
+        self.var_node_encoder = Sequential(Linear(12, hidden), ReLU(), Linear(hidden, hidden))
         self.con_node_encoder = Sequential(Linear(2, hidden), ReLU(), Linear(hidden, hidden))
 
         # Compute variable assignement.
@@ -231,9 +231,8 @@ class SimpleNet(torch.nn.Module):
         rhs = data.rhs
         index = data.index
         obj = data.obj
+        obj_var = data.obj_var
 
-        print(var_node_features.size())
-        exit()
 
         # Compute initial node embeddings.
         var_node_features_0 = self.var_node_encoder(var_node_features)
@@ -434,6 +433,7 @@ class GraphDataset(InMemoryDataset):
             data.edge_index_con = edge_index_con
 
             data.y = torch.from_numpy(np.array(y)).to(torch.long)
+            data.obj_var = torch.from_numpy(np.array(obj_var)).to(torch.float)
             data.var_node_features = torch.from_numpy(np.array(feat_var)).to(torch.float)
             data.con_node_features = torch.from_numpy(np.array(feat_con)).to(torch.float)
             data.rhs = torch.from_numpy(np.array(feat_rhs)).to(torch.float)
@@ -443,7 +443,6 @@ class GraphDataset(InMemoryDataset):
             data.num_nodes_var = num_nodes_var
             data.num_nodes_con = num_nodes_con
             data.index = torch.from_numpy(np.array(index)).to(torch.long)
-            data.obj_var = torch.from_numpy(np.array(obj_var)).to(torch.float)
             data.index_var = torch.from_numpy(np.array(index_var)).to(torch.long)
 
             data_list.append(data)
