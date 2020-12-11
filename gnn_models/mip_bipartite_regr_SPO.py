@@ -523,7 +523,7 @@ for r, f in enumerate(file_list):
 
     print(dataset.data.y)
     print(dataset.data.y.mean())
-    exit()
+    print(dataset.data.y.median())
 
 
     # Split data.
