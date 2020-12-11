@@ -243,7 +243,7 @@ class SimpleNet(torch.nn.Module):
         var_node_features_0 = self.var_node_encoder(var_node_features)
         con_node_features_0 = self.con_node_encoder(con_node_features)
 
-        obj_pre = self.feature_mlp(var_node_features)
+        obj_pre = self.feature_mlp(var_node_features_0)
 
 
         con_node_features_1 = F.relu(
