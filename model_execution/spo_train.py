@@ -21,6 +21,7 @@ def combine_datasets(directory, data_full):
             if entry.name.endswith('.csv'):
                 # print(entry.path)
                 data_full = np.append(data_full, pd.read_csv(entry.path, sep=',',header=None).values, axis=0)
+                print(data_full.shape)
     except OSError:
         if not os.path.exists(directory):
             raise
@@ -35,6 +36,7 @@ if __name__ == '__main__':
     parser.add_argument("-data_test_dir", type=str, default='')
     parser.add_argument("-lp_train_dir", type=str, default='')
     parser.add_argument("-method", type=str, default='2stage')
+    parser.add_argument("-model_path", type=str)
     parser.add_argument("-timelimit", type=float, default=60)
     parser.add_argument("-logfile", type=str, default='sys.stdout')
 
@@ -58,6 +60,9 @@ if __name__ == '__main__':
         # The coefficients
         print('Coefficients: \n', regr.coef_)
 
+        # Write model to file
+        np.savetxt(args.model_path, regr.coef_, delimiter=',')
+
         if len(args.data_test_dir) > 0:
             data_test_full = np.empty((0, num_features+1))
             data_test_full = combine_datasets(args.data_test_dir, data_test_full)
@@ -71,18 +76,3 @@ if __name__ == '__main__':
 
             # The coefficient of determination: 1 is perfect prediction
             print('Coefficient of determination: %.2f' % r2_score(y_test, y_pred))
-
-
-    """ 
-    evaluation
-        
-    1- read .lp file into cplex instane
-    2- read .pk graph file
-    3- iterate over variable nodes:
-            c_i = model(features_i)
-    4- store true objective then modify based on c_i predictions
-    5- run mip solver
-    6- evaluate solution on true objective
-    7- write statistics about regret and solving time, etc.
-     
-    """
