@@ -523,6 +523,8 @@ for r, f in enumerate(file_list):
 
     print(dataset.data.y)
     print(dataset.data.y.mean())
+    print(dataset.data.y.min())
+    print(dataset.data.y.max())
     print(dataset.data.y.median())
 
 
