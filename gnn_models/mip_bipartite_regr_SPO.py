@@ -607,8 +607,8 @@ for r, f in enumerate(file_list):
         return total_loss / c
 
 
-    best_val = 0.0
-    test_acc = 0.0
+    best_val = None
+    test_acc = None
     for epoch in range(1, 100):
 
         train_loss = train(epoch)
@@ -618,7 +618,7 @@ for r, f in enumerate(file_list):
         scheduler.step(val_acc)
         lr = scheduler.optimizer.param_groups[0]['lr']
 
-        if val_acc < best_val:
+        if best_val is None or val_acc < best_val:
             best_val = val_acc
             test_acc = test(test_loader)
 
