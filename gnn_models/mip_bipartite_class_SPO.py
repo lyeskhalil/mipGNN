@@ -238,7 +238,7 @@ class SimpleNet(torch.nn.Module):
         obj = data.obj
         obj_var = data.obj_var
 
-        obj_pre = self.feature_mlp(var_node_features)
+        #obj_pre = self.feature_mlp(var_node_features)
 
         # Compute initial node embeddings.
         var_node_features_0 = self.var_node_encoder(var_node_features)
