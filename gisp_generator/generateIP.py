@@ -38,7 +38,44 @@ def generateRevsCosts(g, whichSet, setParam):
         for u,v,edge in g.edges(data=True):
             edge['cost'] = 1.0
 
-def generateRevsCostsSPO(g, E2, n_features=10, n_informative=10, bias=1000):
+def generateRevsCostsSPO(true_func, g, E2, n_features=10, nodes_feature_factor=100, nodes_dummy=-5, noise_loc=0, noise_scale=50, bias=1000):
+    num_nodes = nx.number_of_nodes(g)
+    num_edges = len(E2)
+
+    true_func = np.expand_dims(np.append(true_func, [bias]), axis=1)
+
+    print(true_func)
+
+    feature_matrix = np.random.rand(num_nodes+num_edges, n_features+1)
+    feature_matrix[:num_nodes,:] *= nodes_feature_factor
+    feature_matrix[:num_nodes,-1] = nodes_dummy
+    feature_matrix[num_nodes:,-1] = 0
+    output_vector = feature_matrix.dot(true_func) + np.random.normal(loc=noise_loc, scale=noise_scale, size=(num_nodes+num_edges,1))
+    output_vector[:num_nodes] = np.clip(output_vector[:num_nodes], a_min=None, a_max=0)
+    output_vector[num_nodes:] = np.clip(output_vector[num_nodes:], a_min=1.0, a_max=None)
+
+    counter = 0
+    for node in g.nodes():
+        g.nodes[node]['features'] = feature_matrix[counter,:].tolist()
+        g.nodes[node]['revenue'] = float(-output_vector[counter])
+        g.nodes[node]['objcoeff'] = float(output_vector[counter])
+        counter += 1
+
+        if counter == 1:
+            print(g.nodes[node]['features'], output_vector[counter])
+    for u,v,edge in g.edges(data=True):
+        if edge['E2']:
+            edge['features'] = feature_matrix[counter,:].tolist()
+            edge['cost'] = float(output_vector[counter])
+            edge['objcoeff'] = float(output_vector[counter])
+            counter += 1
+
+            if counter == num_nodes + 1:
+                print(edge['features'], output_vector[counter])
+
+    return feature_matrix, output_vector
+
+def generateRevsCostsSPO_sameNodesEdges(g, E2, n_features=10, n_informative=10, bias=1000):
     num_nodes = nx.number_of_nodes(g)
     num_edges = len(E2)
 
@@ -61,18 +98,12 @@ def generateRevsCostsSPO(g, E2, n_features=10, n_informative=10, bias=1000):
 
     counter = 0
     for node in g.nodes():
-        # g.nodes[node]['features'] = np.append(np.random.rand(n_features), [-1]) 
-        # g.nodes[node]['revenue'] = np.dot(g.nodes[node]['features'], true_func) + np.random.normal(loc=10, scale=2)
-        # g.nodes[node]['objcoeff'] = -g.nodes[node]['revenue']
         g.nodes[node]['features'] = feature_matrix[counter,:].tolist()
         g.nodes[node]['revenue'] = float(-output_vector[counter])
         g.nodes[node]['objcoeff'] = float(output_vector[counter])
         counter += 1
     for u,v,edge in g.edges(data=True):
         if edge['E2']:
-            # edge['features'] = np.append(np.random.rand(n_features), [1])
-            # edge['cost'] = np.dot(edge['features'], true_func) + np.random.normal(loc=10, scale=2)
-            # edge['objcoeff'] = edge['cost']
             edge['features'] = feature_matrix[counter,:].tolist()
             edge['cost'] = float(output_vector[counter])
             edge['objcoeff'] = float(output_vector[counter])
@@ -312,7 +343,12 @@ if __name__ == "__main__":
     E2 = generateE2(g, args.alphaE2)
 
     if args.spo:
-        feature_matrix, output_vector = generateRevsCostsSPO(g, E2)
+        n_features = 10
+        np.random.seed(0)
+        true_func = np.random.rand(n_features) * 10
+        print("true_func = ", true_func)
+        np.random.seed(args.seed)
+        feature_matrix, output_vector = generateRevsCostsSPO(true_func, g, E2, n_features=n_features, nodes_feature_factor=100, nodes_dummy=-5, noise_loc=0, noise_scale=50, bias=1000)
         spodata_fullpath = spodata_dir + "/" + lpname + ".csv"
         np.savetxt(spodata_fullpath, np.append(feature_matrix, output_vector, 1), delimiter=',')
 
@@ -387,3 +423,9 @@ if __name__ == "__main__":
     # print(["(%s, %g)" % (n, d['bias']) for n, d in vcg2.nodes(data=True) if d['bipartite']==0])
 
     print([d['objcoeff'] for n, d in vcg2.nodes(data=True) if d['bipartite']==0])
+
+    if args.solve == 2:
+        sol = ip.solution.get_values()
+        print(np.sum(sol[:nx.number_of_nodes(g)]), np.sum(sol[:nx.number_of_edges(g)]))
+    print(lpname)
+

@@ -1,9 +1,3 @@
-# import sys
-
-# sys.path.insert(0, '..')
-# sys.path.insert(0, '../..')
-# sys.path.insert(0, '.')
-
 import os
 # import os.path as osp
 import numpy as np
