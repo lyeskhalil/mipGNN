@@ -1,5 +1,4 @@
 import os
-# import os.path as osp
 import numpy as np
 import argparse
 from pathlib import Path
@@ -121,7 +120,6 @@ if __name__ == '__main__':
             # Write model to file
             model_filename = '%s/%s_%d_%d.pk' % (output_dir, args.model_type, args.poly_degree, indicator)
             pickle.dump(regr, open(model_filename, 'wb'))
-            # clf2 = pickle.load(open(model_filename, 'rb'))
 
             if len(args.data_test_dir) > 0:
                 rows_indicator = np.where(data_test_full[:,0] == indicator)[0]

@@ -207,6 +207,7 @@ def extractVCG(g, E2, ip, set_biases, spo, gap=None, bestobj=None):
 
         if spo:
             vcg.nodes[node_name]['features'] = node_data['features']
+            vcg.nodes[node_name]['model_indicator'] = node_data['model_indicator']
 
     for edge in E2:
         node_name = "y" + str(edge[0]) + "_" + str(edge[1])
@@ -215,6 +216,7 @@ def extractVCG(g, E2, ip, set_biases, spo, gap=None, bestobj=None):
 
         if spo:
             vcg.nodes[node_name]['features'] = g[edge[0]][edge[1]]['features']
+            vcg.nodes[node_name]['model_indicator'] = g[edge[0]][edge[1]]['model_indicator']
     
     constraint_counter = 0        
     for node1, node2, edge in g.edges(data=True):
