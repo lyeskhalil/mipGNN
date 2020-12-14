@@ -9,6 +9,7 @@ import time
 import numpy as np
 import argparse
 from sklearn.datasets import make_regression 
+from sklearn.preprocessing import PolynomialFeatures
 
 
 def disable_output_cpx(instance_cpx):
@@ -38,7 +39,18 @@ def generateRevsCosts(g, whichSet, setParam):
         for u,v,edge in g.edges(data=True):
             edge['cost'] = 1.0
 
-def generateRevsCostsSPO(true_func, g, E2, n_features=10, nodes_feature_factor=100, nodes_dummy=-5, noise_loc=0, noise_scale=50, bias=1000):
+def generateDataPolySPO(true_func, num_data, poly_deg=1, n_features=10, bias=0, noise_halfwidth=0.5, a_min=None, a_max=None):
+    feature_matrix = np.random.normal(loc=0, scale=1, size=(num_data, n_features))
+
+    output_vector = np.expand_dims(np.power(feature_matrix.dot(true_func), poly_deg), axis=1)
+    output_vector += bias
+    output_vector *= np.random.rand(num_data,1) * (2 * noise_halfwidth) + (1 - noise_halfwidth)
+
+    output_vector = np.clip(output_vector, a_min=a_min, a_max=a_max)
+
+    return feature_matrix, output_vector
+
+def generateDataSPO(true_func, g, E2, n_features=10, nodes_feature_factor=100, nodes_dummy=-5, noise_loc=0, noise_scale=50, bias=1000):
     num_nodes = nx.number_of_nodes(g)
     num_edges = len(E2)
 
@@ -50,30 +62,39 @@ def generateRevsCostsSPO(true_func, g, E2, n_features=10, nodes_feature_factor=1
     feature_matrix[:num_nodes,:] *= nodes_feature_factor
     feature_matrix[:num_nodes,-1] = nodes_dummy
     feature_matrix[num_nodes:,-1] = 0
-    output_vector = feature_matrix.dot(true_func) + np.random.normal(loc=noise_loc, scale=noise_scale, size=(num_nodes+num_edges,1))
+
+    output_vector = feature_matrix.dot(true_func) 
+    output_vector += np.random.normal(loc=noise_loc, scale=noise_scale, size=(num_nodes+num_edges,1))
     output_vector[:num_nodes] = np.clip(output_vector[:num_nodes], a_min=None, a_max=0)
     output_vector[num_nodes:] = np.clip(output_vector[num_nodes:], a_min=1.0, a_max=None)
 
+    return feature_matrix, output_vector
+
+def generateRevsCostsSPO(g, E2, feature_matrix, output_vector):
+    num_nodes = nx.number_of_nodes(g)
     counter = 0
     for node in g.nodes():
         g.nodes[node]['features'] = feature_matrix[counter,:].tolist()
         g.nodes[node]['revenue'] = float(-output_vector[counter])
         g.nodes[node]['objcoeff'] = float(output_vector[counter])
+        g.nodes[node]['model_indicator'] = 0
+        
         counter += 1
 
         if counter == 1:
             print(g.nodes[node]['features'], output_vector[counter])
+
     for u,v,edge in g.edges(data=True):
         if edge['E2']:
             edge['features'] = feature_matrix[counter,:].tolist()
             edge['cost'] = float(output_vector[counter])
             edge['objcoeff'] = float(output_vector[counter])
+            edge['model_indicator'] = 1
+
             counter += 1
 
             if counter == num_nodes + 1:
                 print(edge['features'], output_vector[counter])
-
-    return feature_matrix, output_vector
 
 def generateRevsCostsSPO_sameNodesEdges(g, E2, n_features=10, n_informative=10, bias=1000):
     num_nodes = nx.number_of_nodes(g)
@@ -281,6 +302,10 @@ if __name__ == "__main__":
     parser.add_argument("-cpx_tmp", type=str, default="./tmp/")
 
     parser.add_argument("-spo", type=int, default=0)    
+    parser.add_argument("-spo_halfwidth", type=float, default=0.5)    
+    parser.add_argument("-spo_polydeg", type=int, default=2)    
+    parser.add_argument("-spo_bias_nodes", type=float, default=-100)    
+    parser.add_argument("-spo_bias_edges", type=float, default=10)    
 
     args = parser.parse_args()
     print(args)
@@ -344,13 +369,34 @@ if __name__ == "__main__":
 
     if args.spo:
         n_features = 10
+                
         np.random.seed(0)
-        true_func = np.random.rand(n_features) * 10
-        print("true_func = ", true_func)
+        true_func_nodes = np.random.rand(n_features)# * 10
+        true_func_edges = np.random.rand(n_features)# * 10
+        print("true_func_nodes = ", true_func_nodes)
+        print("true_func_edges = ", true_func_edges)
         np.random.seed(args.seed)
-        feature_matrix, output_vector = generateRevsCostsSPO(true_func, g, E2, n_features=n_features, nodes_feature_factor=100, nodes_dummy=-5, noise_loc=0, noise_scale=50, bias=1000)
+        # feature_matrix, output_vector = generateDataSPO(true_func, g, E2, n_features=n_features, nodes_feature_factor=100, nodes_dummy=-5, noise_loc=0, noise_scale=50, bias=1000)
+        
+        num_nodes = nx.number_of_nodes(g)
+        num_edges = len(E2)
+        num_data = num_nodes + num_edges
+        feature_matrix1, output_vector1 = generateDataPolySPO(true_func_nodes, num_nodes, n_features=10, poly_deg=args.spo_polydeg, bias=args.spo_bias_nodes, noise_halfwidth=args.spo_halfwidth, a_min=None, a_max=0)
+        feature_matrix2, output_vector2 = generateDataPolySPO(true_func_edges, num_edges, n_features=10, poly_deg=args.spo_polydeg, bias=args.spo_bias_edges, noise_halfwidth=args.spo_halfwidth, a_min=0, a_max=None)
+        feature_matrix = np.append(feature_matrix1, feature_matrix2, axis=0)
+        output_vector = np.append(output_vector1, output_vector2, axis=0)
+
+        print(np.mean(feature_matrix1), np.std(feature_matrix1), np.median(feature_matrix1), np.min(feature_matrix1), np.max(feature_matrix1))
+        print(np.mean(feature_matrix2), np.std(feature_matrix2), np.median(feature_matrix2), np.min(feature_matrix2), np.max(feature_matrix2))
+        print(np.mean(output_vector1), np.std(output_vector1), np.median(output_vector1), np.min(output_vector1), np.max(output_vector1))
+        print(np.mean(output_vector2), np.std(output_vector2), np.median(output_vector2), np.min(output_vector2), np.max(output_vector2))
+
+        generateRevsCostsSPO(g, E2, feature_matrix, output_vector)
+
         spodata_fullpath = spodata_dir + "/" + lpname + ".csv"
-        np.savetxt(spodata_fullpath, np.append(feature_matrix, output_vector, 1), delimiter=',')
+        model_indicator = np.zeros((num_data, 1))
+        model_indicator[num_nodes:] = 1
+        np.savetxt(spodata_fullpath, np.concatenate((model_indicator, feature_matrix, output_vector), axis=1), delimiter=',')
 
     # Create IP, write it to file, and solve it with CPLEX
     print(lpname)
