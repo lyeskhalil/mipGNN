@@ -369,6 +369,9 @@ if __name__ == "__main__":
 
     if args.spo:
         n_features = 10
+        num_nodes = nx.number_of_nodes(g)
+        num_edges = len(E2)
+        num_data = num_nodes + num_edges
                 
         np.random.seed(0)
         true_func_nodes = np.random.rand(n_features)# * 10
@@ -376,15 +379,14 @@ if __name__ == "__main__":
         print("true_func_nodes = ", true_func_nodes)
         print("true_func_edges = ", true_func_edges)
         np.random.seed(args.seed)
-        # feature_matrix, output_vector = generateDataSPO(true_func, g, E2, n_features=n_features, nodes_feature_factor=100, nodes_dummy=-5, noise_loc=0, noise_scale=50, bias=1000)
         
-        num_nodes = nx.number_of_nodes(g)
-        num_edges = len(E2)
-        num_data = num_nodes + num_edges
         feature_matrix1, output_vector1 = generateDataPolySPO(true_func_nodes, num_nodes, n_features=10, poly_deg=args.spo_polydeg, bias=args.spo_bias_nodes, noise_halfwidth=args.spo_halfwidth, a_min=None, a_max=0)
         feature_matrix2, output_vector2 = generateDataPolySPO(true_func_edges, num_edges, n_features=10, poly_deg=args.spo_polydeg, bias=args.spo_bias_edges, noise_halfwidth=args.spo_halfwidth, a_min=0, a_max=None)
         feature_matrix = np.append(feature_matrix1, feature_matrix2, axis=0)
         output_vector = np.append(output_vector1, output_vector2, axis=0)
+
+        model_indicator = np.zeros((num_data, 1))
+        model_indicator[num_nodes:] = 1
 
         print(np.mean(feature_matrix1), np.std(feature_matrix1), np.median(feature_matrix1), np.min(feature_matrix1), np.max(feature_matrix1))
         print(np.mean(feature_matrix2), np.std(feature_matrix2), np.median(feature_matrix2), np.min(feature_matrix2), np.max(feature_matrix2))
@@ -394,8 +396,6 @@ if __name__ == "__main__":
         generateRevsCostsSPO(g, E2, feature_matrix, output_vector)
 
         spodata_fullpath = spodata_dir + "/" + lpname + ".csv"
-        model_indicator = np.zeros((num_data, 1))
-        model_indicator[num_nodes:] = 1
         np.savetxt(spodata_fullpath, np.concatenate((model_indicator, feature_matrix, output_vector), axis=1), delimiter=',')
 
     # Create IP, write it to file, and solve it with CPLEX
