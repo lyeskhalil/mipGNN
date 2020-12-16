@@ -99,12 +99,12 @@ class SPONet(torch.nn.Module):
         a Tensor of output data. We can use Modules defined in the constructor as
         well as arbitrary operators on Tensors.
         """
+
         for i, layer in enumerate(self.layers):
             x = layer(x)
             # print(torch.t(x))
             if i < len(self.layers) - 1:
                 x = self.nonlinearity(x)
-
 
         return x
         # return self.relu_sign * torch.relu(self.relu_sign * x)

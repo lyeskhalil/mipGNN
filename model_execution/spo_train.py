@@ -241,10 +241,13 @@ if __name__ == '__main__':
         instance_cpx = []
         coeffs_true = []
         model_indices = []
+
+        to_delete_data = []
         for instance_idx, instance in enumerate(data_filenames):
             file_npz = "../gisp_generator/SOL/%s.npz" % instance
             file_lp = "../gisp_generator/LP/%s.lp" % instance
             if not os.path.isfile(file_npz) or not os.path.isfile(file_lp):
+                to_delete_data += [instance_idx]
                 continue
             # get true opt
             sol_pool = np.load(file_npz)['solutions']
@@ -267,6 +270,9 @@ if __name__ == '__main__':
             instance_cpx[-1].parameters.emphasis.mip.set(1)
             instance_cpx[-1].parameters.threads.set(args.nn_cpx_threads)
         
+        for counter, idx in enumerate(to_delete_data):
+            del data_train_full[idx - counter]
+
         num_instances = len(sol_true)
 
         loss_fn = SPOLoss.apply
@@ -331,6 +337,7 @@ if __name__ == '__main__':
 
                 torch.save({
                     'epoch': epoch, 
+                    'num_features': num_features,
                     'model0_state_dict': models[0].state_dict(),
                     'model1_state_dict': models[1].state_dict(),
                     'loss_spo': running_loss_best,
