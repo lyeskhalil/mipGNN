@@ -338,6 +338,7 @@ if __name__ == '__main__':
                 torch.save({
                     'epoch': epoch, 
                     'num_features': num_features,
+                    'nn_poly_degree': args.nn_poly_degree,
                     'model0_state_dict': models[0].state_dict(),
                     'model1_state_dict': models[1].state_dict(),
                     'loss_spo': running_loss_best,
