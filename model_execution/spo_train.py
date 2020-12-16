@@ -84,17 +84,15 @@ if __name__ == '__main__':
 
     """ Parse arguments """
     parser = argparse.ArgumentParser()
+    parser.add_argument("-method", type=str, default='2stage')
     parser.add_argument("-data_train_dir", type=str)
     parser.add_argument("-data_test_dir", type=str, default='')
-    parser.add_argument("-lp_train_dir", type=str, default='')
-    parser.add_argument("-sol_train_dir", type=str, default='')
-    parser.add_argument("-method", type=str, default='2stage')
-    parser.add_argument("-timelimit", type=float, default=60)
 
     parser.add_argument("-output_dir", type=str)
     parser.add_argument("-single_model", type=int, default=0)
     parser.add_argument("-model_type", type=str, default='linear')
-    parser.add_argument("-poly_degree", type=int, default=1)
+    parser.add_argument("-poly_degree", type=int, default=2)
+    parser.add_argument("-ridge_reg", type=float, default=1.0)
 
     # Training parameters
     parser.add_argument("-nn_epochs", type=int, default=1000)
@@ -162,12 +160,15 @@ if __name__ == '__main__':
             X_train, y_train = data_train_full[rows_indicator,1:num_features+1], data_train_full[rows_indicator,-1]
 
             # Create linear regression object
+            model_filename = args.model_type
             if args.model_type == 'linear':
                 regr = linear_model.LinearRegression()
             elif args.model_type == 'svm_poly':
                 regr = svm.SVR(kernel='poly', degree=args.poly_degree)
-            elif args.model_type == 'poly_ridge':
-                regr = make_pipeline(PolynomialFeatures(args.poly_degree), Ridge())
+                model_filename += '_' + args.poly_degree
+            elif args.model_type == 'ridge_poly':
+                regr = make_pipeline(PolynomialFeatures(args.poly_degree), Ridge(alpha=args.ridge_reg))
+                model_filename += '_%d_%g' % (args.poly_degree, args.ridge_reg)
             elif args.model_type == 'mlp':
                 regr = neural_network.MLPRegressor((10,10))
 
@@ -179,7 +180,7 @@ if __name__ == '__main__':
             _, mse_train, r2_train = test_model(regr, X_train, y_train)
 
             # Write model to file
-            model_filename = '%s/%s_%d_%d.pk' % (output_dir, args.model_type, args.poly_degree, indicator)
+            model_filename = '%s/%s_%d.pk' % (output_dir, model_filename, indicator)
             pickle.dump(regr, open(model_filename, 'wb'))
 
             if len(args.data_test_dir) > 0:
