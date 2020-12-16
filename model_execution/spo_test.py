@@ -1,7 +1,6 @@
 import os
 import numpy as np
 import argparse
-from pathlib import Path
 from sklearn import datasets, linear_model
 from sklearn.metrics import mean_squared_error, r2_score
 import pandas as pd
@@ -10,13 +9,15 @@ import cplex
 import pickle
 import time
 
+import spo_utils
 
 if __name__ == '__main__':
 
     """ Parse arguments """
     parser = argparse.ArgumentParser()
     parser.add_argument("-instance", type=str)
-    parser.add_argument("-model_path", type=str)
+    parser.add_argument("-model_dir", type=str)
+    parser.add_argument("-model_prefix", type=str)
     parser.add_argument("-graph", type=str)
     parser.add_argument("-groundtruth", type=str)
     parser.add_argument("-logfile", type=str)
@@ -31,21 +32,11 @@ if __name__ == '__main__':
     graph = nx.read_gpickle(args.graph)
 
     # Read true optval to get regret
-    with open(args.groundtruth, 'r') as file:
-        results_str = file.read()
-    objval_true = float(results_str.split(',')[-3])
+    objval_true = spo_utils.read_optval(args.groundtruth)
 
     if args.method != 'mipgnn':
-        # Read model from file
-        models = {}
-        model_filename = args.model_path
-        if args.single_model:
-            models[0] = pickle.load(open(model_filename, 'rb'))
-        else:
-            for entry in os.scandir(args.model_path):
-                if entry.name.endswith('.pk'):
-                    indicator = int(entry.name[entry.name.rfind('_')+1:len(entry.name)-3])
-                    models[indicator] = pickle.load(open(entry, 'rb'))
+        # models = spo_utils.read_sklearn_model(args.model_path, args.single_model)
+        models = spo_utils.read_sklearn_model(args.model_dir, args.model_prefix, args.single_model)
 
         # Read MIP 
         instance_cpx = cplex.Cplex(args.instance)
@@ -55,7 +46,7 @@ if __name__ == '__main__':
         num_variables = len(instance_obj_true)
         if instance_cpx.objective.sense[instance_cpx.objective.get_sense()] == 'maximize':
             instance_cpx.objective.set_sense(instance_cpx.objective.sense.minimize)
-            instance_obj_true = -np.array(instance_cpx.objective.get_linear())
+            instance_obj_true *= -1
             objval_true *= -1
 
         # print(instance_cpx.objective.get_linear())
@@ -103,6 +94,7 @@ if __name__ == '__main__':
         time_solve_loss = instance_cpx.get_time() - start_time
 
         objval_prediction_worstcase = instance_cpx.solution.get_objective_value()
+        # todo: take into account suboptimality of objval_true e.g. timeout
         regret_unambiguous = np.abs(objval_true - objval_prediction_worstcase)
 
     else:
