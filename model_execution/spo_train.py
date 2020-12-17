@@ -1,4 +1,5 @@
 import os
+import sys
 import numpy as np
 import argparse
 from pathlib import Path
@@ -22,10 +23,6 @@ from torch.utils.tensorboard import SummaryWriter
 from spo_torch import SPONet, SPOLoss
 import spo_utils
 
-
-# def tensorboard_update(writer, x_val, y_val, val_name):
-    # ...log the running loss
-    # writer.add_scalar(val_name, y_val, x_val)
 
 def combine_datasets(directory, dim, operation='combine', poly_degree=1):
     try:
@@ -304,6 +301,7 @@ if __name__ == '__main__':
             running_loss, running_loss_best = 0.0, np.inf
             running_loss_withreg, running_loss_withreg_best = 0.0, np.inf
             for instance_idx in range(num_instances): #len(data_train_full)
+                sys.stdout.flush()
                 optimizer.zero_grad()
 
                 indices = model_indices[instance_idx]

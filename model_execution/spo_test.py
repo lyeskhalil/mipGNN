@@ -25,10 +25,12 @@ if __name__ == '__main__':
     parser.add_argument("-graph", type=str)
     parser.add_argument("-groundtruth", type=str)
     parser.add_argument("-logfile", type=str)
-    parser.add_argument("-timelimit", type=float, default=3600)
 
     parser.add_argument("-method", type=str, default='standard')
     parser.add_argument("-single_model", type=bool, default=False)
+
+    parser.add_argument("-nn_cpx_timelimit", type=float, default=3600)
+    parser.add_argument("-nn_cpx_threads", type=int, default=8)
 
     args = parser.parse_args()
     print(args)
@@ -59,7 +61,8 @@ if __name__ == '__main__':
 
         # Read MIP 
         instance_cpx = cplex.Cplex(args.instance)
-        instance_cpx.parameters.timelimit.set(args.timelimit)
+        instance_cpx.parameters.timelimit.set(args.nn_cpx_timelimit)
+        instance_cpx.parameters.threads.set(args.nn_cpx_threads)
 
         instance_obj_true = np.array(instance_cpx.objective.get_linear())
         num_variables = len(instance_obj_true)
