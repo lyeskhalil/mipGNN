@@ -15,11 +15,13 @@ import pandas as pd
 import pickle
 import time
 import cplex
+import multiprocess as mp
 
 import torch
 import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
 
+import spo_torch
 from spo_torch import SPONet, SPOLoss
 import spo_utils
 
@@ -97,7 +99,9 @@ if __name__ == '__main__':
     parser.add_argument("-nn_lr_decay", type=int, default=1)
     parser.add_argument("-nn_reg", type=float, default=1e-5)
     parser.add_argument("-nn_termination", type=float, default=0.05)
-    parser.add_argument("-nn_patience", type=int, default=20)
+    parser.add_argument("-nn_patience", type=int, default=200)
+    parser.add_argument("-nn_batchsize", type=int, default=1)
+    parser.add_argument("-nn_poolsize", type=int, default=1)
 
     # Tensorboard parameters
     parser.add_argument("-nn_tb_dir", type=str, default='SPO_TENSORBOARD')
@@ -108,7 +112,7 @@ if __name__ == '__main__':
 
     # CPLEX parameters
     parser.add_argument("-nn_cpx_timelimit", type=float, default=60)
-    parser.add_argument("-nn_cpx_threads", type=int, default=4)
+    parser.add_argument("-nn_cpx_threads", type=int, default=1)
 
     # Warmstart parameters
     parser.add_argument("-nn_warmstart_dir", type=str, default='')
@@ -205,6 +209,7 @@ if __name__ == '__main__':
                 results_file.write(results_str)
 
     elif args.method == 'spo':
+        np.random.seed(0)
         torch.manual_seed(0)
         warmstart_bool = int(args.nn_warmstart_dir != '' and args.nn_warmstart_prefix != '')
 
@@ -266,7 +271,7 @@ if __name__ == '__main__':
             instance_cpx[-1].parameters.timelimit.set(args.nn_cpx_timelimit)
             instance_cpx[-1].parameters.emphasis.mip.set(1)
             instance_cpx[-1].parameters.threads.set(args.nn_cpx_threads)
-        
+
         for counter, idx in enumerate(to_delete_data):
             del data_train_full[idx - counter]
 
@@ -275,6 +280,7 @@ if __name__ == '__main__':
         loss_fn = SPOLoss.apply
         depth, width = args.nn_depth, args.nn_width
         models = [SPONet(num_features, depth, width, relu_sign=-1), SPONet(num_features, depth, width, relu_sign=1)]
+        print(models[1].layers[0].weight.data)
 
         if args.nn_warmstart_dir != '' and args.nn_warmstart_prefix != '' and depth == 0:
             models_pretrained = spo_utils.read_sklearn_model(args.nn_warmstart_dir, args.nn_warmstart_prefix)
@@ -288,48 +294,89 @@ if __name__ == '__main__':
             lr=args.nn_lr_init)
 
         lmbda = lambda epoch: args.nn_lr_init/(np.sqrt(epoch+1))
-        # lmbda = lambda epoch: 2.0*1e-6/(args.nn_reg * (epoch+2))
-        # scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lmbda)
-        
+
         running_loss_best, running_loss_withreg_best, epoch_best = np.inf, np.inf, -1
         time_solve = 0.0
         for epoch in range(num_epochs):
+            sys.stdout.flush()
             print('---------------')
+            print("Learning rate =", optimizer.param_groups[0]['lr'])#scheduler.get_lr()[0])
             if args.nn_lr_decay:
                 optimizer.param_groups[0]['lr'] = lmbda(epoch)
 
-            running_loss, running_loss_best = 0.0, np.inf
-            running_loss_withreg, running_loss_withreg_best = 0.0, np.inf
-            for instance_idx in range(num_instances): #len(data_train_full)
-                sys.stdout.flush()
+            perm = torch.tensor(np.random.permutation(range(num_instances)))
+            batches = torch.split(perm, args.nn_batchsize)
+
+            print(batches)
+
+            running_loss, running_loss_withreg = 0.0, 0.0
+
+            for batch_cur_ in batches:
                 optimizer.zero_grad()
+                batch_cur = batch_cur_.tolist()
+                print(batch_cur)
+                
+                coeffs = []
+                for instance_idx_ in batch_cur:
+                    instance_idx = int(instance_idx_)
+                    print(instance_idx)
+                    indices = model_indices[instance_idx]
+                    coeffs_cur = [models[0](data_train_full[instance_idx][indices[0], 1:num_features+1]), models[1](data_train_full[instance_idx][indices[1], 1:num_features+1])]
+                    coeffs += [torch.cat((coeffs_cur[0], coeffs_cur[1]), 0)]
 
-                indices = model_indices[instance_idx]
+                def solveIP_obj(idx):
+                    instance_idx = batch_cur[idx]
 
-                coeffs = [models[0](data_train_full[instance_idx][indices[0], 1:num_features+1]), models[1](data_train_full[instance_idx][indices[1], 1:num_features+1])]
+                    obj_subgradient = (2*coeffs[idx] - coeffs_true[instance_idx]) / (torch.max(torch.abs(coeffs[idx])) + 1)
+                    time_cur = time.time()
+                    sol_spo_cur, _ = spo_torch.solveIP_obj(instance_cpx[instance_idx], obj_subgradient)
+                    time_cur = time.time() - time_cur
 
-                coeffs = torch.cat((coeffs[0], coeffs[1]), 0)
+                    return (sol_spo_cur, time_cur)
 
-                # todo: track CPLEX solution statuses
-                time_cur = time.time()
-                loss_val = loss_fn(coeffs, sol_true[instance_idx], coeffs_true[instance_idx], instance_cpx[instance_idx])
-                time_solve += time.time() - time_cur
+                ret_vals = []
+                if args.nn_poolsize > 1 and args.nn_batchsize > 1:
+                    with mp.Pool(args.nn_poolsize) as p:
+                        ret_vals = p.map(solveIP_obj, range(len(batch_cur)))
+                else:
+                    for idx in range(len(batch_cur)):
+                        sol_spo_cur, time_cur = solveIP_obj(idx)
+                        # loss_val_cur, loss_spo_cur, time_cur = forward(idx)
+                        ret_vals += [(sol_spo_cur, time_cur)]
 
-                loss_spo = float(loss_val - objval_true[instance_idx])
+                for idx, ret in enumerate(ret_vals):
+                    instance_idx = batch_cur[idx]
+                    loss_val_cur = loss_fn(
+                        coeffs[idx],
+                        coeffs_true[instance_idx],
+                        ret[0], 
+                        sol_true[instance_idx])
 
-                loss_val += args.nn_reg * torch.norm(coeffs) 
+                    loss_spo_cur = float(loss_val_cur - objval_true[instance_idx])
+                    loss_spo_cur_scaled = loss_spo_cur / ((1e-9 + np.abs(objval_true[instance_idx])) * num_instances)
 
-                loss_val.backward()
+                    print("SPO loss [%d-%d] = %g = (%g) - (%g)" % (epoch, instance_idx, loss_spo_cur, loss_val_cur, objval_true[instance_idx]))
+
+                    loss_val_cur += args.nn_reg * torch.norm(coeffs[idx])
+
+                    running_loss_withreg += loss_val_cur.data / num_instances
+                    running_loss += loss_spo_cur_scaled
+                    time_solve += ret[1]
+
+                    loss_val_cur.backward() 
+
+                # loss_val.backward()
+                # print(loss_val)
+                # print(models[1].layers[0].weight.data)
 
                 optimizer.step()
 
-                running_loss += loss_spo / (1e-9 + np.abs(objval_true[instance_idx])) * num_instances
-                running_loss_withreg += loss_val.data
+                # running_loss += loss_spo / ((1e-9 + np.abs(objval_true[instance_idx])) * num_instances)
+                # running_loss_withreg += loss_val.data
 
-                print("SPO loss [%d-%d] = %g = (%g) - (%g)" % (epoch, instance_idx, loss_spo, loss_val, objval_true[instance_idx]))
-                print("Learning rate =", optimizer.param_groups[0]['lr'])#scheduler.get_lr()[0])
+                # print("SPO loss [%d-%d] = %g = (%g) - (%g)" % (epoch, instance_idx, loss_spo, loss_val, objval_true[instance_idx]))
 
-            if running_loss < running_loss_best or running_loss_withreg < running_loss_withreg_best:
+            if running_loss < running_loss_best:# or running_loss_withreg < running_loss_withreg_best:
                 running_loss_best = running_loss
                 running_loss_withreg_best = running_loss_withreg
                 epoch_best = epoch

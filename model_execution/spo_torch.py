@@ -12,6 +12,13 @@ def solveIP(instance_cpx):
     solution = np.array(instance_cpx.solution.get_values())
     return solution, optval
 
+def solveIP_obj(instance_cpx, objective_new):
+    instance_cpx.objective.set_linear([(idx, float(objective_new[idx])) for idx in range(len(objective_new))])
+    instance_cpx.solve()
+    optval = instance_cpx.solution.get_objective_value()
+    solution = np.array(instance_cpx.solution.get_values())
+    return solution, optval
+
 class SPOLoss(torch.autograd.Function):
     """
     We can implement our own custom autograd Functions by subclassing
@@ -20,7 +27,7 @@ class SPOLoss(torch.autograd.Function):
     """
 
     @staticmethod
-    def forward(ctx, coeffs_predictions, sol_true, coeffs_true, instance_cpx):
+    def forward(ctx, coeffs_predictions, coeffs_true, sol_spo, sol_true):
         """
         In the forward pass we receive a Tensor containing the input and return
         a Tensor containing the output. ctx is a context object that can be used
@@ -28,30 +35,29 @@ class SPOLoss(torch.autograd.Function):
         objects for use in the backward pass using the ctx.save_for_backward method.
         """
         # optimize with obj = 2*coeff_predicted - coeff_true
-        obj_subgradient = (2*coeffs_predictions - coeffs_true) / (torch.max(torch.abs(coeffs_predictions)) + 1)
-        instance_cpx.objective.set_linear([(idx, float(obj_subgradient[idx])) for idx in range(len(coeffs_predictions))])
-        sol_spo, optval_spo = solveIP(instance_cpx)
-        print("fake_optval =", optval_spo)
+        # obj_subgradient = (2*coeffs_predictions - coeffs_true) / (torch.max(torch.abs(coeffs_predictions)) + 1)
+        # instance_cpx.objective.set_linear([(idx, float(obj_subgradient[idx])) for idx in range(len(coeffs_predictions))])
+        # sol_spo, optval_spo = solveIP(instance_cpx)
+        # print("fake_optval =", optval_spo)
 
-        print("coeffs_predictions stats: ", 
-            torch.mean(coeffs_predictions), 
-            torch.median(coeffs_predictions), 
-            torch.min(coeffs_predictions), 
-            torch.max(coeffs_predictions))
+        # print("coeffs_predictions stats: ", 
+        #     torch.mean(coeffs_predictions), 
+        #     torch.median(coeffs_predictions), 
+        #     torch.min(coeffs_predictions), 
+        #     torch.max(coeffs_predictions))
 
-        print("obj_subgradient stats: ", 
-            torch.mean(obj_subgradient), 
-            torch.median(obj_subgradient), 
-            torch.min(obj_subgradient), 
-            torch.max(obj_subgradient))
+        # print("obj_subgradient stats: ", 
+        #     torch.mean(obj_subgradient), 
+        #     torch.median(obj_subgradient), 
+        #     torch.min(obj_subgradient), 
+        #     torch.max(obj_subgradient))
         
         sol_spo = torch.unsqueeze(torch.tensor(sol_spo), 1) 
         objval_predictions_true = torch.dot(sol_spo[:,0], coeffs_true[:,0])
         
         ctx.save_for_backward(
             sol_spo, 
-            sol_true, 
-            torch.tensor([len(coeffs_predictions),1]))
+            sol_true)
         
         return torch.tensor([objval_predictions_true])
 
@@ -64,7 +70,7 @@ class SPOLoss(torch.autograd.Function):
         """
         grad_input = grad_output.clone()
 
-        sol_spo, sol_true, coeffs_dim = ctx.saved_tensors
+        sol_spo, sol_true = ctx.saved_tensors
         subgradient = 2*(sol_true - sol_spo)
 
         # print("^^^^^^", grad_input, '\n', torch.sum(subgradient > 0))

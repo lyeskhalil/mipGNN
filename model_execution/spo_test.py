@@ -43,10 +43,11 @@ if __name__ == '__main__':
     torch_bool = False
     if args.method != 'mipgnn':
         if not args.model_dir.endswith('.pt'):
+            model_filename = args.model_dir + '/' + args.model_prefix
             models = spo_utils.read_sklearn_model(args.model_dir, args.model_prefix, args.single_model)
         else:
-            torch_bool = True
             model_filename = args.model_dir
+            torch_bool = True
             checkpoint = torch.load(model_filename)
             nn_poly_degree = checkpoint['nn_poly_degree']
             if nn_poly_degree > 1:
@@ -134,7 +135,8 @@ if __name__ == '__main__':
     print("Unambiguous Regret = ", regret_unambiguous)
     print(objval_true, objval_prediction_worstcase)
 
-    results_str = "%.5f,%.5f,%g,%g,%g,%.5f,%.5f,%.5f" % (
+    results_str = "%s,%.5f,%.5f,%g,%g,%g,%.5f,%.5f,%.5f" % (
+        model_filename,
         regret_unambiguous,
         regret_ambiguous,
         time_predictions,
