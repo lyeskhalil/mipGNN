@@ -312,6 +312,7 @@ if __name__ == '__main__':
 
                 coeffs = torch.cat((coeffs[0], coeffs[1]), 0)
 
+                # todo: track CPLEX solution statuses
                 time_cur = time.time()
                 loss_val = loss_fn(coeffs, sol_true[instance_idx], coeffs_true[instance_idx], instance_cpx[instance_idx])
                 time_solve += time.time() - time_cur

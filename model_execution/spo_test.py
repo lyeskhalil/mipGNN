@@ -3,13 +3,17 @@ import numpy as np
 import argparse
 from sklearn import datasets, linear_model
 from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.preprocessing import PolynomialFeatures
 import pandas as pd
 import networkx as nx
 import cplex
 import pickle
 import time
+import re
+import torch
 
 import spo_utils
+from spo_torch import SPONet, SPOLoss
 
 if __name__ == '__main__':
 
@@ -34,9 +38,24 @@ if __name__ == '__main__':
     # Read true optval to get regret
     objval_true = spo_utils.read_optval(args.groundtruth)
 
+    torch_bool = False
     if args.method != 'mipgnn':
-        # models = spo_utils.read_sklearn_model(args.model_path, args.single_model)
-        models = spo_utils.read_sklearn_model(args.model_dir, args.model_prefix, args.single_model)
+        if not args.model_dir.endswith('.pt'):
+            models = spo_utils.read_sklearn_model(args.model_dir, args.model_prefix, args.single_model)
+        else:
+            torch_bool = True
+            model_filename = args.model_dir
+            checkpoint = torch.load(model_filename)
+            nn_poly_degree = checkpoint['nn_poly_degree']
+            if nn_poly_degree > 1:
+                poly = PolynomialFeatures(nn_poly_degree, include_bias=False)
+
+            num_features = checkpoint['num_features']
+            ints_in_filename = re.findall('\d+',model_filename)#map(int, re.findall(r'\d+', model_filename))
+            depth, width = int(ints_in_filename[0]), int(ints_in_filename[1])
+            models = [SPONet(num_features, depth, width, relu_sign=-1), SPONet(num_features, depth, width, relu_sign=1)]
+            models[0].load_state_dict(checkpoint['model0_state_dict'])
+            models[1].load_state_dict(checkpoint['model1_state_dict'])
 
         # Read MIP 
         instance_cpx = cplex.Cplex(args.instance)
@@ -55,7 +74,13 @@ if __name__ == '__main__':
         for node, node_data in graph.nodes(data=True):
             if node_data['bipartite'] == 0:
                 indicator = node_data['model_indicator']
-                prediction = models[indicator].predict([node_data['features']])[0]
+                if torch_bool:
+                    features = node_data['features']
+                    if nn_poly_degree > 1:
+                        features = poly.fit_transform([features])
+                    prediction = float(models[indicator](torch.tensor(features, dtype=models[0].layers[0].weight.dtype)))
+                else:
+                    prediction = models[indicator].predict([node_data['features']])[0]
                 instance_cpx.objective.set_linear(node, prediction)
         time_predictions = time.time() - start_time
 
