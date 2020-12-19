@@ -228,7 +228,7 @@ if __name__ == '__main__':
         model_filename = '%s/%s.pt' % (output_dir, filename_noext)
 
         # Tensorboard setup
-        tb_dirname = '%s/%s_%s' % (args.nn_tb_dir, args.output_dir, filename_noext)
+        tb_dirname = '%s/%s/%s' % (args.nn_tb_dir, args.output_dir, filename_noext)
         try: 
             os.makedirs(tb_dirname)
         except OSError:
