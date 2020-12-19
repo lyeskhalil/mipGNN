@@ -1,3 +1,7 @@
+# todo: validation
+# todo: check CPLEX status
+# todo: solve LP instead of MIP
+
 import os
 import sys
 import numpy as np
@@ -222,9 +226,14 @@ if __name__ == '__main__':
             args.nn_lr_decay,
             warmstart_bool)
         model_filename = '%s/%s.pt' % (output_dir, filename_noext)
-        tb_dirname = '%s/%s' % (args.nn_tb_dir, filename_noext)
 
         # Tensorboard setup
+        tb_dirname = '%s/%s_%s' % (args.nn_tb_dir, args.output_dir, filename_noext)
+        try: 
+            os.makedirs(tb_dirname)
+        except OSError:
+            if not os.path.exists(tb_dirname):
+                raise
         tb_writer = SummaryWriter(tb_dirname)
 
         num_epochs = args.nn_epochs
@@ -362,6 +371,8 @@ if __name__ == '__main__':
                     running_loss_withreg += loss_val_cur.data / num_instances
                     running_loss += loss_spo_cur_scaled
                     time_solve += ret[1]
+
+                    loss_val_cur /= 1.0*len(batch_cur)
 
                     loss_val_cur.backward() 
 
