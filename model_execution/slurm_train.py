@@ -32,7 +32,7 @@ print("total number of configurations =", len(configs))
 # 	'-nn_poolsize', '10'
 # 	])  
 
-  
+random.seed(0)
 configs = sample(configs, 500) 
 
 for config in configs:
