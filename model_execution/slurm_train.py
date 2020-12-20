@@ -1,9 +1,6 @@
 import spo_train
 import submitit
 
-def add(a, b):
-    return a + b
-
 executor = submitit.AutoExecutor(folder="log_test")
 print(executor.which())
 
