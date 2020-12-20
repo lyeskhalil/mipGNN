@@ -134,6 +134,9 @@ def test_model(model, X, y):
 
 
 def main(args):
+    # based on this: https://stackoverflow.com/a/61879723
+    global solveIP_obj_local
+
     """ Parse arguments """
     parser = argparse.ArgumentParser()
     parser.add_argument("-method", type=str, default='2stage')
@@ -175,6 +178,7 @@ def main(args):
     parser.add_argument("-nn_poly_degree", type=int, default=1)
 
     args = parser.parse_args(args)
+    # args = parser.parse_args()
     print(args)
 
     # output directories
@@ -362,7 +366,7 @@ def main(args):
                         coeffs_cur = [models[0](meta_dict[stage]['data'][instance_idx][indices[0], 1:num_features+1]), models[1](meta_dict[stage]['data'][instance_idx][indices[1], 1:num_features+1])]
                         coeffs += [torch.cat((coeffs_cur[0], coeffs_cur[1]), 0)]
 
-                    def solveIP_obj(idx):
+                    def solveIP_obj_local(idx):
                         instance_idx = batch_cur[idx]
 
                         obj_subgradient = (2*coeffs[idx] - meta_dict[stage]['coeffs_true'][instance_idx]) / (torch.max(torch.abs(coeffs[idx])) + 1)
@@ -372,10 +376,26 @@ def main(args):
 
                         return (sol_spo_cur, time_cur)
 
+                    # def solveIP_obj2(coeffs_cur, coeffs_true_cur, instance_cpx_cur):
+                    #     obj_subgradient = (2*coeffs_cur - coeffs_true_cur / (torch.max(torch.abs(coeffs_cur)) + 1))
+                    #     time_cur = time.time()
+                    #     sol_spo_cur, _ = spo_torch.solveIP_obj(instance_cpx_cur, obj_subgradient)
+                    #     time_cur = time.time() - time_cur
+
+                    #     return (sol_spo_cur, time_cur)
+
+                    # print([(coeffs[idx], meta_dict[stage]['coeffs_true'][batch_cur[idx]], meta_dict[stage]['instance_cpx'][batch_cur[idx]]) for idx in range(len(batch_cur))])
+
                     ret_vals = []
                     if args.nn_poolsize > 1 and args.nn_batchsize > 1:
-                        with mp.Pool(args.nn_poolsize) as p:
-                            ret_vals = p.map(solveIP_obj, range(len(batch_cur)))
+                        import concurrent.futures
+                        with concurrent.futures.ProcessPoolExecutor(max_workers=args.nn_poolsize) as executor:
+                            ret_vals = executor.map(solveIP_obj_local, range(len(batch_cur)))
+
+                        # with mp.Pool(args.nn_poolsize) as p:
+                        #     ret_vals = p.map(solveIP_obj, range(len(batch_cur)))
+                            # ret_vals = p.starmap(solveIP_obj2, 
+                                # [(coeffs[idx], meta_dict[stage]['coeffs_true'][batch_cur[idx]], meta_dict[stage]['instance_cpx'][batch_cur[idx]]) for idx in range(len(batch_cur))])
                     else:
                         for idx in range(len(batch_cur)):
                             sol_spo_cur, time_cur = solveIP_obj(idx)
@@ -439,7 +459,7 @@ def main(args):
                         print("epoch - epoch_best =", epoch - epoch_best)
                         print("running_loss_best =", running_loss_best)
 
-                        return    
+                        exit()
 
 if __name__ == '__main__':
     main(sys.argv[1:])
