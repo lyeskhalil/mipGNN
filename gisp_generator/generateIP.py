@@ -445,8 +445,7 @@ if __name__ == "__main__":
         with open(sol_dir + "/" + lpname + ".sol", "w+") as sol_file:
             sol_file.write(results_str)
 
-        if num_solutions >= 1:
-        # if pool_bool and num_solutions >= 1:
+        if pool_bool and num_solutions >= 1:
             # Collect solutions from pool
             solutions_matrix = np.zeros((num_solutions, len(ip.solution.pool.get_values(0))))
             objval_arr = np.zeros(num_solutions)

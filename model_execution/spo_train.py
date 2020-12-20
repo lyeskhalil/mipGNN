@@ -29,7 +29,7 @@ from spo_torch import SPONet, SPOLoss
 import spo_utils
 
 
-def build_dict(data_filenames, data_full, args):
+def build_dict(mode, data_filenames, data_full, args):
     sol_true = []
     objval_true = []
     instance_cpx = []
@@ -39,15 +39,22 @@ def build_dict(data_filenames, data_full, args):
     to_delete_data = []
 
     for instance_idx, instance in enumerate(data_filenames):
+        file_sol = "../gisp_generator/SOL/%s.sol" % instance
         file_npz = "../gisp_generator/SOL/%s.npz" % instance
         file_lp = "../gisp_generator/LP/%s.lp" % instance
-        if not os.path.isfile(file_npz) or not os.path.isfile(file_lp):
+        
+        if not os.path.isfile(file_lp) or (mode == 'train' and not os.path.isfile(file_npz)) or (mode == 'validation' and not os.path.isfile(file_sol)):
             to_delete_data += [instance_idx]
             continue
+
         # get true opt
-        sol_pool = np.load(file_npz)['solutions']
-        sol_true += [torch.unsqueeze(torch.tensor(sol_pool[0, 1:]), 1)]
-        objval_true += [torch.tensor([sol_pool[0,0]])]
+        if mode == 'train':
+            sol_pool = np.load(file_npz)['solutions']
+            sol_true += [torch.unsqueeze(torch.tensor(sol_pool[0, 1:]), 1)]
+            objval_true += [torch.tensor([sol_pool[0,0]])]
+        elif mode == 'validation':
+            sol_true += [torch.empty(0)]
+            objval_true += [torch.tensor([spo_utils.read_optval(file_sol)])]
         
         instance_cpx += [cplex.Cplex(file_lp)]
 
@@ -301,12 +308,12 @@ def main(args):
         meta_dict = {}
 
         data_train_full, data_train_filenames = combine_datasets(args.data_train_dir, operation='list', poly_degree=args.nn_poly_degree)
-        meta_dict['train'] = build_dict(data_train_filenames, data_train_full, args)
+        meta_dict['train'] = build_dict('train', data_train_filenames, data_train_full, args)
         num_features = len(data_train_full[0][0,:]) - 2
 
         if validation_bool:
             data_validation_full, data_validation_filenames = combine_datasets(args.data_validation_dir, operation='list', poly_degree=args.nn_poly_degree)
-            meta_dict['validation'] = build_dict(data_validation_filenames, data_validation_full, args)
+            meta_dict['validation'] = build_dict('validation', data_validation_filenames, data_validation_full, args)
             stages += ['validation']
 
         loss_fn = SPOLoss.apply
