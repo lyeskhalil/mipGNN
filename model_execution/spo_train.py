@@ -436,6 +436,8 @@ def main(args):
                     tb_writer.add_histogram('model0 weights', models[0].layers[0].weight.data, epoch)
                     tb_writer.add_histogram('model1 weights', models[1].layers[0].weight.data, epoch)
 
+                    print(models[0].layers[0].weight.grad)
+
                 if stage == 'validation':
                     if running_loss < running_loss_best:# or running_loss_withreg < running_loss_withreg_best:
                         running_loss_best = running_loss
