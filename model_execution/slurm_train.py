@@ -7,7 +7,7 @@ print(executor.which())
 executor.update_parameters(
 	additional_parameters={"account": "rrg-khalile2"}, 
 	timeout_min=719,
-	mem_per_cpu=16,
+	mem_gb=16,
 	cpus_per_task=10)
 
 job = executor.submit(spo_train.main, 
@@ -20,7 +20,7 @@ job = executor.submit(spo_train.main,
 	'-nn_depth', '2',
 	'-nn_width', '50',
 	'-nn_lr_decay', '1',
-	'-nn_lr_init', '1e-2',
+	'-nn_lr_init', '1e-3',
 	'-nn_reg', '0',
 	'-nn_batchsize', '10',
 	'-nn_poolsize', '10'
