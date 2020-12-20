@@ -36,15 +36,15 @@ print("total number of configurations =", len(configs))
 configs = sample(configs, 500) 
 
 for config in configs:
-	arg_list =
-		[
-		'-method', 'spo',
-		'-data_train_dir', '../gisp_generator/SPO_DATA/spo_gisp_er/150_150/alpha_0.75_numFeat_10_biasnodes_100_biasedges_10_halfwidth_0.5_polydeg_2/train',
-		'-data_validation_dir', '../gisp_generator/SPO_DATA/spo_gisp_er/150_150/alpha_0.75_numFeat_10_biasnodes_100_biasedges_10_halfwidth_0.5_polydeg_2/valid',
-		'-output_dir', 'spo_torch_polydeg2_hypersearch',
-		'-nn_poly_degree', '1',
-		'-nn_poolsize', '50'
-		]
+	arg_list = 
+	[
+	'-method', 'spo',
+	'-data_train_dir', '../gisp_generator/SPO_DATA/spo_gisp_er/150_150/alpha_0.75_numFeat_10_biasnodes_100_biasedges_10_halfwidth_0.5_polydeg_2/train',
+	'-data_validation_dir', '../gisp_generator/SPO_DATA/spo_gisp_er/150_150/alpha_0.75_numFeat_10_biasnodes_100_biasedges_10_halfwidth_0.5_polydeg_2/valid',
+	'-output_dir', 'spo_torch_polydeg2_hypersearch',
+	'-nn_poly_degree', '1',
+	'-nn_poolsize', '50'
+	]
 
 	for arg, value in config.items():
 		arg_list += [arg, value]
