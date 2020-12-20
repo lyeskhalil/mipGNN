@@ -18,7 +18,7 @@ import pandas as pd
 import pickle
 import time
 import cplex
-import multiprocess as mp
+import concurrent.futures
 
 import torch
 import torch.optim as optim
@@ -166,6 +166,9 @@ def main(args):
     parser.add_argument("-nn_batchsize", type=int, default=1)
     parser.add_argument("-nn_poolsize", type=int, default=1)
 
+    parser.add_argument("-nn_sgd_nesterov", type=int, default=0)
+    parser.add_argument("-nn_sgd_momentum", type=float, default=0.0)
+
     # Tensorboard parameters
     parser.add_argument("-nn_tb_dir", type=str, default='SPO_TENSORBOARD')
 
@@ -286,13 +289,16 @@ def main(args):
         device = torch.device("cpu")
         torch.set_default_dtype(dtype)
 
-        filename_noext = 'depth_%d_width_%d_reg_%g_polydeg_%d_lrinit_%g_lrdecay_%d_warmst_%d' % (
+        filename_noext = 'depth_%d_width_%d_reg_%g_polydeg_%d_lrinit_%g_lrdecay_%d_sgdnesterov_%d_sgdmom_%g_batchsize_%d_warmst_%d' % (
             args.nn_depth, 
             args.nn_width,
             args.nn_reg,
             args.nn_poly_degree, 
             args.nn_lr_init,
             args.nn_lr_decay,
+            args.nn_sgd_nesterov,
+            args.nn_sgd_momentum,
+            args.nn_batchsize,
             warmstart_bool)
         model_filename = '%s/%s.pt' % (output_dir, filename_noext)
 
@@ -330,7 +336,9 @@ def main(args):
 
         optimizer = optim.SGD(
             list(models[0].parameters())+list(models[1].parameters()), 
-            lr=args.nn_lr_init)
+            lr=args.nn_lr_init,
+            nesterov=bool(args.nn_sgd_nesterov),
+            momentum=args.nn_sgd_momentum)
 
         lmbda = lambda epoch: args.nn_lr_init/(np.sqrt(epoch+1))
 
@@ -395,8 +403,7 @@ def main(args):
 
                     ret_vals = []
                     if args.nn_poolsize > 1 and args.nn_batchsize > 1:
-                        import concurrent.futures
-                        with concurrent.futures.ProcessPoolExecutor(max_workers=args.nn_poolsize) as executor:
+                        with concurrent.futures.ProcessPoolExecutor(max_workers=min([args.nn_poolsize, len(batch_cur)])) as executor:
                             ret_vals = executor.map(solveIP_obj_local, range(len(batch_cur)))
 
                         # with mp.Pool(args.nn_poolsize) as p:
@@ -425,7 +432,7 @@ def main(args):
 
                         running_loss_withreg += loss_val_cur.data / meta_dict[stage]['num_instances']
                         running_loss += loss_spo_cur_scaled
-                        time_solve += ret[1]
+                        time_solve += ret[1] if stage == 'train' else 0
 
                         loss_val_cur /= 1.0*len(batch_cur)
 
