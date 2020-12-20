@@ -1,6 +1,7 @@
 import spo_train
 import spo_utils
 import submitit
+from random import sample 
 
 executor = submitit.AutoExecutor(folder="log_test")
 print(executor.which())
@@ -14,7 +15,7 @@ executor.update_parameters(
 dict_allvals = {'-nn_depth': ['1','2','3'], '-nn_width': ['10','20','40', '80'], '-nn_lr_decay': ['0', '1'], '-nn_lr_init': ['1e-3', '5e-3'], '-nn_reg': ['0', '1'], '-nn_batchsize': ['5', '10', '20', '50', '100'], '-nn_sgd_nesterov': ['0', '1'], '-nn_sgd_momentum': ['0', '0.2', '0.4', '0.8']}
 configs = list(spo_utils.dict_product(dict_allvals))
 
-print("number of configurations =", len(configs))
+print("total number of configurations =", len(configs))
 # job = executor.submit(spo_train.main, 
 # 	[
 # 	'-method', 'spo',
@@ -30,6 +31,9 @@ print("number of configurations =", len(configs))
 # 	'-nn_batchsize', '10',
 # 	'-nn_poolsize', '10'
 # 	])  
+
+  
+configs = sample(configs, 500) 
 
 for config in configs:
 	arg_list =
