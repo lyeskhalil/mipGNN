@@ -18,7 +18,7 @@ executor.update_parameters(
 
 #dict_allvals = {'-nn_depth': ['1','2','3'], '-nn_width': ['10','20','40', '80'], '-nn_lr_decay': ['0', '1'], '-nn_lr_init': ['1e-3', '5e-3'], '-nn_reg': ['0', '1'], '-nn_batchsize': ['5', '10', '20', '50', '100'], '-nn_sgd_nesterov': ['0', '1'], '-nn_sgd_momentum': ['0', '0.2', '0.4', '0.8']}
 
-dict_allvals = {'-nn_poly_degree': ['2'], '-nn_depth': ['0'], '-nn_width': ['0'], '-nn_lr_decay': ['0', '1'], '-nn_lr_init': ['1e-3', '5e-3', '1e-2', '1e-1', '1e0'], '-nn_reg': ['0', '1'], '-nn_batchsize': ['5', '10'], '-nn_sgd_nesterov': ['0', '1'], '-nn_sgd_momentum': ['0', '0.2', '0.4', '0.8']}
+dict_allvals = {'-nn_poly_degree': ['2'], '-nn_depth': ['0'], '-nn_width': ['0'], '-nn_lr_decay': ['0', '1'], '-nn_lr_init': ['1e-3', '5e-3', '1e-2', '1e-1', '1e0'], '-nn_reg': ['1e-6', '1e-4', '1e-2', '1e-1', '0', '1e0'], '-nn_batchsize': ['10'], '-nn_sgd_nesterov': ['1'], '-nn_sgd_momentum': ['0.2', '0.4', '0.8']}
 
 configs = list(spo_utils.dict_product(dict_allvals))
 
