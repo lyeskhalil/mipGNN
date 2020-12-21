@@ -302,6 +302,8 @@ def main(args):
             warmstart_bool)
         model_filename = '%s/%s.pt' % (output_dir, filename_noext)
 
+        print(filename_noext)
+
         # Tensorboard setup
         tb_dirname = '%s/%s/%s' % (args.nn_tb_dir, args.output_dir, filename_noext)
         try: 
@@ -441,6 +443,7 @@ def main(args):
                     if stage == 'train':
                         optimizer.step()
 
+                print('%s loss' % stage, running_loss, epoch)
                 tb_writer.add_scalar('%s loss' % stage, running_loss, epoch)
                 if stage == 'train':
                     tb_writer.add_scalar('learning rate', optimizer.param_groups[0]['lr'], epoch)
@@ -469,6 +472,8 @@ def main(args):
                             'loss_spo': running_loss_best,
                             'loss_spo_withreg': running_loss_withreg_best
                             }, model_filename)
+
+                        print("New incumbent: %g, %g, %d" % (running_loss_best, running_loss_withreg_best, epoch))
 
                     if epoch - epoch_best >= args.nn_patience or running_loss_best <= args.nn_termination:
                         print("Early termination!")
