@@ -378,7 +378,7 @@ def main(args):
                     coeffs = []
                     for instance_idx_ in batch_cur:
                         instance_idx = int(instance_idx_)
-                        print(instance_idx)
+                        # print(instance_idx)
                         indices = meta_dict[stage]['model_indices'][instance_idx]
                         coeffs_cur = [models[0](meta_dict[stage]['data'][instance_idx][indices[0], 1:num_features+1]), models[1](meta_dict[stage]['data'][instance_idx][indices[1], 1:num_features+1])]
                         coeffs += [torch.cat((coeffs_cur[0], coeffs_cur[1]), 0)]
@@ -414,7 +414,7 @@ def main(args):
                                 # [(coeffs[idx], meta_dict[stage]['coeffs_true'][batch_cur[idx]], meta_dict[stage]['instance_cpx'][batch_cur[idx]]) for idx in range(len(batch_cur))])
                     else:
                         for idx in range(len(batch_cur)):
-                            sol_spo_cur, time_cur = solveIP_obj(idx)
+                            sol_spo_cur, time_cur = solveIP_obj_local(idx)
                             ret_vals += [(sol_spo_cur, time_cur)]
 
                     for idx, ret in enumerate(ret_vals):

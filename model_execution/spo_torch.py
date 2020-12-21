@@ -112,5 +112,6 @@ class SPONet(torch.nn.Module):
             if i < len(self.layers) - 1:
                 x = self.nonlinearity(x)
 
-        return x
+        # return x
+        return self.relu_sign * torch.abs(x)
         # return self.relu_sign * torch.relu(self.relu_sign * x)
