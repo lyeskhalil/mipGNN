@@ -329,7 +329,7 @@ def main(args):
         models = [SPONet(num_features, depth, width, relu_sign=-1), SPONet(num_features, depth, width, relu_sign=1)]
         print(models[1].layers[0].weight.data)
 
-        if args.nn_warmstart_dir != '' and args.nn_warmstart_prefix != '' and depth == 0:
+        if warmstart_bool and depth == 0:
             models_pretrained = spo_utils.read_sklearn_model(args.nn_warmstart_dir, args.nn_warmstart_prefix)
             assert(len(models_pretrained) == len(model_indicators))
             for indicator in model_indicators:
