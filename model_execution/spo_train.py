@@ -430,7 +430,7 @@ def main(args):
 
                         print("%s -- SPO loss [%d-%d] = %g = (%g) - (%g)" % (stage, epoch, instance_idx, loss_spo_cur, loss_val_cur, meta_dict[stage]['objval_true'][instance_idx]))
 
-                        loss_val_cur += args.nn_reg * torch.norm(coeffs[idx])
+                        loss_val_cur += args.nn_reg * torch.norm(coeffs[idx], p=1)
 
                         running_loss_withreg += loss_val_cur.data / meta_dict[stage]['num_instances']
                         running_loss += loss_spo_cur_scaled
