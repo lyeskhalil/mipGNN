@@ -409,6 +409,7 @@ class GraphDataset(InMemoryDataset):
                     obj_var.append([node_data['objcoeff']])
                     obj.append([node_data['objcoeff']])
                     index_var.append(0)
+                    y.append(node_data['bias'])
 
                 # Node is constraint node.
                 elif node_data['bipartite'] == 1:
@@ -525,10 +526,7 @@ for r, f in enumerate(file_list):
 
 
     print(dataset.data.y)
-    print(dataset.data.y.mean())
-    print(dataset.data.y.min())
-    print(dataset.data.y.max())
-    print(dataset.data.y.median())
+
 
 
     # Split data.
