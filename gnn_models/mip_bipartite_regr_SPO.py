@@ -251,16 +251,19 @@ class SimpleNet(torch.nn.Module):
         x = ones.new_zeros((data.var_node_features.size(0), 1))
         x = x.scatter_(0, data.zeros.view(-1, 1).expand_as(obj_pre_zeros), obj_pre_zeros)
         x = x.scatter_(0, data.ones.view(-1, 1).expand_as(obj_pre_ones), obj_pre_ones)
+        obj_pre = x
+
+        var_node_features_0 = torch.cat([var_node_features, obj_pre], dim=-1)
+
+        # Compute initial node embeddings.
+        var_node_features_0 = self.var_node_encoder(var_node_features_0)
+        con_node_features_0 = self.con_node_encoder(con_node_features)
+
+
+
 
 
         exit()
-
-
-        # Compute initial node embeddings.
-        var_node_features_0 = self.var_node_encoder(var_node_features)
-        con_node_features_0 = self.con_node_encoder(con_node_features)
-
-        var_node_features_0 = torch.cat([var_node_features_0, obj_pre], dim=-1)
 
         con_node_features_1 = F.relu(
             self.var_con_1(var_node_features_0, con_node_features_0, edge_index_var, edge_features_var, rhs,
