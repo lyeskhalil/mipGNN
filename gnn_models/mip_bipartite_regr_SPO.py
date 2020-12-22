@@ -257,7 +257,7 @@ class SimpleNet(torch.nn.Module):
         var_node_features_0 = self.var_node_encoder(var_node_features_0)
         con_node_features_0 = self.con_node_encoder(con_node_features)
 
- 
+
         con_node_features_1 = F.relu(
             self.var_con_1(var_node_features_0, con_node_features_0, edge_index_var, edge_features_var, rhs,
                            (var_node_features_0.size(0), con_node_features.size(0))))
@@ -575,6 +575,7 @@ for r, f in enumerate(file_list):
     def train(epoch):
         model.train()
         total_loss = 0
+        obj_loss = 0
         c  = 0
         mse = torch.nn.L1Loss()
 
@@ -587,10 +588,11 @@ for r, f in enumerate(file_list):
             loss.backward()
 
             total_loss += loss.item() * data.y.size(-1)
+            obj_loss += mse(obj, data.obj_var).item() * data.y.size(-1)
             c += data.y.size(-1)
 
             optimizer.step()
-        return total_loss / c
+        return total_loss / c, obj_loss / c
 
 
     def test(loader):
@@ -619,7 +621,7 @@ for r, f in enumerate(file_list):
     test_acc = None
     for epoch in range(1, 100):
 
-        train_loss = train(epoch)
+        train_loss, obj_loss = train(epoch)
         train_acc = test(train_loader)
 
         val_acc = test(val_loader)
@@ -634,6 +636,7 @@ for r, f in enumerate(file_list):
         if lr < 0.000001:
             break
 
+        print(obj_loss)
         print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
               'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
                                                                             train_acc, val_acc, test_acc))
