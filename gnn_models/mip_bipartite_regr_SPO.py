@@ -410,8 +410,6 @@ class GraphDataset(InMemoryDataset):
                     obj.append([node_data['objcoeff']])
                     index_var.append(0)
 
-                    print(node_data['bias'])
-                    exit()
                     y.append(node_data['bias'])
 
                 # Node is constraint node.
@@ -528,7 +526,7 @@ for r, f in enumerate(file_list):
     print(len(dataset))
 
 
-    print(dataset.data.y)
+    print(dataset.data.y.size())
     exit()
 
 
