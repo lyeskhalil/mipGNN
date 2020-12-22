@@ -160,7 +160,7 @@ class SimpleNet(torch.nn.Module):
         super(SimpleNet, self).__init__()
 
         # Embed initial node features.
-        self.var_node_encoder = Sequential(Linear(12, hidden), ReLU(), Linear(hidden, hidden-1))
+        self.var_node_encoder = Sequential(Linear(12, hidden), ReLU(), Linear(hidden, hidden))
         self.con_node_encoder = Sequential(Linear(2, hidden), ReLU(), Linear(hidden, hidden))
         self.feature_mlp_zeros = Sequential(Linear(11, hidden), ReLU(), Linear(hidden, 1))
         self.feature_mlp_ones = Sequential(Linear(11, hidden), ReLU(), Linear(hidden, 1))
