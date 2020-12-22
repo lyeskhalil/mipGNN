@@ -162,7 +162,8 @@ class SimpleNet(torch.nn.Module):
         # Embed initial node features.
         self.var_node_encoder = Sequential(Linear(12, hidden), ReLU(), Linear(hidden, hidden-1))
         self.con_node_encoder = Sequential(Linear(2, hidden), ReLU(), Linear(hidden, hidden))
-        self.feature_mlp = Sequential(Linear(12, hidden), ReLU(), Linear(hidden, 1))
+        self.feature_mlp_zeros = Sequential(Linear(11, hidden), ReLU(), Linear(hidden, 1))
+        self.feature_mlp_ones = Sequential(Linear(11, hidden), ReLU(), Linear(hidden, 1))
 
         # Compute variable assignement.
         # TODO: Just one shared assignment for all layers?
@@ -205,7 +206,8 @@ class SimpleNet(torch.nn.Module):
         self.var_assigment_4.reset_parameters()
 
         self.var_con_1.reset_parameters()
-        self.feature_mlp.reset_parameters()
+        self.feature_mlp_zeros.reset_parameters()
+        self.feature_mlp_ones.reset_parameters()
         self.con_var_1.reset_parameters()
 
         self.var_con_2.reset_parameters()
@@ -242,11 +244,12 @@ class SimpleNet(torch.nn.Module):
 
         zeros = var_node_features[data.zeros]
         ones = var_node_features[data.ones]
+
+
+        obj_pre_ones = self.feature_mlp_ones(ones)
+        obj_pre_zeros = self.feature_mlp_zeros(zeros)
+
         exit()
-
-        obj_pre = self.feature_mlp(var_node_features)
-
-
 
 
         # Compute initial node embeddings.
