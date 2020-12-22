@@ -237,7 +237,13 @@ class SimpleNet(torch.nn.Module):
         obj = data.obj
         obj_var = data.obj_var
 
+        print(var_node_features.size())
+        exit()
+
         obj_pre = self.feature_mlp(var_node_features)
+
+
+
 
         # Compute initial node embeddings.
         var_node_features_0 = self.var_node_encoder(var_node_features)
@@ -516,7 +522,7 @@ for r, f in enumerate(file_list):
     dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform()).shuffle()
 
     print(len(dataset))
-    exit()
+
 
     print(dataset.data.y)
     print(dataset.data.y.mean())
