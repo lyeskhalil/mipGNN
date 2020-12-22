@@ -526,9 +526,6 @@ for r, f in enumerate(file_list):
     print(len(dataset))
 
 
-    print(dataset.data.y.size())
-    print(dataset.data.y)
-    exit()
 
 
 
