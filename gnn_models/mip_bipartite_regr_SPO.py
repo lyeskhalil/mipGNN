@@ -377,15 +377,26 @@ class GraphDataset(InMemoryDataset):
             index_var = []
             obj = []
 
+            ones = []
+            zeros = []
+
             # Iterate over nodes, and collect features.
             for i, (node, node_data) in enumerate(graph.nodes(data=True)):
                 # Node is a variable node.
                 if node_data['bipartite'] == 0:
                     node_to_varnode[i] = num_nodes_var
+                    if node_data['model_indicator'] == 0:
+                        zeros.append(num_nodes_var)
+                    elif node_data['model_indicator'] == 1:
+                        ones.append(num_nodes_var)
+                    else:
+                        print("Error in data.")
+                        exit()
+
+
                     num_nodes_var += 1
 
-
-                    y.append(node_data['bias'])
+                    node_data['model_indicator']
 
 
                     feat_var.append(node_data['features'].tolist() + [graph.degree[i]])
@@ -450,6 +461,9 @@ class GraphDataset(InMemoryDataset):
             data.index = torch.from_numpy(np.array(index)).to(torch.long)
             data.index_var = torch.from_numpy(np.array(index_var)).to(torch.long)
 
+            data.zeros = torch.from_numpy(np.array(zeros)).to(torch.long)
+            data.ones = torch.from_numpy(np.array(ones)).to(torch.long)
+
             data_list.append(data)
 
         data, slices = self.collate(data_list)
@@ -465,7 +479,7 @@ class MyData(Data):
             return torch.tensor([self.num_nodes_con, self.num_nodes_var]).view(2, 1)
         elif key in ['index']:
              return torch.tensor(self.num_nodes_con)
-        elif key in ['index_var']:
+        elif key in ['index_var', 'ones', 'zeros']:
              return torch.tensor(self.num_nodes_var)
         else:
             return 0
@@ -480,27 +494,11 @@ class MyTransform(object):
 
 
 file_list = [
-    # "../DATA1/er_SET2/200_200/alpha_0.75_setParam_100/train/",
-    # "../DATA1/er_SET2/200_200/alpha_0.25_setParam_100/train/",
-    # "../DATA1/er_SET2/200_200/alpha_0.5_setParam_100/train/",
-    # "../DATA1/er_SET2/300_300/alpha_0.75_setParam_100/train/",
-    # "../DATA1/er_SET2/300_300/alpha_0.25_setParam_100/train/",
-    # "../DATA1/er_SET2/300_300/alpha_0.5_setParam_100/train/",
-    # "../DATA1/er_SET1/400_400/alpha_0.75_setParam_100/train/",
-    # "../DATA1/er_SET1/400_400/alpha_0.5_setParam_100/train/",
-    "./DATA_SPO/spo_er_SPO1/200_200/alpha_0.75_numFeat_10_bias_1000_noise_10_2/train/",
+    "./DATA_SPO/150_150/150_150/alpha_0.75_numFeat_10_biasnodes_100_biasedges_10_halfwidth_0.5_polydeg_2/train/",
 ]
 
 name_list = [
-    # "er_SET2_200_200_alpha_0_75_setParam_100_train",
-    # "er_SET2_200_200_alpha_0_25_setParam_100_train",
-    # "er_SET2_200_200_alpha_0_5_setParam_100_train",
-    # "er_SET2_300_300_alpha_0_75_setParam_100_train",
-    # "er_SET2_300_300_alpha_0_25_setParam_100_train",
-    # "er_SET2_300_300_alpha_0_5_setParam_100_train",
-    # "er_SET1_400_400_alpha_0_75_setParam_100_train",
-    # "er_SET1_400_400_alpha_0_5_setParam_100_train",
-    "alpha_0.75_numFeat_10_bias_1000_noise_10_2_regr",
+    "SPO",
 ]
 
 
@@ -518,6 +516,7 @@ for r, f in enumerate(file_list):
     dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform()).shuffle()
 
     len(dataset)
+    exit()
 
     print(dataset.data.y)
     print(dataset.data.y.mean())
