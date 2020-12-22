@@ -513,7 +513,7 @@ file_list = [
 ]
 
 name_list = [
-    "SPO",
+    "SPO_model",
 ]
 
 
