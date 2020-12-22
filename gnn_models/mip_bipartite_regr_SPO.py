@@ -515,7 +515,7 @@ for r, f in enumerate(file_list):
     # Create dataset.
     dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform()).shuffle()
 
-    len(dataset)
+    print(len(dataset))
     exit()
 
     print(dataset.data.y)
