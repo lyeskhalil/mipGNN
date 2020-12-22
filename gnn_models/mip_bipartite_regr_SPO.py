@@ -399,7 +399,7 @@ class GraphDataset(InMemoryDataset):
                     node_data['model_indicator']
 
 
-                    feat_var.append(node_data['features'].tolist() + [graph.degree[i]])
+                    feat_var.append(node_data['features'] + [graph.degree[i]])
                     obj_var.append([node_data['objcoeff']])
                     obj.append([node_data['objcoeff']])
                     index_var.append(0)
