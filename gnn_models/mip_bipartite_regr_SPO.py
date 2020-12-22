@@ -245,9 +245,13 @@ class SimpleNet(torch.nn.Module):
         zeros = var_node_features[data.zeros]
         ones = var_node_features[data.ones]
 
+        obj_pre_zeros = self.feature_mlp_zeros(zeros) #n
+        obj_pre_ones = self.feature_mlp_ones(ones) #e
 
-        obj_pre_ones = self.feature_mlp_ones(ones)
-        obj_pre_zeros = self.feature_mlp_zeros(zeros)
+        x = ones.new_zeros((data.var_node_features.size(0), 1))
+        x = x.scatter_(0, data.zeros.view(-1, 1).expand_as(obj_pre_zeros), obj_pre_zeros)
+        x = x.scatter_(0, data.ones.view(-1, 1).expand_as(obj_pre_ones), obj_pre_ones)
+
 
         exit()
 
