@@ -238,6 +238,10 @@ class SimpleNet(torch.nn.Module):
         obj_var = data.obj_var
 
         print(var_node_features.size())
+        print(con_node_features.size())
+
+        zeros = var_node_features[data.zeros]
+        ones = var_node_features[data.ones]
         exit()
 
         obj_pre = self.feature_mlp(var_node_features)
