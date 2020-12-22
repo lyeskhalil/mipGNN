@@ -239,8 +239,6 @@ class SimpleNet(torch.nn.Module):
         obj = data.obj
         obj_var = data.obj_var
 
-        print(var_node_features.size())
-        print(con_node_features.size())
 
         zeros = var_node_features[data.zeros]
         ones = var_node_features[data.ones]
@@ -259,11 +257,6 @@ class SimpleNet(torch.nn.Module):
         var_node_features_0 = self.var_node_encoder(var_node_features_0)
         con_node_features_0 = self.con_node_encoder(con_node_features)
 
-
-
-
-
-        exit()
 
         con_node_features_1 = F.relu(
             self.var_con_1(var_node_features_0, con_node_features_0, edge_index_var, edge_features_var, rhs,
