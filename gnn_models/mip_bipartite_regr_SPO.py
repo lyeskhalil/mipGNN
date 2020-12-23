@@ -509,7 +509,7 @@ class MyTransform(object):
 
 
 file_list = [
-    "./DATA_SPO/150_150/150_150/alpha_0.75_numFeat_10_biasnodes_100_biasedges_10_halfwidth_0.5_polydeg_2/train/",
+    "./DATA_SPO/train/",
 ]
 
 name_list = [
@@ -531,10 +531,7 @@ for r, f in enumerate(file_list):
     dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform()).shuffle()
 
     print(len(dataset))
-
-
-
-
+    exit()
 
     # Split data.
 
