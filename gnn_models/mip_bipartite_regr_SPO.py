@@ -531,10 +531,8 @@ for r, f in enumerate(file_list):
     dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform()).shuffle()
 
     print(len(dataset))
-    exit()
 
     # Split data.
-
     l = len(dataset)
     train_index, rest = train_test_split(list(range(0, l)), test_size=0.2)
     l = len(rest)
