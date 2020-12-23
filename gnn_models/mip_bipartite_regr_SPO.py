@@ -19,9 +19,7 @@ from torch.nn import BatchNorm1d as BN
 from torch.nn import Sequential, Linear, ReLU, Sigmoid
 from torch_geometric.nn import MessagePassing
 from torch_geometric.nn.inits import reset
-import string, random
 
-from torch_scatter import scatter_add
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -531,6 +529,8 @@ for r, f in enumerate(file_list):
     dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform()).shuffle()
 
     print(len(dataset))
+
+    print(dataset.data.obj.mean())
 
     # Split data.
     l = len(dataset)
