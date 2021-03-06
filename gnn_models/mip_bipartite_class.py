@@ -22,7 +22,6 @@ from torch_geometric.nn.inits import reset
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-
 # Update constraint embeddings based on variable embeddings.
 class VarConBipartiteLayer(MessagePassing):
     def __init__(self, edge_dim, dim, var_assigment):
