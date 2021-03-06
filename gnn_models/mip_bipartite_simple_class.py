@@ -307,9 +307,12 @@ len(dataset)
 
 # TODO: Fixed split for testing purposes.
 # Split data.
-train_index, rest = train_test_split(list(range(0, 1000)), test_size=0.2) # list(range(0,800)),list(range(800,1000)) #train_test_split(list(range(0, 1000)), test_size=0.2)
-val_index = rest[0:100]
-test_index = rest[100:]
+l = len(dataset)
+train_index, rest = train_test_split(list(range(0, l)), test_size=0.2)
+l = len(rest)
+val_index = rest[0:int(l / 2)]
+test_index = rest[int(l / 2):]
+
 
 train_dataset = dataset[train_index].shuffle()
 val_dataset = dataset[val_index].shuffle()
