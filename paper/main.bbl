@@ -1,4 +1,4 @@
-\begin{thebibliography}{38}
+\begin{thebibliography}{36}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -86,14 +86,6 @@ M.~Fischetti, A.~Lodi, and G.~Zarpellon.
 \newblock In \emph{Integration of Constraint Programming, Artificial
   Intelligence, and Operations Research}, volume 11494 of \emph{Lecture Notes
   in Computer Science}, pages 275--291, 2019.
-
-\bibitem[Gasse et~al.(2019)Gasse, Ch{\'{e}}telat, Ferroni, Charlin, and
-  Lodi]{Gas+2019}
-M.~Gasse, D.~Ch{\'{e}}telat, N.~Ferroni, L.~Charlin, and A.~Lodi.
-\newblock Exact combinatorial optimization with graph convolutional neural
-  networks.
-\newblock In \emph{Advances in Neural Information Processing Systems}, pages
-  15554--15566, 2019.
 
 \bibitem[Gilmer et~al.(2017)Gilmer, Schoenholz, Riley, Vinyals, and
   Dahl]{Gil+2017}
@@ -206,13 +198,6 @@ D.~Selsam, M.~Lamm, B.~B{\"{u}}nz, P.~Liang, L.~de~Moura, and D.~L. Dill.
 \newblock Learning a {SAT} solver from single-bit supervision.
 \newblock In \emph{International Conference on Learning Representations}, 2019.
 
-\bibitem[Song et~al.(2020)Song, Lanka, Yue, and Dilkina]{Son+2020}
-J.~Song, R.~Lanka, Y.~Yue, and B.~Dilkina.
-\newblock A general large neighborhood search framework for solving integer
-  programs.
-\newblock \emph{CoRR}, abs/2004.00422, 2020.
-\newblock URL \url{https://arxiv.org/abs/2004.00422}.
-
 \bibitem[Sperduti and Starita(1997)]{Spe+1997}
 A.~Sperduti and A.~Starita.
 \newblock Supervised neural networks for the classification of structures.
@@ -232,12 +217,11 @@ P.~Velickovic, R.~Ying, M.~Padovano, R>~Hadsell, and C.~Blundell.
 \newblock Neural execution of graph algorithms.
 \newblock In \emph{International Conference on Learning Representations}, 2020.
 
-\bibitem[Wilder et~al.(2019)Wilder, Dilkina, and Tambe]{Wil+2019}
-B.~Wilder, B.~Dilkina, and M.~Tambe.
-\newblock Melding the data-decisions pipeline: Decision-focused learning for
-  combinatorial optimization.
-\newblock In \emph{{AAAI} Conference on Artificial Intelligence}, pages
-  1658--1665, 2019.
+\bibitem[Wilder et~al.(2019)Wilder, Ewing, Dilkina, and Tambe]{Wil+2019}
+B.~Wilder, E.~Ewing, B.~Dilkina, and M.~Tambe.
+\newblock End to end learning and optimization on graphs.
+\newblock In \emph{Advances in Neural Information Processing Systems}, pages
+  4674--4685, 2019.
 
 \bibitem[Wu et~al.(2019)Wu, Pan, Chen, Long, Zhang, and Yu]{Wu+2019}
 Z.~Wu, S.~Pan, F.~Chen, G.~Long, C.~Zhang, and P.~S. Yu.

@@ -19,9 +19,6 @@ from torch.nn import BatchNorm1d as BN
 from torch.nn import Sequential, Linear, ReLU, Sigmoid
 from torch_geometric.nn import MessagePassing
 from torch_geometric.nn.inits import reset
-import string, random
-
-from torch_scatter import scatter_add
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -94,10 +91,10 @@ class ErrorLayer(MessagePassing):
         out = tmp - rhs
 
         # TODO: Think here.
-        #out = self.error_encoder(out)
+        # out = self.error_encoder(out)
 
         # TODO: Change.
-        #out = softmax(out, index)
+        # out = softmax(out, index)
 
         return out
 
@@ -120,8 +117,8 @@ class ConVarBipartiteLayer(MessagePassing):
                                        BN(dim))
 
         # Learn joint representation of contraint embedding and error.
-        self.joint_con_encoder = Sequential(Linear(dim + 1, dim), ReLU(), Linear(dim, dim-1), ReLU(),
-                                            BN(dim-1))
+        self.joint_con_encoder = Sequential(Linear(dim + 1, dim), ReLU(), Linear(dim, dim - 1), ReLU(),
+                                            BN(dim - 1))
 
         self.mlp = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim), ReLU(), BN(dim))
         self.eps = torch.nn.Parameter(torch.Tensor([0]))
@@ -132,7 +129,7 @@ class ConVarBipartiteLayer(MessagePassing):
         edge_embedding = self.edge_encoder(edge_attr)
 
         joint_con = torch.cat([self.joint_con_encoder(torch.cat([source, error_con], dim=-1)), error_con], dim=-1)
-        #joint_con = self.joint_con_encoder(torch.cat([source, error_con], dim=-1))
+        # joint_con = self.joint_con_encoder(torch.cat([source, error_con], dim=-1))
         tmp = self.propagate(edge_index, x=joint_con, error=error_con, edge_attr=edge_embedding, size=size)
 
         out = self.mlp((1 + self.eps) * target + tmp)
@@ -162,7 +159,6 @@ class SimpleNet(torch.nn.Module):
         self.con_node_encoder = Sequential(Linear(2, hidden), ReLU(), Linear(hidden, hidden))
 
         # Compute variable assignement.
-        # TODO: Just one shared assignment for all layers?
         self.var_assigment_1 = Sequential(Linear(hidden, hidden), ReLU(), Linear(hidden, 1), Sigmoid())
         self.var_assigment_2 = Sequential(Linear(hidden, hidden), ReLU(), Linear(hidden, 1), Sigmoid())
         self.var_assigment_3 = Sequential(Linear(hidden, hidden), ReLU(), Linear(hidden, 1), Sigmoid())
@@ -236,7 +232,6 @@ class SimpleNet(torch.nn.Module):
         var_node_features_0 = self.var_node_encoder(var_node_features)
         con_node_features_0 = self.con_node_encoder(con_node_features)
 
-
         con_node_features_1 = F.relu(
             self.var_con_1(var_node_features_0, con_node_features_0, edge_index_var, edge_features_var, rhs,
                            (var_node_features_0.size(0), con_node_features.size(0))))
@@ -287,10 +282,11 @@ class SimpleNet(torch.nn.Module):
         # print(cost.size())
         # exit()
 
-
         # print(err_1.min(), print(err_1.max()))
 
-        x = torch.cat([var_node_features_0, var_node_features_1, var_node_features_2, var_node_features_3, var_node_features_4], dim=-1)
+        x = torch.cat(
+            [var_node_features_0, var_node_features_1, var_node_features_2, var_node_features_3, var_node_features_4],
+            dim=-1)
 
         x = F.relu(self.lin1(x))
         # x = F.dropout(x, p=0.5, training=self.training)
@@ -336,7 +332,6 @@ class GraphDataset(InMemoryDataset):
             print(filename, num, num_graphs)
             if num == 608:
                 continue
-
 
             # Get graph.
             graph = nx.read_gpickle(data_path + filename)
@@ -454,9 +449,9 @@ class MyData(Data):
         elif key in ['edge_index_con']:
             return torch.tensor([self.num_nodes_con, self.num_nodes_var]).view(2, 1)
         elif key in ['index']:
-             return torch.tensor(self.num_nodes_con)
+            return torch.tensor(self.num_nodes_con)
         elif key in ['index_var']:
-             return torch.tensor(self.num_nodes_var)
+            return torch.tensor(self.num_nodes_var)
         else:
             return 0
 
@@ -470,7 +465,7 @@ class MyTransform(object):
 
 
 file_list = [
-    # "../DATA1/er_SET2/200_200/alpha_0.75_setParam_100/train/",
+    "../DATA1/er_SET2/200_200/alpha_0.75_setParam_100/train/",
     # "../DATA1/er_SET2/200_200/alpha_0.25_setParam_100/train/",
     # "../DATA1/er_SET2/200_200/alpha_0.5_setParam_100/train/",
     # "../DATA1/er_SET2/300_300/alpha_0.75_setParam_100/train/",
@@ -478,11 +473,11 @@ file_list = [
     # "../DATA1/er_SET2/300_300/alpha_0.5_setParam_100/train/",
     # "../DATA1/er_SET1/400_400/alpha_0.75_setParam_100/train/",
     # "../DATA1/er_SET1/400_400/alpha_0.5_setParam_100/train/",
-    "../DATA1/er_SET1/400_400/alpha_0.25_setParam_100/train/",
+    #"../DATA1/er_SET1/400_400/alpha_0.25_setParam_100/train/",
 ]
 
 name_list = [
-    # "er_SET2_200_200_alpha_0_75_setParam_100_train",
+    "er_SET2_200_200_alpha_0_75_setParam_100_train",
     # "er_SET2_200_200_alpha_0_25_setParam_100_train",
     # "er_SET2_200_200_alpha_0_5_setParam_100_train",
     # "er_SET2_300_300_alpha_0_75_setParam_100_train",
@@ -490,10 +485,8 @@ name_list = [
     # "er_SET2_300_300_alpha_0_5_setParam_100_train",
     # "er_SET1_400_400_alpha_0_75_setParam_100_train",
     # "er_SET1_400_400_alpha_0_5_setParam_100_train",
-    "er_SET1_400_400_alpha_0_25_setParam_100_train",
+    #"er_SET1_400_400_alpha_0_25_setParam_100_train",
 ]
-
-
 
 for r, f in enumerate(file_list):
 
@@ -509,14 +502,13 @@ for r, f in enumerate(file_list):
 
     len(dataset)
 
-
     # Split data.
 
     l = len(dataset)
     train_index, rest = train_test_split(list(range(0, l)), test_size=0.2)
     l = len(rest)
-    val_index = rest[0:int(l/2)]
-    test_index = rest[int(l/2):]
+    val_index = rest[0:int(l / 2)]
+    test_index = rest[int(l / 2):]
 
     train_dataset = dataset[train_index].shuffle()
     val_dataset = dataset[val_index].shuffle()
@@ -525,7 +517,6 @@ for r, f in enumerate(file_list):
     print(len(train_dataset))
     print(len(val_dataset))
     print(len(test_dataset))
-
 
     # Prepare batch loaders.
     batch_size = 15
@@ -583,7 +574,7 @@ for r, f in enumerate(file_list):
             # err_total += err.item()
 
         # print(err_total / l)
-        #print(cost_total / l)
+        # print(cost_total / l)
 
         return correct / l
 
