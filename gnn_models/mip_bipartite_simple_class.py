@@ -304,7 +304,6 @@ bias_threshold = 0.05
 dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform())#.shuffle()
 len(dataset)
 
-exit()
 
 # TODO: Fixed split for testing purposes.
 # Split data.
