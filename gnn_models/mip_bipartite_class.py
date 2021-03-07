@@ -13,7 +13,10 @@ from sklearn.model_selection import train_test_split
 from torch_geometric.data import (InMemoryDataset, Data)
 from torch_geometric.data import DataLoader
 
+import torch_geometric.utils.softmax
+
 import torch
+
 import torch.nn.functional as F
 from torch.nn import BatchNorm1d as BN
 from torch.nn import Sequential, Linear, ReLU, Sigmoid
@@ -90,10 +93,10 @@ class ErrorLayer(MessagePassing):
         out = tmp - rhs
 
         # TODO: Think here.
-        # out = self.error_encoder(out)
+        out = self.error_encoder(out)
 
         # TODO: Change.
-        # out = softmax(out, index)
+        out = torch_geometric.utils.softmax(out, index)
 
         return out
 
@@ -497,7 +500,7 @@ for r, f in enumerate(file_list):
     # Threshold for computing class labels.
     bias_threshold = 0.050
     # Create dataset.
-    dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform()).shuffle()
+    dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform())#.shuffle()
 
     len(dataset)
 
