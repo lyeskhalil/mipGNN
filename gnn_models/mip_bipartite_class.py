@@ -96,7 +96,7 @@ class ErrorLayer(MessagePassing):
         out = self.error_encoder(out)
 
         # TODO: Change.
-        #out = torch_geometric.utils.softmax(out, index)
+        out = torch_geometric.utils.softmax(out, index)
 
         return out
 
@@ -119,7 +119,7 @@ class ConVarBipartiteLayer(MessagePassing):
                                        BN(dim))
 
         # Learn joint representation of contraint embedding and error.
-        self.joint_con_encoder = Sequential(Linear(dim + 1, dim), ReLU(), Linear(dim, dim - 1), ReLU(),
+        self.joint_con_encoder = Sequential(Linear(dim + dim, dim), ReLU(), Linear(dim, dim - 1), ReLU(),
                                             BN(dim - 1))
 
         self.mlp = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim), ReLU(), BN(dim))
