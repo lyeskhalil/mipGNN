@@ -96,7 +96,7 @@ class ErrorLayer(MessagePassing):
         out = self.error_encoder(out)
 
         # TODO: Change.
-        out = torch_geometric.utils.softmax(out, index)
+        #out = torch_geometric.utils.softmax(out, index)
 
         return out
 
