@@ -119,7 +119,7 @@ class ConVarBipartiteLayer(MessagePassing):
                                        BN(dim))
 
         # Learn joint representation of contraint embedding and error.
-        self.joint_con_encoder = Sequential(Linear(dim + dim, dim), ReLU(), Linear(dim, dim - 1), ReLU(),
+        self.joint_con_encoder = Sequential(Linear(dim + dim, dim), ReLU(), Linear(dim, dim), ReLU(),
                                             BN(dim))
 
         self.mlp = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim), ReLU(), BN(dim))
