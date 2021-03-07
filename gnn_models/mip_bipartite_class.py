@@ -120,7 +120,7 @@ class ConVarBipartiteLayer(MessagePassing):
 
         # Learn joint representation of contraint embedding and error.
         self.joint_con_encoder = Sequential(Linear(dim + dim, dim), ReLU(), Linear(dim, dim - 1), ReLU(),
-                                            BN(dim - 1))
+                                            BN(dim))
 
         self.mlp = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim), ReLU(), BN(dim))
         self.eps = torch.nn.Parameter(torch.Tensor([0]))
