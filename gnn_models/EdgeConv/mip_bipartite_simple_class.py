@@ -296,7 +296,7 @@ class MyTransform(object):
 # Prepare data.
 path = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
 # Path to raw graph data.
-data_path = '../DATA1/er_SET1/400_400/alpha_0.75_setParam_100/train/'
+data_path = '../../DATA1/er_SET1/400_400/alpha_0.75_setParam_100/train/'
 # Threshold for computing class labels.
 bias_threshold = 0.05
 # Create dataset.
