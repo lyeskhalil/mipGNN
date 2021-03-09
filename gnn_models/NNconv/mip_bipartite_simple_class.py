@@ -345,7 +345,7 @@ print(len(test_dataset))
 print(1 - test_dataset.data.y.sum().item() / test_dataset.data.y.size(-1))
 
 # Prepare batch loaders.
-batch_size = 15
+batch_size = 2
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
