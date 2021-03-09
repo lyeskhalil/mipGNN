@@ -73,7 +73,6 @@ class ErrorLayer(MessagePassing):
         self.error_encoder = Sequential(Linear(1, dim), ReLU(), Linear(dim, dim), ReLU(),
                                         BN(dim))
 
-    # TODO: Change back!
     def forward(self, source, edge_index, edge_attr, rhs, index, size):
         # Compute scalar variable assignment.
         new_source = self.var_assignment(source)
@@ -83,10 +82,8 @@ class ErrorLayer(MessagePassing):
         # Compute residual, i.e., Ax-b.
         out = tmp - rhs
 
-        # TODO: Think here.
         out = self.error_encoder(out)
 
-        # TODO: Change.
         out = torch_geometric.utils.softmax(out, index)
 
         return out
@@ -111,10 +108,6 @@ class ConVarBipartiteLayer(MessagePassing):
         # Maps edge features to the same number of components as node features.
         self.edge_encoder = Sequential(Linear(edge_dim, dim), ReLU(), Linear(dim, dim), ReLU(),
                                        BN(dim))
-
-        # Learn joint representation of contraint embedding and error.
-        # self.joint_con_encoder = Sequential(Linear(dim + dim, dim), ReLU(), Linear(dim, dim), ReLU(),
-        #                                    BN(dim))
 
         self.reset_parameters()
 
@@ -208,11 +201,8 @@ class SimpleNet(torch.nn.Module):
         edge_index_con = data.edge_index_con
         edge_features_var = data.edge_features_var
         edge_features_con = data.edge_features_con
-        num_nodes_var = data.num_nodes_var
-        num_nodes_con = data.num_nodes_con
         rhs = data.rhs
         index = data.index
-        obj = data.obj
 
         # Compute initial node embeddings.
         var_node_features_0 = self.var_node_encoder(var_node_features)
@@ -257,18 +247,6 @@ class SimpleNet(torch.nn.Module):
         var_node_features_4 = F.relu(
             self.con_var_4(con_node_features_4, var_node_features_3, edge_index_con, edge_features_con, err_4,
                            (con_node_features_4.size(0), var_node_features_3.size(0))))
-
-        var = self.var_assigment_4(var_node_features_4)
-
-        # cost = torch.mul(var, obj)
-        # print(cost.size())
-        # print(data.index_var)
-        # cost = scatter_add(cost, index=data.index_var, dim=0)
-        #
-        # print(cost.size())
-        # exit()
-
-        # print(err_1.min(), print(err_1.max()))
 
         x = torch.cat(
             [var_node_features_0, var_node_features_1, var_node_features_2, var_node_features_3, var_node_features_4],
