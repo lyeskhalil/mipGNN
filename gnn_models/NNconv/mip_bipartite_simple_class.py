@@ -67,8 +67,6 @@ class SimpleBipartiteLayer(MessagePassing):
         weight = self.nn(edge_attr)
 
         weight = weight.view(-1, self.dim, self.dim)
-        print(weight.size())
-        exit()
 
         print(weight.size(), x_j.unsqueeze(1).size())
         exit()
