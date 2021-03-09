@@ -25,14 +25,15 @@ from torch_geometric.nn.inits import reset
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+
 class VarConBipartiteLayer(MessagePassing):
 
     def __init__(self, edge_dim, dim, var_assigment):
         super(VarConBipartiteLayer, self).__init__(aggr="add", flow="source_to_target")
 
-        self.nn = Sequential(Linear(2*dim + dim + 1, dim), ReLU(), Linear(dim, dim), ReLU(),
-                                       BN(dim))
-
+        # Combine node and edge features of adjacent nodes.
+        self.nn = Sequential(Linear(3 * dim + 1, dim), ReLU(), Linear(dim, dim), ReLU(),
+                             BN(dim))
 
         # Maps edge features to the same number of components as node features.
         self.edge_encoder = Sequential(Linear(edge_dim, dim), ReLU(), Linear(dim, dim), ReLU(),
@@ -57,12 +58,11 @@ class VarConBipartiteLayer(MessagePassing):
 
         return out
 
-    def message(self, x_j, t_i, v_j, edge_attr):
-        return self.nn(torch.cat([t_i, x_j, v_j, edge_attr], dim=-1))
+    def message(self, x_j, t_i, v_i, edge_attr):
+        return self.nn(torch.cat([t_i, x_j, v_i, edge_attr], dim=-1))
 
     def __repr__(self):
         return '{}(nn={})'.format(self.__class__.__name__, self.nn)
-
 
 
 # Compute error signal.
@@ -73,15 +73,10 @@ class ErrorLayer(MessagePassing):
         self.error_encoder = Sequential(Linear(1, dim), ReLU(), Linear(dim, dim), ReLU(),
                                         BN(dim))
 
-
-
     # TODO: Change back!
     def forward(self, source, edge_index, edge_attr, rhs, index, size):
         # Compute scalar variable assignment.
         new_source = self.var_assignment(source)
-
-        # Map edge features to embeddings with the same number of components as node embeddings.
-
 
         tmp = self.propagate(edge_index, x=new_source, edge_attr=edge_attr, size=size)
 
@@ -110,15 +105,15 @@ class ConVarBipartiteLayer(MessagePassing):
     def __init__(self, edge_dim, dim):
         super(ConVarBipartiteLayer, self).__init__(aggr="add", flow="source_to_target")
 
-        self.nn = Sequential(Linear(4*dim, dim), ReLU(), Linear(dim, dim), ReLU(),
-                                       BN(dim))
+        self.nn = Sequential(Linear(4 * dim, dim), ReLU(), Linear(dim, dim), ReLU(),
+                             BN(dim))
 
         # Maps edge features to the same number of components as node features.
         self.edge_encoder = Sequential(Linear(edge_dim, dim), ReLU(), Linear(dim, dim), ReLU(),
                                        BN(dim))
 
         # Learn joint representation of contraint embedding and error.
-        #self.joint_con_encoder = Sequential(Linear(dim + dim, dim), ReLU(), Linear(dim, dim), ReLU(),
+        # self.joint_con_encoder = Sequential(Linear(dim + dim, dim), ReLU(), Linear(dim, dim), ReLU(),
         #                                    BN(dim))
 
         self.reset_parameters()
@@ -135,14 +130,10 @@ class ConVarBipartiteLayer(MessagePassing):
         return out
 
     def message(self, x_j, t_i, e_j, edge_attr):
-
-
         return self.nn(torch.cat([t_i, x_j, e_j, edge_attr], dim=-1))
 
     def __repr__(self):
         return '{}(nn={})'.format(self.__class__.__name__, self.nn)
-
-
 
 
 class SimpleNet(torch.nn.Module):
@@ -460,15 +451,15 @@ class MyTransform(object):
 
 
 file_list = [
-    #"../DATA1/er_SET2/200_200/alpha_0.75_setParam_100/train/",
+    # "../DATA1/er_SET2/200_200/alpha_0.75_setParam_100/train/",
     # "../DATA1/er_SET2/200_200/alpha_0.25_setParam_100/train/",
     # "../DATA1/er_SET2/200_200/alpha_0.5_setParam_100/train/",
     "../../DATA1/er_SET2/300_300/alpha_0.75_setParam_100/train/",
-    #"../DATA1/er_SET2/300_300/alpha_0.25_setParam_100/train/",
+    # "../DATA1/er_SET2/300_300/alpha_0.25_setParam_100/train/",
     # "../DATA1/er_SET2/300_300/alpha_0.5_setParam_100/train/",
     # "../DATA1/er_SET1/400_400/alpha_0.75_setParam_100/train/",
     # "../DATA1/er_SET1/400_400/alpha_0.5_setParam_100/train/",
-    #"../DATA1/er_SET1/400_400/alpha_0.25_setParam_100/train/",
+    # "../DATA1/er_SET1/400_400/alpha_0.25_setParam_100/train/",
 ]
 
 name_list = [
@@ -480,7 +471,7 @@ name_list = [
     # "er_SET2_300_300_alpha_0_5_setParam_100_train",
     # "er_SET1_400_400_alpha_0_75_setParam_100_train",
     # "er_SET1_400_400_alpha_0_5_setParam_100_train",
-    #"er_SET1_400_400_alpha_0_25_setParam_100_train",
+    # "er_SET1_400_400_alpha_0_25_setParam_100_train",
 ]
 
 for r, f in enumerate(file_list):
@@ -493,7 +484,7 @@ for r, f in enumerate(file_list):
     # Threshold for computing class labels.
     bias_threshold = 0.050
     # Create dataset.
-    dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform())#.shuffle()
+    dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform())  # .shuffle()
 
     len(dataset)
 
