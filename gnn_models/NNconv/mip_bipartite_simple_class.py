@@ -66,6 +66,10 @@ class SimpleBipartiteLayer(MessagePassing):
     def message(self, x_j, edge_attr):
         weight = self.nn(edge_attr)
         weight = weight.view(-1, self.dim, self.dim)
+
+        print(weight.size(), x_j.unsqueeze(1).size())
+        exit()
+
         return torch.matmul(x_j.unsqueeze(1), weight).squeeze(1)
 
     def __repr__(self):
