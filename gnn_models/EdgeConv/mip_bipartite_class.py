@@ -167,9 +167,7 @@ class ConVarBipartiteLayer(MessagePassing):
         return out
 
     def message(self, x_j, t_i, e_j, edge_attr):
-        print(torch.cat([t_i, x_j, e_j, edge_attr], dim=-1).size())
-
-        exit()
+     
 
         return self.nn(torch.cat([t_i, x_j, e_j, edge_attr], dim=-1))
 
