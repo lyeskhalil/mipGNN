@@ -58,8 +58,8 @@ class VarConBipartiteLayer(MessagePassing):
 
         return out
 
-    def message(self, x_j, t_i, v_i, edge_attr):
-        return self.nn(torch.cat([t_i, x_j, v_i, edge_attr], dim=-1))
+    def message(self, x_j, t_i, v_j, edge_attr):
+        return self.nn(torch.cat([t_i, x_j, v_j, edge_attr], dim=-1))
 
     def __repr__(self):
         return '{}(nn={})'.format(self.__class__.__name__, self.nn)
