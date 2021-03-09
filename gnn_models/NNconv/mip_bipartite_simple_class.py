@@ -358,7 +358,7 @@ test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
 print("### DATA LOADED.")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = SimpleNet(hidden=128).to(device)
+model = SimpleNet(hidden=32).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 # Play with this.
