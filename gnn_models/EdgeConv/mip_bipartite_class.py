@@ -148,12 +148,12 @@ class ConVarBipartiteLayer(MessagePassing):
     def __init__(self, edge_dim, dim):
         super(ConVarBipartiteLayer, self).__init__(aggr="add", flow="source_to_target")
 
-        self.nn = Sequential(Linear(2*dim + edge_dim + 1, dim), ReLU(), Linear(dim, dim), ReLU(),
+        self.nn = Sequential(Linear(2*dim + edge_dim + dim, dim), ReLU(), Linear(dim, dim), ReLU(),
                                        BN(dim))
 
         # Learn joint representation of contraint embedding and error.
-        self.joint_con_encoder = Sequential(Linear(dim + dim, dim), ReLU(), Linear(dim, dim), ReLU(),
-                                            BN(dim))
+        #self.joint_con_encoder = Sequential(Linear(dim + dim, dim), ReLU(), Linear(dim, dim), ReLU(),
+        #                                    BN(dim))
 
         self.reset_parameters()
 
