@@ -35,14 +35,14 @@ class SimpleBipartiteLayer(MessagePassing):
     def reset_parameters(self):
         reset(self.nn)
 
-    def forward(self,  source, target, edge_index, edge_attr, size):
+    def forward(self, source, target, edge_index, edge_attr, size):
 
-        out = self.propagate(edge_index, x=source, edge_attr=edge_attr, size=size)
+        out = self.propagate(edge_index, x=source, t = target, edge_attr=edge_attr, size=size)
 
         return out
 
-    def message(self, x_i, x_j, edge_attr):
-        return self.nn(torch.cat([x_i, x_j - x_i, edge_attr], dim=-1))
+    def message(self, x_i, t_j, edge_attr):
+        return self.nn(torch.cat([x_i, t_j - x_i, edge_attr], dim=-1))
 
     def __repr__(self):
         return '{}(nn={})'.format(self.__class__.__name__, self.nn)
