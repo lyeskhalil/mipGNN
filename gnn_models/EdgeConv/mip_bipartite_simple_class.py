@@ -25,8 +25,8 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 class SimpleBipartiteLayer(MessagePassing):
 
-    def __init__(self, edge_dim, dim, aggr = "max"):
-        super(SimpleBipartiteLayer, self).__init__(aggr="add", flow="source_to_target")
+    def __init__(self, edge_dim, dim):
+        super(SimpleBipartiteLayer, self).__init__(aggr="max", flow="source_to_target")
 
         self.nn = Sequential(Linear(dim + edge_dim, dim), ReLU(), Linear(dim, dim), ReLU(),
                                        BN(dim))
