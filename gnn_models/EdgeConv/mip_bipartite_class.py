@@ -67,16 +67,22 @@ class VarConBipartiteLayer(MessagePassing):
 
 # Compute error signal.
 class ErrorLayer(MessagePassing):
-    def __init__(self, dim, var_assignment):
+    def __init__(self, edge_dim, dim, var_assignment):
         super(ErrorLayer, self).__init__(aggr="add", flow="source_to_target")
         self.var_assignment = var_assignment
         self.error_encoder = Sequential(Linear(1, dim), ReLU(), Linear(dim, dim), ReLU(),
                                         BN(dim))
 
+
+
     # TODO: Change back!
     def forward(self, source, edge_index, edge_attr, rhs, index, size):
         # Compute scalar variable assignment.
         new_source = self.var_assignment(source)
+
+        # Map edge features to embeddings with the same number of components as node embeddings.
+
+
         tmp = self.propagate(edge_index, x=new_source, edge_attr=edge_attr, size=size)
 
         # Compute residual, i.e., Ax-b.
@@ -99,56 +105,16 @@ class ErrorLayer(MessagePassing):
         return aggr_out
 
 
-# Update variable embeddings based on constraint embeddings.
 class ConVarBipartiteLayer(MessagePassing):
+
     def __init__(self, edge_dim, dim):
         super(ConVarBipartiteLayer, self).__init__(aggr="add", flow="source_to_target")
+
+        self.nn = Sequential(Linear(4*dim, dim), ReLU(), Linear(dim, dim), ReLU(),
+                                       BN(dim))
 
         # Maps edge features to the same number of components as node features.
         self.edge_encoder = Sequential(Linear(edge_dim, dim), ReLU(), Linear(dim, dim), ReLU(),
-                                       BN(dim))
-
-        # Learn joint representation of contraint embedding and error.
-        self.joint_con_encoder = Sequential(Linear(dim + dim, dim), ReLU(), Linear(dim, dim), ReLU(),
-                                            BN(dim))
-
-        self.mlp = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim), ReLU(), BN(dim))
-        self.eps = torch.nn.Parameter(torch.Tensor([0]))
-        self.initial_eps = 0
-
-    def forward(self, source, target, edge_index, edge_attr, error_con, size):
-        # Map edge features to embeddings with the same number of components as node embeddings.
-        edge_embedding = self.edge_encoder(edge_attr)
-
-        #joint_con = torch.cat([self.joint_con_encoder(torch.cat([source, error_con], dim=-1)), error_con], dim=-1)
-        joint_con = self.joint_con_encoder(torch.cat([source, error_con], dim=-1))
-        # joint_con = self.joint_con_encoder(torch.cat([source, error_con], dim=-1))
-        tmp = self.propagate(edge_index, x=joint_con, error=error_con, edge_attr=edge_embedding, size=size)
-
-        out = self.mlp((1 + self.eps) * target + tmp)
-
-        return out
-
-    def message(self, x_j, error_j, edge_attr):
-        return F.relu(x_j + edge_attr)
-
-    def update(self, aggr_out):
-        return aggr_out
-
-    def reset_parameters(self):
-        reset(self.node_encoder)
-        reset(self.edge_encoder)
-        reset(self.joint_con_encoder)
-        reset(self.mlp)
-        self.eps.data.fill_(self.initial_eps)
-
-
-class ConVarBipartiteLayer(MessagePassing):
-
-    def __init__(self, edge_dim, dim):
-        super(ConVarBipartiteLayer, self).__init__(aggr="add", flow="source_to_target")
-
-        self.nn = Sequential(Linear(2*dim + edge_dim + dim, dim), ReLU(), Linear(dim, dim), ReLU(),
                                        BN(dim))
 
         # Learn joint representation of contraint embedding and error.
@@ -161,13 +127,15 @@ class ConVarBipartiteLayer(MessagePassing):
         reset(self.nn)
 
     def forward(self, source, target, edge_index, edge_attr, error_con, size):
+        # Map edge features to embeddings with the same number of components as node embeddings.
+        edge_embedding = self.edge_encoder(edge_attr)
 
-        out = self.propagate(edge_index, x=source, t=target, e=error_con, edge_attr=edge_attr, size=size)
+        out = self.propagate(edge_index, x=source, t=target, e=error_con, edge_attr=edge_embedding, size=size)
 
         return out
 
     def message(self, x_j, t_i, e_j, edge_attr):
-     
+
 
         return self.nn(torch.cat([t_i, x_j, e_j, edge_attr], dim=-1))
 
