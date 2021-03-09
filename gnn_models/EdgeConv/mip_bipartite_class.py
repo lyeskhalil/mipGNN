@@ -30,14 +30,16 @@ class VarConBipartiteLayer(MessagePassing):
     def __init__(self, edge_dim, dim, var_assigment):
         super(VarConBipartiteLayer, self).__init__(aggr="add", flow="source_to_target")
 
-        self.nn = Sequential(Linear(2*dim + edge_dim + 1, dim), ReLU(), Linear(dim, dim), ReLU(),
+        self.nn = Sequential(Linear(2*dim + dim + 1, dim), ReLU(), Linear(dim, dim), ReLU(),
+                                       BN(dim))
+
+
+        # Maps edge features to the same number of components as node features.
+        self.edge_encoder = Sequential(Linear(edge_dim, dim), ReLU(), Linear(dim, dim), ReLU(),
                                        BN(dim))
 
         # Maps variable embeddings to scalar variable assigment.
         self.var_assigment = var_assigment
-        # Maps variable embeddings + assignment to joint embedding.
-        self.joint_var = Sequential(Linear(dim + 1, dim), ReLU(), Linear(dim, dim), ReLU(),
-                                    BN(dim))
 
         self.reset_parameters()
 
@@ -48,7 +50,10 @@ class VarConBipartiteLayer(MessagePassing):
         # Compute scalar variable assignment.
         var_assignment = self.var_assigment(source)
 
-        out = self.propagate(edge_index, x=source, t=target, v=var_assignment, edge_attr=edge_attr, size=size)
+        # Map edge features to embeddings with the same number of components as node embeddings.
+        edge_embedding = self.edge_encoder(edge_attr)
+
+        out = self.propagate(edge_index, x=source, t=target, v=var_assignment, edge_attr=edge_embedding, size=size)
 
         return out
 
