@@ -208,11 +208,12 @@ class SimpleNet(torch.nn.Module):
         var_node_features_0 = self.var_node_encoder(var_node_features)
         con_node_features_0 = self.con_node_encoder(con_node_features)
 
+        err_1 = self.error_1(var_node_features_0, edge_index_var, edge_features_var, rhs, index,
+                             (var_node_features_0.size(0), con_node_features.size(0)))
         con_node_features_1 = F.relu(
             self.var_con_1(var_node_features_0, con_node_features_0, edge_index_var, edge_features_var, rhs,
                            (var_node_features_0.size(0), con_node_features.size(0))))
-        err_1 = self.error_1(var_node_features_0, edge_index_var, edge_features_var, rhs, index,
-                             (var_node_features_0.size(0), con_node_features.size(0)))
+
 
         var_node_features_1 = F.relu(
             self.con_var_1(con_node_features_1, var_node_features_0, edge_index_con, edge_features_con, err_1,
@@ -432,10 +433,10 @@ file_list = [
     # "../DATA1/er_SET2/200_200/alpha_0.75_setParam_100/train/",
     # "../DATA1/er_SET2/200_200/alpha_0.25_setParam_100/train/",
     # "../DATA1/er_SET2/200_200/alpha_0.5_setParam_100/train/",
-    "../../DATA1/er_SET2/300_300/alpha_0.75_setParam_100/train/",
+    # "../../DATA1/er_SET2/300_300/alpha_0.75_setParam_100/train/",
     # "../DATA1/er_SET2/300_300/alpha_0.25_setParam_100/train/",
     # "../DATA1/er_SET2/300_300/alpha_0.5_setParam_100/train/",
-    # "../DATA1/er_SET1/400_400/alpha_0.75_setParam_100/train/",
+    "../DATA1/er_SET1/400_400/alpha_0.75_setParam_100/train/",
     # "../DATA1/er_SET1/400_400/alpha_0.5_setParam_100/train/",
     # "../DATA1/er_SET1/400_400/alpha_0.25_setParam_100/train/",
 ]
@@ -444,10 +445,10 @@ name_list = [
     # "er_SET2_200_200_alpha_0_75_setParam_100_train",
     # "er_SET2_200_200_alpha_0_25_setParam_100_train",
     # "er_SET2_200_200_alpha_0_5_setParam_100_train",
-    "er_SET2_300_300_alpha_0_75_setParam_100_train",
+    #"er_SET2_300_300_alpha_0_75_setParam_100_train",
     # "er_SET2_300_300_alpha_0_25_setParam_100_train",
     # "er_SET2_300_300_alpha_0_5_setParam_100_train",
-    # "er_SET1_400_400_alpha_0_75_setParam_100_train",
+    "er_SET1_400_400_alpha_0_75_setParam_100_train",
     # "er_SET1_400_400_alpha_0_5_setParam_100_train",
     # "er_SET1_400_400_alpha_0_25_setParam_100_train",
 ]
