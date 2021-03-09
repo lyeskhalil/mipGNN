@@ -25,13 +25,12 @@ from torch_geometric.nn.inits import reset
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-# Update constraint embeddings based on variable embeddings.
 class VarConBipartiteLayer(MessagePassing):
+
     def __init__(self, edge_dim, dim, var_assigment):
         super(VarConBipartiteLayer, self).__init__(aggr="add", flow="source_to_target")
 
-        # Maps edge features to the same number of components as node features.
-        self.edge_encoder = Sequential(Linear(edge_dim, dim), ReLU(), Linear(dim, dim), ReLU(),
+        self.nn = Sequential(Linear(2*dim + edge_dim + 1, dim), ReLU(), Linear(dim, dim), ReLU(),
                                        BN(dim))
 
         # Maps variable embeddings to scalar variable assigment.
@@ -40,39 +39,25 @@ class VarConBipartiteLayer(MessagePassing):
         self.joint_var = Sequential(Linear(dim + 1, dim), ReLU(), Linear(dim, dim), ReLU(),
                                     BN(dim))
 
-        self.mlp = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim), ReLU(),
-                              BN(dim))
-        self.eps = torch.nn.Parameter(torch.Tensor([0]))
-        self.initial_eps = 0
+        self.reset_parameters()
+
+    def reset_parameters(self):
+        reset(self.nn)
 
     def forward(self, source, target, edge_index, edge_attr, rhs, size):
-        # Map edge features to embeddings with the same number of components as node embeddings.
-        edge_embedding = self.edge_encoder(edge_attr)
         # Compute scalar variable assignment.
         var_assignment = self.var_assigment(source)
-        # Compute joint embedding of variable embeddings and scalar variable assignment.
-        new_source = self.joint_var(torch.cat([source, var_assignment], dim=-1))
 
-        # Do the acutal message passing.
-        tmp = self.propagate(edge_index, x=new_source, var_assignment=var_assignment, edge_attr=edge_embedding,
-                             size=size)
-        out = self.mlp((1 + self.eps) * target + tmp)
+        out = self.propagate(edge_index, x=source, t=target, v=var_assignment, edge_attr=edge_attr, size=size)
 
         return out
 
-    def message(self, x_j, var_assignment_j, edge_attr):
-        return F.relu(x_j + edge_attr)
+    def message(self, x_j, t_i, v_j, edge_attr):
+        return self.nn(torch.cat([t_i, x_j, v_j, edge_attr], dim=-1))
 
-    def update(self, aggr_out):
-        return aggr_out
+    def __repr__(self):
+        return '{}(nn={})'.format(self.__class__.__name__, self.nn)
 
-    def reset_parameters(self):
-        reset(self.edge_encoder)
-        reset(self.var_assigment)
-        reset(self.node_encoder)
-        reset(self.joint_var)
-        reset(self.mlp)
-        self.eps.data.fill_(self.initial_eps)
 
 
 # Compute error signal.
@@ -151,6 +136,38 @@ class ConVarBipartiteLayer(MessagePassing):
         reset(self.joint_con_encoder)
         reset(self.mlp)
         self.eps.data.fill_(self.initial_eps)
+
+
+class ConVarBipartiteLayer(MessagePassing):
+
+    def __init__(self, edge_dim, dim):
+        super(ConVarBipartiteLayer, self).__init__(aggr="add", flow="source_to_target")
+
+        self.nn = Sequential(Linear(2*dim + edge_dim + 1, dim), ReLU(), Linear(dim, dim), ReLU(),
+                                       BN(dim))
+
+        # Learn joint representation of contraint embedding and error.
+        self.joint_con_encoder = Sequential(Linear(dim + dim, dim), ReLU(), Linear(dim, dim), ReLU(),
+                                            BN(dim))
+
+        self.reset_parameters()
+
+    def reset_parameters(self):
+        reset(self.nn)
+
+    def forward(self, source, target, edge_index, edge_attr, error_con, size):
+
+        out = self.propagate(edge_index, x=source, t=target, e=error_con, edge_attr=edge_attr, size=size)
+
+        return out
+
+    def message(self, x_j, t_i, e_j, edge_attr):
+        return self.nn(torch.cat([t_i, x_j, e_j, edge_attr], dim=-1))
+
+    def __repr__(self):
+        return '{}(nn={})'.format(self.__class__.__name__, self.nn)
+
+
 
 
 class SimpleNet(torch.nn.Module):
