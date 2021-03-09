@@ -37,11 +37,11 @@ class SimpleBipartiteLayer(MessagePassing):
 
     def forward(self, source, target, edge_index, edge_attr, size):
 
-        out = self.propagate(edge_index, x=source, edge_attr=edge_attr, size=size)
+        out = self.propagate(edge_index, x=source, t=target, edge_attr=edge_attr, size=size)
 
         return out
 
-    def message(self, x_j, edge_attr):
+    def message(self, x_j, t_i, edge_attr):
         return self.nn(torch.cat([x_j, edge_attr], dim=-1))
 
     def __repr__(self):
