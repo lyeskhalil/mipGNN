@@ -49,7 +49,7 @@ class VarConBipartiteLayer(MessagePassing):
 
     def forward(self, source, target, edge_index, edge_attr, rhs, size):
         # Compute scalar variable assignment.
-        var_assignment = self.var_assigment(target)
+        var_assignment = self.var_assigment(source)
 
         # Map edge features to embeddings with the same number of components as node embeddings.
         edge_embedding = self.edge_encoder(edge_attr)
@@ -58,8 +58,8 @@ class VarConBipartiteLayer(MessagePassing):
 
         return out
 
-    def message(self, x_j, t_i, v_i, edge_attr):
-        return self.nn(torch.cat([t_i, x_j, v_i, edge_attr], dim=-1))
+    def message(self, x_j, t_i, v_j, edge_attr):
+        return self.nn(torch.cat([t_i, x_j, v_j, edge_attr], dim=-1))
 
     def __repr__(self):
         return '{}(nn={})'.format(self.__class__.__name__, self.nn)
