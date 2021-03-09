@@ -38,8 +38,8 @@ class SimpleBipartiteLayer(MessagePassing):
     def __init__(self, edge_dim, dim):
         super(SimpleBipartiteLayer, self).__init__(aggr="add", flow="source_to_target")
 
-        self.nn = Sequential(Linear(edge_dim, dim), ReLU(), Linear(dim, dim), ReLU(),
-                                       BN(dim))
+        self.nn = Sequential(Linear(edge_dim, dim*dim), ReLU(), Linear(dim*dim, dim*dim), ReLU(),
+                                       BN(dim*dim))
 
         self.dim = dim
 
