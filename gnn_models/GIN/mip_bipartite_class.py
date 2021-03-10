@@ -57,17 +57,19 @@ class VarConBipartiteLayer(MessagePassing):
         # Compute scalar variable assignment.
         var_assignment = self.var_assigment(source)
 
-        new_source = self.joint_con_encoder(torch.cat([source, var_assignment], dim=-1))
+        source = self.joint_var(torch.cat([source, var_assignment], dim=-1))
 
         # Map edge features to embeddings with the same number of components as node embeddings.
         edge_embedding = self.edge_encoder(edge_attr)
 
-        out = self.propagate(edge_index, x=source, t=target, v=var_assignment, edge_attr=edge_embedding, size=size)
+        tmp = self.propagate(edge_index, x=source, edge_attr=edge_embedding, size=size)
+
+        out = self.mlp((1 + self.eps) * target + tmp)
 
         return out
 
-    def message(self, x_j, t_i, v_j, edge_attr):
-        return self.nn(torch.cat([t_i, x_j, v_j, edge_attr], dim=-1))
+    def message(self, x_j, edge_attr):
+        return F.relu(x_j + edge_attr)
 
     def __repr__(self):
         return '{}(nn={})'.format(self.__class__.__name__, self.nn)
@@ -81,11 +83,17 @@ class ErrorLayer(MessagePassing):
         self.error_encoder = Sequential(Linear(1, dim), ReLU(), Linear(dim, dim), ReLU(),
                                         BN(dim))
 
+        # Learn joint representation of contraint embedding and error.
+        self.joint_var = Sequential(Linear(dim + dim, dim), ReLU(), Linear(dim, dim), ReLU(),
+                                    BN(dim))
+
     def forward(self, source, edge_index, edge_attr, rhs, index, size):
         # Compute scalar variable assignment.
         new_source = self.var_assignment(source)
 
         tmp = self.propagate(edge_index, x=new_source, edge_attr=edge_attr, size=size)
+
+
 
         # Compute residual, i.e., Ax-b.
         out = tmp - rhs
@@ -110,13 +118,16 @@ class ConVarBipartiteLayer(MessagePassing):
     def __init__(self, edge_dim, dim):
         super(ConVarBipartiteLayer, self).__init__(aggr="add", flow="source_to_target")
 
-        # Combine node and edge features of adjacent nodes.
-        self.nn = Sequential(Linear(4 * dim, dim), ReLU(), Linear(dim, dim), ReLU(),
-                             BN(dim))
 
         # Maps edge features to the same number of components as node features.
         self.edge_encoder = Sequential(Linear(edge_dim, dim), ReLU(), Linear(dim, dim), ReLU(),
                                        BN(dim))
+
+        # Learn joint representation of contraint embedding and error.
+        self.joint_var = Sequential(Linear(dim + dim, dim), ReLU(), Linear(dim, dim), ReLU(),
+                                    BN(dim))
+
+        self.mlp = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim), ReLU(), BN(dim))
 
         self.reset_parameters()
 
@@ -127,12 +138,16 @@ class ConVarBipartiteLayer(MessagePassing):
         # Map edge features to embeddings with the same number of components as node embeddings.
         edge_embedding = self.edge_encoder(edge_attr)
 
-        out = self.propagate(edge_index, x=source, t=target, e=error_con, edge_attr=edge_embedding, size=size)
+        source = self.joint_var(torch.cat([source, error_con], dim=-1))
+
+        tmp = self.propagate(edge_index, x=source, edge_attr=edge_embedding, size=size)
+
+        out = self.mlp((1 + self.eps) * target + tmp)
 
         return out
 
-    def message(self, x_j, t_i, e_j, edge_attr):
-        return self.nn(torch.cat([t_i, x_j, e_j, edge_attr], dim=-1))
+    def message(self, x_j, edge_attr):
+        return F.relu(x_j + edge_attr)
 
     def __repr__(self):
         return '{}(nn={})'.format(self.__class__.__name__, self.nn)
