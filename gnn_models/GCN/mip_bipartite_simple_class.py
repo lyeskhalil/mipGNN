@@ -20,7 +20,7 @@ from torch.nn import Sequential, Linear, ReLU
 from torch_geometric.nn import MessagePassing
 from torch_geometric.nn.inits import reset
 from torch_geometric.utils import degree
-
+from torch_sparse import SparseTensor, matmul
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -37,8 +37,8 @@ class SimpleBipartiteLayer(MessagePassing):
         self.edge_encoder = Sequential(Linear(edge_dim, dim), ReLU(), Linear(dim, dim), ReLU(),
                                        BN(dim))
 
-        self.linear = torch.nn.Linear(dim, dim)
-        self.root_emb = torch.nn.Embedding(1, dim)
+        self.lin_l = Linear(dim, dim, bias=True)
+        self.lin_r = Linear(dim, dim, bias=False)
 
         self.reset_parameters()
 
@@ -46,30 +46,27 @@ class SimpleBipartiteLayer(MessagePassing):
         reset(self.nn)
 
     def forward(self, source, target, edge_index, edge_attr, size):
-        target = self.linear(target)
-        # Map edge features to embeddings with the same number of components as node embeddings.
-        edge_embedding = self.edge_encoder(edge_attr)
 
-        row, col = edge_index
+        out = self.propagate(edge_index, x=source, size=size)
+        out = self.lin_l(out)
 
-        deg = degree(row, target.size(0), dtype = target.dtype) + 1
-        deg_inv_sqrt = deg.pow(-0.5)
-        #deg_inv_sqrt[deg_inv_sqrt == float('inf')] = 0
+        edge_emb = self.edge_encoder(edge_attr)
 
-        norm = deg_inv_sqrt[row] * deg_inv_sqrt[col]
+        out += self.lin_r(target)
 
-        out = self.propagate(edge_index, x=source, t=target, edge_attr=edge_embedding, size=size, norm=norm)
-
-        out += F.relu(target + self.root_emb.weight) * 1./deg.view(-1,1)
+        out = F.normalize(out, p=2., dim=-1)
 
         return out
 
-    def message(self, x_j, t_i, edge_attr, norm):
-        return norm.view(-1, 1) * F.relu(x_j + edge_attr)
+    def message(self, x_j):
+        return x_j
+
+    def message_and_aggregate(self, adj_t, x):
+        adj_t = adj_t.set_value(None, layout=None)
+        return matmul(adj_t, x[0], reduce=self.aggr)
 
     def __repr__(self):
         return '{}(nn={})'.format(self.__class__.__name__, self.nn)
-
 
 
 class SimpleNet(torch.nn.Module):
