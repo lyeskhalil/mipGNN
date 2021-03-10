@@ -50,8 +50,6 @@ class SimpleBipartiteLayer(MessagePassing):
         out = self.propagate(edge_index, x=source, size=size, edge_emb = edge_emb)
         out = self.lin_l(out)
 
-
-
         out += self.lin_r(target)
 
         out = F.normalize(out, p=2., dim=-1)
@@ -59,7 +57,7 @@ class SimpleBipartiteLayer(MessagePassing):
         return out
 
     def message(self, x_j, edge_emb):
-        return x_j + edge_emb
+        return F.relu(x_j + edge_emb)
 
     def message_and_aggregate(self, adj_t, x):
         adj_t = adj_t.set_value(None, layout=None)
