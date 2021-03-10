@@ -65,7 +65,7 @@ class VarConBipartiteLayer(MessagePassing):
 
         return out
 
-    def message(self, x_j, var_assignment_j, edge_attr):
+    def message(self, x_j, edge_attr):
         return F.relu(x_j + edge_attr)
 
     def update(self, aggr_out):
@@ -127,7 +127,6 @@ class ConVarBipartiteLayer(MessagePassing):
 
         self.lin_l = Linear(dim, dim, bias=True)
         self.lin_r = Linear(dim, dim, bias=False)
-
 
 
     def forward(self, source, target, edge_index, edge_attr, error_con, size):

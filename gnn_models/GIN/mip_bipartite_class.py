@@ -40,6 +40,10 @@ class VarConBipartiteLayer(MessagePassing):
         self.edge_encoder = Sequential(Linear(edge_dim, dim), ReLU(), Linear(dim, dim), ReLU(),
                                        BN(dim))
 
+        # Learn joint representation of contraint embedding and error.
+        self.joint_var = Sequential(Linear(dim + 1, dim), ReLU(), Linear(dim, dim), ReLU(),
+                                    BN(dim))
+
         # Maps variable embeddings to scalar variable assigment.
         self.var_assigment = var_assigment
 
@@ -52,6 +56,8 @@ class VarConBipartiteLayer(MessagePassing):
     def forward(self, source, target, edge_index, edge_attr, rhs, size):
         # Compute scalar variable assignment.
         var_assignment = self.var_assigment(source)
+
+        new_source = self.joint_con_encoder(torch.cat([source, var_assignment], dim=-1))
 
         # Map edge features to embeddings with the same number of components as node embeddings.
         edge_embedding = self.edge_encoder(edge_attr)
