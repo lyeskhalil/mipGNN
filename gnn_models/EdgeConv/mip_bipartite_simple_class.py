@@ -157,11 +157,11 @@ class GraphDataset(InMemoryDataset):
 
     @property
     def raw_file_names(self):
-        return "SET2_SPO"
+        return sname
 
     @property
     def processed_file_names(self):
-        return "SET2_SPO"
+        return sname
 
     def download(self):
         pass
