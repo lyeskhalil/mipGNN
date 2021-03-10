@@ -32,10 +32,6 @@ class VarConBipartiteLayer(MessagePassing):
     def __init__(self, edge_dim, dim, var_assigment):
         super(VarConBipartiteLayer, self).__init__(aggr="add", flow="source_to_target")
 
-        # Combine node and edge features of adjacent nodes.
-        self.nn = Sequential(Linear(3 * dim + 1, dim), ReLU(), Linear(dim, dim), ReLU(),
-                             BN(dim))
-
         # Maps edge features to the same number of components as node features.
         self.edge_encoder = Sequential(Linear(edge_dim, dim), ReLU(), Linear(dim, dim), ReLU(),
                                        BN(dim))
@@ -50,7 +46,6 @@ class VarConBipartiteLayer(MessagePassing):
         self.reset_parameters()
 
     def reset_parameters(self):
-        reset(self.nn)
         reset(self.edge_encoder)
 
     def forward(self, source, target, edge_index, edge_attr, rhs, size):
@@ -132,7 +127,7 @@ class ConVarBipartiteLayer(MessagePassing):
         self.reset_parameters()
 
     def reset_parameters(self):
-        reset(self.nn)
+        pass
 
     def forward(self, source, target, edge_index, edge_attr, error_con, size):
         # Map edge features to embeddings with the same number of components as node embeddings.
