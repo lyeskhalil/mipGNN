@@ -46,6 +46,7 @@ class SimpleBipartiteLayer(MessagePassing):
         reset(self.nn)
 
     def forward(self, source, target, edge_index, edge_attr, size):
+        target = self.linear(target)
         # Map edge features to embeddings with the same number of components as node embeddings.
         edge_embedding = self.edge_encoder(edge_attr)
 
@@ -55,6 +56,8 @@ class SimpleBipartiteLayer(MessagePassing):
         deg = degree(row, source.size(0), dtype = source.dtype) + 1
         deg_inv_sqrt = deg.pow(-0.5)
         deg_inv_sqrt[deg_inv_sqrt == float('inf')] = 0
+
+        exit()
 
         norm = deg_inv_sqrt[row] * deg_inv_sqrt[col]
 
