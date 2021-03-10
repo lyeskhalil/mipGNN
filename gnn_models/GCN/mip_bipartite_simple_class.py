@@ -52,7 +52,7 @@ class SimpleBipartiteLayer(MessagePassing):
         row, col = edge_index
 
         #edge_weight = torch.ones((edge_index.size(1), ), device=edge_index.device)
-        deg = degree(row, target.size(0), dtype = target.dtype) + 1
+        deg = degree(col, source.size(0), dtype = source.dtype) + 1
         deg_inv_sqrt = deg.pow(-0.5)
         deg_inv_sqrt[deg_inv_sqrt == float('inf')] = 0
 
