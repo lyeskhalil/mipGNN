@@ -43,6 +43,11 @@ class VarConBipartiteLayer(MessagePassing):
         # Maps variable embeddings to scalar variable assigment.
         self.var_assigment = var_assigment
 
+
+        self.mlp = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim), ReLU(), BN(dim))
+        self.eps = torch.nn.Parameter(torch.Tensor([0]))
+        self.initial_eps = 0
+
         self.reset_parameters()
 
     def reset_parameters(self):
@@ -123,6 +128,10 @@ class ConVarBipartiteLayer(MessagePassing):
                                     BN(dim))
 
         self.mlp = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim), ReLU(), BN(dim))
+
+
+        self.eps = torch.nn.Parameter(torch.Tensor([0]))
+        self.initial_eps = 0
 
         self.reset_parameters()
 
