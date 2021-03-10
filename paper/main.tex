@@ -46,7 +46,7 @@
 \setlist[enumerate]{noitemsep, topsep=0.5\topsep}
 \setlist[description]{noitemsep, topsep=0.5\topsep}
 \setlist[itemize]{noitemsep, topsep=0.5\topsep}
-
+ 
 \usepackage{setspace}
 \usepackage[protrusion=true,expansion=false, activate={true,nocompatibility},final,kerning=true,spacing=true]{microtype}
 \usepackage[]{microtype}
@@ -348,14 +348,13 @@ Same algorithm as above interpreted as a message passing algorithm:
 		\State Initialize probabilities $\vec{p}_j \leftarrow \nicefrac{1}{m}$ for each constraint node
 		\State Set $T$ to according~\cref{mwubound}
 		\For{$t \text{ in } [T]$}
-		\State For each constraint node $\vec{c}_j$ send $\vec{p}_j$ to adjacent node variable
-		\Statex
 		\State Update each variable node $\vec{v}_i$ based on output $\vec{x}_i$ of oracle using $\vec{p}$
-		\State Send $\vec{v}_i$ to each adjacent constraint, compute error signal $\vec{e}_i$ for each constraint $\vec{c}_j$
+		\State Send $\vec{v}_i$ to each adjacent constraint
+		\State Compute error signal $\vec{e}_i$ for each constraint $\vec{c}_j$
 		\begin{equation*}
 		\vec{e}_j \leftarrow \nicefrac{1}{\rho}\,\Big(\sum_{i \in N(j)} \label{key}\vec{A}_{ji}  \vec{v}_i \Big) - \vec{b}_j   
 		\end{equation*}
-		\State Perform gradient descent by $\vec{w}_i \leftarrow (1 - \eta \vec{e}_i) \vec{w}_i$ 
+		\State Update $\vec{w}_i \leftarrow (1 - \eta \vec{e}_i) \vec{w}_i$ 
 		\State Normalize weights $\vec{p}_j \leftarrow \nicefrac{\vec{w}_j}{\boldsymbol{\Gamma}(t)} $  for $i$ in $[m]$, where $\boldsymbol{\Gamma}(t) = \sum_{i \in [m]} \vec{w}_i$
 		\State Update solution $\vec{\bar{x}} \leftarrow \vec{\bar{x}} + \vec{x}$
 		\EndFor

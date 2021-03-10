@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020) (preloaded format=pdflatex 2020.4.7)  9 MAR 2021 12:50
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020) (preloaded format=pdflatex 2020.4.7)  10 MAR 2021 12:17
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1453,15 +1453,15 @@ Package microtype Info: Loading generic protrusion settings for font family
 
 
 LaTeX Font Warning: Font shape `U/stmry/b/n' undefined
-(Font)              using `U/stmry/m/n' instead on input line 359.
+(Font)              using `U/stmry/m/n' instead on input line 358.
 
 Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on in
-put line 364.
+put line 363.
 [3]
 Package hyperref Info: bookmark level for unknown theorem defaults to 0 on inpu
-t line 369.
+t line 368.
  [4]
-Underfull \hbox (badness 10000) in paragraph at lines 499--502
+Underfull \hbox (badness 10000) in paragraph at lines 498--500
 
  []
 
@@ -1470,11 +1470,11 @@ Underfull \hbox (badness 10000) in paragraph at lines 499--502
 Package natbib Warning: There were undefined citations.
 
 [8]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 513.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 513.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 514.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 514.
  (./main.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 513.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 513.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 514.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 514.
 Package rerunfilecheck Info: File `main.out' has not changed.
 (rerunfilecheck)             Checksum: D41D8CD98F00B204E9800998ECF8427E;0.
 
@@ -1489,7 +1489,7 @@ Here is how much of TeX's memory you used:
  48995 multiletter control sequences out of 15000+600000
  659044 words of font info for 184 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 73i,11n,90p,10126b,928s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 73i,11n,90p,10126b,926s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/local/texlive/2020/texmf-dist/fonts/enc/dvips/lm/lm-mathit.enc}{/usr/lo
 cal/texlive/2020/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc}{/usr/local/texlive/20
 20/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc}{/usr/local/texlive/2020/texmf-d
@@ -1514,7 +1514,7 @@ cal/texlive/2020/texmf-dist/fonts/type1/public/lm/lmsy6.pfb></usr/local/texlive
 /2020/texmf-dist/fonts/type1/public/lm/lmsy8.pfb></usr/local/texlive/2020/texmf
 -dist/fonts/type1/public/lm/lmtt10.pfb></usr/local/texlive/2020/texmf-dist/font
 s/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on main.pdf (8 pages, 355715 bytes).
+Output written on main.pdf (8 pages, 355688 bytes).
 PDF statistics:
  336 PDF objects out of 1000 (max. 8388607)
  286 compressed objects within 3 object streams
