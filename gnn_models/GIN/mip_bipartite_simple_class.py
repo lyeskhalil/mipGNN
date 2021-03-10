@@ -158,11 +158,11 @@ class GraphDataset(InMemoryDataset):
 
     @property
     def raw_file_names(self):
-        return "SET2_SPO"
+        return sname
 
     @property
     def processed_file_names(self):
-        return "SET2_SPO"
+        return sname
 
     def download(self):
         pass
@@ -294,107 +294,150 @@ class MyTransform(object):
         return new_data
 
 
-# Prepare data.
-path = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
-# Path to raw graph data.
-data_path = '../../DATA1/er_SET2/300_300/alpha_0.75_setParam_100/train/'
-# Threshold for computing class labels.
-bias_threshold = 0.05
-# Create dataset.
-dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform())#.shuffle()
-len(dataset)
+
+file_list = [
+    "../../DATA1/er_SET2/200_200/alpha_0.75_setParam_100/train/",
+    "../../DATA1/er_SET2/200_200/alpha_0.25_setParam_100/train/",
+    "../../DATA1/er_SET2/200_200/alpha_0.5_setParam_100/train/",
+    "../../DATA1/er_SET2/300_300/alpha_0.75_setParam_100/train/",
+    "../../DATA1/er_SET2/300_300/alpha_0.25_setParam_100/train/",
+    "../../DATA1/er_SET2/300_300/alpha_0.5_setParam_100/train/",
+    "../../DATA1/er_SET1/400_400/alpha_0.75_setParam_100/train/",
+    "../../DATA1/er_SET1/400_400/alpha_0.5_setParam_100/train/",
+    "../../DATA1/er_SET1/400_400/alpha_0.25_setParam_100/train/",
+]
+
+name_list = [
+    "er_SET2_200_200_alpha_0_75_setParam_100_train",
+    "er_SET2_200_200_alpha_0_25_setParam_100_train",
+    "er_SET2_200_200_alpha_0_5_setParam_100_train",
+    "er_SET2_300_300_alpha_0_75_setParam_100_train",
+    "er_SET2_300_300_alpha_0_25_setParam_100_train",
+    "er_SET2_300_300_alpha_0_5_setParam_100_train",
+    "er_SET1_400_400_alpha_0_75_setParam_100_train",
+    "er_SET1_400_400_alpha_0_5_setParam_100_train",
+    "er_SET1_400_400_alpha_0_25_setParam_100_train",
+]
+
+results = []
+
+for r, f in enumerate(file_list):
+
+    # Prepare data.
+    path = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
+    # Path to raw graph data.
+    data_path = f
+    sname = name_list[r]
+    # Threshold for computing class labels.
+    bias_threshold = 0.050
+    # Create dataset.
+    dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform())  # .shuffle()
+
+    len(dataset)
+
+    # Split data.
+
+    l = len(dataset)
+    train_index, rest = train_test_split(list(range(0, l)), test_size=0.2)
+    l = len(rest)
+    val_index = rest[0:int(l / 2)]
+    test_index = rest[int(l / 2):]
+
+    train_dataset = dataset[train_index].shuffle()
+    val_dataset = dataset[val_index].shuffle()
+    test_dataset = dataset[test_index].shuffle()
+
+    print(len(train_dataset))
+    print(len(val_dataset))
+    print(len(test_dataset))
+
+    # Prepare batch loaders.
+    batch_size = 15
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
+
+    print("### DATA LOADED.")
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model = SimpleNet(hidden=128).to(device)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+
+    # Play with this.
+    # TODO: Change back
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
+                                                           factor=0.8, patience=10,
+                                                           min_lr=0.0000001)
+    print("### SETUP DONE.")
 
 
-# TODO: Fixed split for testing purposes.
-# Split data.
-l = len(dataset)
-train_index, rest = train_test_split(list(range(0, l)), test_size=0.2)
-l = len(rest)
-val_index = rest[0:int(l / 2)]
-test_index = rest[int(l / 2):]
+    def train(epoch):
+        model.train()
+
+        loss_all = 0
+        for data in train_loader:
+            data = data.to(device)
+            optimizer.zero_grad()
+            # output, err, cost = model(data)
+            output = model(data)
+
+            loss = F.nll_loss(output, data.y)
+            loss.backward()
+            loss_all += batch_size * loss.item()
+            optimizer.step()
+        return loss_all / len(train_dataset)
 
 
-train_dataset = dataset[train_index].shuffle()
-val_dataset = dataset[val_index].shuffle()
-test_dataset = dataset[test_index].shuffle()
+    def test(loader):
+        model.eval()
 
-# TODO: Do not change this.
-# np.savetxt("index_er_200_SET2_1k_20", test_index, delimiter=",", fmt="%d")
+        correct = 0
+        l = 0
 
-print(len(val_dataset))
-print(len(test_dataset))
-print(1 - test_dataset.data.y.sum().item() / test_dataset.data.y.size(-1))
+        err_total = 0.0
+        cost_total = 0.0
+        for data in loader:
+            data = data.to(device)
+            # pred, err, cost = model(data)
+            pred = model(data)
+            pred = pred.max(dim=1)[1]
+            correct += pred.eq(data.y).float().mean().item()
+            l += 1
 
-# Prepare batch loaders.
-batch_size = 15
-train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
+            # cost_total += cost.item()
+            # err_total += err.item()
 
+        # print(err_total / l)
+        # print(cost_total / l)
 
-print("### DATA LOADED.")
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = SimpleNet(hidden=128).to(device)
-optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-
-# Play with this.
-scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
-                                                       factor=0.8, patience=10,
-                                                       min_lr=0.0000001)
-print("### SETUP DONE.")
-
-def train(epoch):
-    model.train()
-
-    loss_all = 0
-    for data in train_loader:
-        data = data.to(device)
-        optimizer.zero_grad()
-        output = model(data)
-
-        loss = F.nll_loss(output, data.y)
-        loss.backward()
-        loss_all += batch_size * loss.item()
-        optimizer.step()
-    return loss_all / len(train_dataset)
+        return correct / l
 
 
-def test(loader):
-    model.eval()
+    best_val = 0.0
+    test_acc = 0.0
+    for epoch in range(1, 100):
 
-    correct = 0
-    l = 0
+        train_loss = train(epoch)
+        train_acc = test(train_loader)
 
-    for data in loader:
-        data = data.to(device)
-        pred = model(data).max(dim=1)[1]
-        correct += pred.eq(data.y).float().mean().item()
-        l += 1
+        val_acc = test(val_loader)
+        scheduler.step(val_acc)
+        lr = scheduler.optimizer.param_groups[0]['lr']
 
-    return correct / l
+        if val_acc > best_val:
+            best_val = val_acc
+            test_acc = test(test_loader)
 
+        # Break if learning rate is smaller 10**-6.
+        if lr < 0.000001:
+            results.append(test_acc)
+            break
 
-best_val = 0.0
-test_acc = 0.0
-for epoch in range(1, 100):
+        print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
+              'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
+                                                                            train_acc, val_acc, test_acc))
+        print(r)
 
-    train_loss = train(epoch)
-    train_acc = test(train_loader)
+    torch.save(model.state_dict(), name_list[r])
 
-    val_acc = test(val_loader)
-    scheduler.step(val_acc)
-    lr = scheduler.optimizer.param_groups[0]['lr']
-
-    if val_acc > best_val:
-        best_val = val_acc
-        test_acc = test(test_loader)
-
-    # Break if learning rate is smaller 10**-6.
-    if lr < 0.000001:
-        break
-
-    print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
-          'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
-                                                       train_acc, val_acc, test_acc))
-
-#torch.save(model.state_dict(), "trained_model_er_200_SET2_1k")
+print("###")
+print(results)

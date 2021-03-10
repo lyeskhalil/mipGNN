@@ -92,10 +92,8 @@ class ErrorLayer(MessagePassing):
         # Compute residual, i.e., Ax-b.
         out = tmp - rhs
 
-        # TODO: Think here.
         out = self.error_encoder(out)
 
-        # TODO: Change.
         out = torch_geometric.utils.softmax(out, index)
 
         return out
@@ -467,29 +465,32 @@ class MyTransform(object):
         return new_data
 
 
+
 file_list = [
-    #"../DATA1/er_SET2/200_200/alpha_0.75_setParam_100/train/",
-    # "../DATA1/er_SET2/200_200/alpha_0.25_setParam_100/train/",
-    # "../DATA1/er_SET2/200_200/alpha_0.5_setParam_100/train/",
-    #"../../DATA1/er_SET2/300_300/alpha_0.75_setParam_100/train/",
-    #"../DATA1/er_SET2/300_300/alpha_0.25_setParam_100/train/",
-    # "../DATA1/er_SET2/300_300/alpha_0.5_setParam_100/train/",
-    #"../DATA1/er_SET1/400_400/alpha_0.75_setParam_100/train/",
+    "../../DATA1/er_SET2/200_200/alpha_0.75_setParam_100/train/",
+    "../../DATA1/er_SET2/200_200/alpha_0.25_setParam_100/train/",
+    "../../DATA1/er_SET2/200_200/alpha_0.5_setParam_100/train/",
+    "../../DATA1/er_SET2/300_300/alpha_0.75_setParam_100/train/",
+    "../../DATA1/er_SET2/300_300/alpha_0.25_setParam_100/train/",
+    "../../DATA1/er_SET2/300_300/alpha_0.5_setParam_100/train/",
+    "../../DATA1/er_SET1/400_400/alpha_0.75_setParam_100/train/",
     "../../DATA1/er_SET1/400_400/alpha_0.5_setParam_100/train/",
-    #"../DATA1/er_SET1/400_400/alpha_0.25_setParam_100/train/",
+    "../../DATA1/er_SET1/400_400/alpha_0.25_setParam_100/train/",
 ]
 
 name_list = [
-    # "er_SET2_200_200_alpha_0_75_setParam_100_train",
-    # "er_SET2_200_200_alpha_0_25_setParam_100_train",
-    # "er_SET2_200_200_alpha_0_5_setParam_100_train",
-    #"er_SET2_300_300_alpha_0_75_setParam_100_train",
-    # "er_SET2_300_300_alpha_0_25_setParam_100_train",
-    # "er_SET2_300_300_alpha_0_5_setParam_100_train",
-    #"er_SET1_400_400_alpha_0_75_setParam_100_train",
+    "er_SET2_200_200_alpha_0_75_setParam_100_train",
+    "er_SET2_200_200_alpha_0_25_setParam_100_train",
+    "er_SET2_200_200_alpha_0_5_setParam_100_train",
+    "er_SET2_300_300_alpha_0_75_setParam_100_train",
+    "er_SET2_300_300_alpha_0_25_setParam_100_train",
+    "er_SET2_300_300_alpha_0_5_setParam_100_train",
+    "er_SET1_400_400_alpha_0_75_setParam_100_train",
     "er_SET1_400_400_alpha_0_5_setParam_100_train",
-    #"er_SET1_400_400_alpha_0_25_setParam_100_train",
+    "er_SET1_400_400_alpha_0_25_setParam_100_train",
 ]
+
+results = []
 
 for r, f in enumerate(file_list):
 
@@ -501,7 +502,7 @@ for r, f in enumerate(file_list):
     # Threshold for computing class labels.
     bias_threshold = 0.050
     # Create dataset.
-    dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform())#.shuffle()
+    dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform())  # .shuffle()
 
     len(dataset)
 
@@ -599,6 +600,7 @@ for r, f in enumerate(file_list):
 
         # Break if learning rate is smaller 10**-6.
         if lr < 0.000001:
+            results.append(test_acc)
             break
 
         print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
@@ -607,3 +609,6 @@ for r, f in enumerate(file_list):
         print(r)
 
     torch.save(model.state_dict(), name_list[r])
+
+print("###")
+print(results)
