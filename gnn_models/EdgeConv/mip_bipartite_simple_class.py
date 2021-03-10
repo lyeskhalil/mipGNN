@@ -435,6 +435,7 @@ for r, f in enumerate(file_list):
                                                                             train_acc, val_acc, test_acc))
         print(r)
 
+    results.append(test_acc)
     torch.save(model.state_dict(), name_list[r])
 
 print("###")

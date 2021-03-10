@@ -570,6 +570,7 @@ for r, f in enumerate(file_list):
               'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
                                                                             train_acc, val_acc, test_acc))
         print(r)
+    results.append(test_acc)
 
     torch.save(model.state_dict(), name_list[r])
 
