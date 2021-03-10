@@ -25,10 +25,16 @@ from torch_geometric.nn.inits import reset
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-# Update constraint embeddings based on variable embeddings.
+
+# Variables to constrains.
 class VarConBipartiteLayer(MessagePassing):
+
     def __init__(self, edge_dim, dim, var_assigment):
         super(VarConBipartiteLayer, self).__init__(aggr="add", flow="source_to_target")
+
+        # Combine node and edge features of adjacent nodes.
+        self.nn = Sequential(Linear(3 * dim + 1, dim), ReLU(), Linear(dim, dim), ReLU(),
+                             BN(dim))
 
         # Maps edge features to the same number of components as node features.
         self.edge_encoder = Sequential(Linear(edge_dim, dim), ReLU(), Linear(dim, dim), ReLU(),
@@ -36,43 +42,29 @@ class VarConBipartiteLayer(MessagePassing):
 
         # Maps variable embeddings to scalar variable assigment.
         self.var_assigment = var_assigment
-        # Maps variable embeddings + assignment to joint embedding.
-        self.joint_var = Sequential(Linear(dim + 1, dim), ReLU(), Linear(dim, dim), ReLU(),
-                                    BN(dim))
 
-        self.mlp = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim), ReLU(),
-                              BN(dim))
-        self.eps = torch.nn.Parameter(torch.Tensor([0]))
-        self.initial_eps = 0
+        self.reset_parameters()
+
+    def reset_parameters(self):
+        reset(self.nn)
+        reset(self.edge_encoder)
 
     def forward(self, source, target, edge_index, edge_attr, rhs, size):
-        # Map edge features to embeddings with the same number of components as node embeddings.
-        edge_embedding = self.edge_encoder(edge_attr)
         # Compute scalar variable assignment.
         var_assignment = self.var_assigment(source)
-        # Compute joint embedding of variable embeddings and scalar variable assignment.
-        new_source = self.joint_var(torch.cat([source, var_assignment], dim=-1))
 
-        # Do the acutal message passing.
-        tmp = self.propagate(edge_index, x=new_source, var_assignment=var_assignment, edge_attr=edge_embedding,
-                             size=size)
-        out = self.mlp((1 + self.eps) * target + tmp)
+        # Map edge features to embeddings with the same number of components as node embeddings.
+        edge_embedding = self.edge_encoder(edge_attr)
+
+        out = self.propagate(edge_index, x=source, t=target, v=var_assignment, edge_attr=edge_embedding, size=size)
 
         return out
 
-    def message(self, x_j, var_assignment_j, edge_attr):
-        return F.relu(x_j + edge_attr)
+    def message(self, x_j, t_i, v_j, edge_attr):
+        return self.nn(torch.cat([t_i, x_j, v_j, edge_attr], dim=-1))
 
-    def update(self, aggr_out):
-        return aggr_out
-
-    def reset_parameters(self):
-        reset(self.edge_encoder)
-        reset(self.var_assigment)
-        reset(self.node_encoder)
-        reset(self.joint_var)
-        reset(self.mlp)
-        self.eps.data.fill_(self.initial_eps)
+    def __repr__(self):
+        return '{}(nn={})'.format(self.__class__.__name__, self.nn)
 
 
 # Compute error signal.
@@ -83,10 +75,10 @@ class ErrorLayer(MessagePassing):
         self.error_encoder = Sequential(Linear(1, dim), ReLU(), Linear(dim, dim), ReLU(),
                                         BN(dim))
 
-    # TODO: Change back!
     def forward(self, source, edge_index, edge_attr, rhs, index, size):
         # Compute scalar variable assignment.
         new_source = self.var_assignment(source)
+
         tmp = self.propagate(edge_index, x=new_source, edge_attr=edge_attr, size=size)
 
         # Compute residual, i.e., Ax-b.
@@ -107,48 +99,37 @@ class ErrorLayer(MessagePassing):
         return aggr_out
 
 
-# Update variable embeddings based on constraint embeddings.
 class ConVarBipartiteLayer(MessagePassing):
+
     def __init__(self, edge_dim, dim):
         super(ConVarBipartiteLayer, self).__init__(aggr="add", flow="source_to_target")
+
+        # Combine node and edge features of adjacent nodes.
+        self.nn = Sequential(Linear(4 * dim, dim), ReLU(), Linear(dim, dim), ReLU(),
+                             BN(dim))
 
         # Maps edge features to the same number of components as node features.
         self.edge_encoder = Sequential(Linear(edge_dim, dim), ReLU(), Linear(dim, dim), ReLU(),
                                        BN(dim))
 
-        # Learn joint representation of contraint embedding and error.
-        self.joint_con_encoder = Sequential(Linear(dim + dim, dim), ReLU(), Linear(dim, dim), ReLU(),
-                                            BN(dim))
+        self.reset_parameters()
 
-        self.mlp = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim), ReLU(), BN(dim))
-        self.eps = torch.nn.Parameter(torch.Tensor([0]))
-        self.initial_eps = 0
+    def reset_parameters(self):
+        reset(self.nn)
 
     def forward(self, source, target, edge_index, edge_attr, error_con, size):
         # Map edge features to embeddings with the same number of components as node embeddings.
         edge_embedding = self.edge_encoder(edge_attr)
 
-        #joint_con = torch.cat([self.joint_con_encoder(torch.cat([source, error_con], dim=-1)), error_con], dim=-1)
-        joint_con = self.joint_con_encoder(torch.cat([source, error_con], dim=-1))
-        # joint_con = self.joint_con_encoder(torch.cat([source, error_con], dim=-1))
-        tmp = self.propagate(edge_index, x=joint_con, error=error_con, edge_attr=edge_embedding, size=size)
-
-        out = self.mlp((1 + self.eps) * target + tmp)
+        out = self.propagate(edge_index, x=source, t=target, e=error_con, edge_attr=edge_embedding, size=size)
 
         return out
 
-    def message(self, x_j, error_j, edge_attr):
-        return F.relu(x_j + edge_attr)
+    def message(self, x_j, t_i, e_j, edge_attr):
+        return self.nn(torch.cat([t_i, x_j, e_j, edge_attr], dim=-1))
 
-    def update(self, aggr_out):
-        return aggr_out
-
-    def reset_parameters(self):
-        reset(self.node_encoder)
-        reset(self.edge_encoder)
-        reset(self.joint_con_encoder)
-        reset(self.mlp)
-        self.eps.data.fill_(self.initial_eps)
+    def __repr__(self):
+        return '{}(nn={})'.format(self.__class__.__name__, self.nn)
 
 
 class SimpleNet(torch.nn.Module):
@@ -223,21 +204,18 @@ class SimpleNet(torch.nn.Module):
         edge_index_con = data.edge_index_con
         edge_features_var = data.edge_features_var
         edge_features_con = data.edge_features_con
-        num_nodes_var = data.num_nodes_var
-        num_nodes_con = data.num_nodes_con
         rhs = data.rhs
         index = data.index
-        obj = data.obj
 
         # Compute initial node embeddings.
         var_node_features_0 = self.var_node_encoder(var_node_features)
         con_node_features_0 = self.con_node_encoder(con_node_features)
 
+        err_1 = self.error_1(var_node_features_0, edge_index_var, edge_features_var, rhs, index,
+                             (var_node_features_0.size(0), con_node_features.size(0)))
         con_node_features_1 = F.relu(
             self.var_con_1(var_node_features_0, con_node_features_0, edge_index_var, edge_features_var, rhs,
                            (var_node_features_0.size(0), con_node_features.size(0))))
-        err_1 = self.error_1(var_node_features_0, edge_index_var, edge_features_var, rhs, index,
-                             (var_node_features_0.size(0), con_node_features.size(0)))
 
         var_node_features_1 = F.relu(
             self.con_var_1(con_node_features_1, var_node_features_0, edge_index_con, edge_features_con, err_1,
@@ -272,18 +250,6 @@ class SimpleNet(torch.nn.Module):
         var_node_features_4 = F.relu(
             self.con_var_4(con_node_features_4, var_node_features_3, edge_index_con, edge_features_con, err_4,
                            (con_node_features_4.size(0), var_node_features_3.size(0))))
-
-        var = self.var_assigment_4(var_node_features_4)
-
-        # cost = torch.mul(var, obj)
-        # print(cost.size())
-        # print(data.index_var)
-        # cost = scatter_add(cost, index=data.index_var, dim=0)
-        #
-        # print(cost.size())
-        # exit()
-
-        # print(err_1.min(), print(err_1.max()))
 
         x = torch.cat(
             [var_node_features_0, var_node_features_1, var_node_features_2, var_node_features_3, var_node_features_4],
@@ -465,7 +431,6 @@ class MyTransform(object):
         return new_data
 
 
-
 file_list = [
     "../../DATA1/er_SET2/200_200/alpha_0.75_setParam_100/train/",
     "../../DATA1/er_SET2/200_200/alpha_0.25_setParam_100/train/",
@@ -475,7 +440,7 @@ file_list = [
     "../../DATA1/er_SET2/300_300/alpha_0.5_setParam_100/train/",
     "../../DATA1/er_SET1/400_400/alpha_0.75_setParam_100/train/",
     "../../DATA1/er_SET1/400_400/alpha_0.5_setParam_100/train/",
-    #"../../DATA1/er_SET1/400_400/alpha_0.25_setParam_100/train/",
+    # "../../DATA1/er_SET1/400_400/alpha_0.25_setParam_100/train/",
 ]
 
 name_list = [
@@ -487,7 +452,7 @@ name_list = [
     "er_SET2_300_300_alpha_0_5_setParam_100_train",
     "er_SET1_400_400_alpha_0_75_setParam_100_train",
     "er_SET1_400_400_alpha_0_5_setParam_100_train",
-    #"er_SET1_400_400_alpha_0_25_setParam_100_train",
+    # "er_SET1_400_400_alpha_0_25_setParam_100_train",
 ]
 
 results = []
@@ -600,14 +565,13 @@ for r, f in enumerate(file_list):
 
         # Break if learning rate is smaller 10**-6.
         if lr < 0.000001:
-
+            results.append(test_acc)
             break
 
         print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
               'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
                                                                             train_acc, val_acc, test_acc))
         print(r)
-
     results.append(test_acc)
 
     torch.save(model.state_dict(), name_list[r])

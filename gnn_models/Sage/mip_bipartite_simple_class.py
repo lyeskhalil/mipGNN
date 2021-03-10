@@ -30,9 +30,6 @@ class SimpleBipartiteLayer(MessagePassing):
     def __init__(self, edge_dim, dim):
         super(SimpleBipartiteLayer, self).__init__(aggr="add", flow="source_to_target")
 
-        self.nn = Sequential(Linear(3*dim, dim), ReLU(), Linear(dim, dim), ReLU(),
-                                       BN(dim))
-
         # Maps edge features to the same number of components as node features.
         self.edge_encoder = Sequential(Linear(edge_dim, dim), ReLU(), Linear(dim, dim), ReLU(),
                                        BN(dim))
@@ -43,11 +40,12 @@ class SimpleBipartiteLayer(MessagePassing):
         self.reset_parameters()
 
     def reset_parameters(self):
-        reset(self.nn)
+        pass
+        #reset(self.nn)
 
     def forward(self, source, target, edge_index, edge_attr, size):
         edge_emb = self.edge_encoder(edge_attr)
-        out = self.propagate(edge_index, x=source, size=size, edge_emb = edge_emb)
+        out = self.propagate(edge_index, x=source, size=size, edge_emb=edge_emb)
         out = self.lin_l(out)
 
         out += self.lin_r(target)
