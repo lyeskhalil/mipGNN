@@ -43,7 +43,6 @@ class VarConBipartiteLayer(MessagePassing):
         # Maps variable embeddings to scalar variable assigment.
         self.var_assigment = var_assigment
 
-
         self.mlp = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim), ReLU(), BN(dim))
         self.eps = torch.nn.Parameter(torch.Tensor([0]))
         self.initial_eps = 0
@@ -93,8 +92,6 @@ class ErrorLayer(MessagePassing):
 
         tmp = self.propagate(edge_index, x=new_source, edge_attr=edge_attr, size=size)
 
-
-
         # Compute residual, i.e., Ax-b.
         out = tmp - rhs
 
@@ -118,7 +115,6 @@ class ConVarBipartiteLayer(MessagePassing):
     def __init__(self, edge_dim, dim):
         super(ConVarBipartiteLayer, self).__init__(aggr="add", flow="source_to_target")
 
-
         # Maps edge features to the same number of components as node features.
         self.edge_encoder = Sequential(Linear(edge_dim, dim), ReLU(), Linear(dim, dim), ReLU(),
                                        BN(dim))
@@ -128,7 +124,6 @@ class ConVarBipartiteLayer(MessagePassing):
                                     BN(dim))
 
         self.mlp = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim), ReLU(), BN(dim))
-
 
         self.eps = torch.nn.Parameter(torch.Tensor([0]))
         self.initial_eps = 0

@@ -76,7 +76,7 @@ class SimpleNet(torch.nn.Module):
         self.con_var_4 = SimpleBipartiteLayer(1, hidden)
 
         # MLP used for classification.
-        self.lin1 = Linear(5*hidden, hidden)
+        self.lin1 = Linear(5 * hidden, hidden)
         self.lin2 = Linear(hidden, hidden)
         self.lin3 = Linear(hidden, hidden)
         self.lin4 = Linear(hidden, 2)
@@ -97,7 +97,6 @@ class SimpleNet(torch.nn.Module):
         self.lin4.reset_parameters()
 
     def forward(self, data):
-
         # Get data of batch.
         var_node_features = data.var_node_features
         con_node_features = data.con_node_features
@@ -112,40 +111,50 @@ class SimpleNet(torch.nn.Module):
         var_node_features_0 = self.var_node_encoder(var_node_features)
         con_node_features_0 = self.con_node_encoder(con_node_features)
 
-
-        con_node_features_1 = F.relu(self.var_con_1(var_node_features_0, con_node_features_0, edge_index_var, edge_features_var,
+        con_node_features_1 = F.relu(
+            self.var_con_1(var_node_features_0, con_node_features_0, edge_index_var, edge_features_var,
                            (num_nodes_var.sum(), num_nodes_con.sum())))
-        var_node_features_1 = F.relu(self.con_var_1(con_node_features_1, var_node_features_0, edge_index_con, edge_features_con,
+        var_node_features_1 = F.relu(
+            self.con_var_1(con_node_features_1, var_node_features_0, edge_index_con, edge_features_con,
                            (num_nodes_con.sum(), num_nodes_var.sum())))
 
-        con_node_features_2 = F.relu(self.var_con_2(var_node_features_1, con_node_features_1, edge_index_var, edge_features_var,
+        con_node_features_2 = F.relu(
+            self.var_con_2(var_node_features_1, con_node_features_1, edge_index_var, edge_features_var,
                            (num_nodes_var.sum(), num_nodes_con.sum())))
-        var_node_features_2 = F.relu(self.con_var_2(con_node_features_2, var_node_features_1, edge_index_con, edge_features_con,
+        var_node_features_2 = F.relu(
+            self.con_var_2(con_node_features_2, var_node_features_1, edge_index_con, edge_features_con,
                            (num_nodes_con.sum(), num_nodes_var.sum())))
 
-        con_node_features_3 = F.relu(self.var_con_3(var_node_features_2, con_node_features_2, edge_index_var, edge_features_var,
+        con_node_features_3 = F.relu(
+            self.var_con_3(var_node_features_2, con_node_features_2, edge_index_var, edge_features_var,
                            (num_nodes_var.sum(), num_nodes_con.sum())))
-        var_node_features_3 = F.relu(self.con_var_3(con_node_features_3, var_node_features_2, edge_index_con, edge_features_con,
+        var_node_features_3 = F.relu(
+            self.con_var_3(con_node_features_3, var_node_features_2, edge_index_con, edge_features_con,
                            (num_nodes_con.sum(), num_nodes_var.sum())))
 
-        con_node_features_4 = F.relu(self.var_con_4(var_node_features_3, con_node_features_3, edge_index_var, edge_features_var,
+        con_node_features_4 = F.relu(
+            self.var_con_4(var_node_features_3, con_node_features_3, edge_index_var, edge_features_var,
                            (num_nodes_var.sum(), num_nodes_con.sum())))
-        var_node_features_4 = F.relu(self.con_var_4(con_node_features_4, var_node_features_3, edge_index_con, edge_features_con,
+        var_node_features_4 = F.relu(
+            self.con_var_4(con_node_features_4, var_node_features_3, edge_index_con, edge_features_con,
                            (num_nodes_con.sum(), num_nodes_var.sum())))
 
-        x = torch.cat([var_node_features_0,var_node_features_1,var_node_features_2,var_node_features_3,var_node_features_4], dim=-1)
+        x = torch.cat(
+            [var_node_features_0, var_node_features_1, var_node_features_2, var_node_features_3, var_node_features_4],
+            dim=-1)
 
         x = F.relu(self.lin1(x))
-        #x = F.dropout(x, p=0.5, training=self.training)
+        # x = F.dropout(x, p=0.5, training=self.training)
         x = F.relu(self.lin2(x))
-        #x = F.dropout(x, p=0.5, training=self.training)
+        # x = F.dropout(x, p=0.5, training=self.training)
         x = F.relu(self.lin3(x))
-        #x = F.dropout(x, p=0.5, training=self.training)
+        # x = F.dropout(x, p=0.5, training=self.training)
         x = self.lin4(x)
         return F.log_softmax(x, dim=-1)
 
     def __repr__(self):
         return self.__class__.__name__
+
 
 # Preprocessing to create Torch dataset.
 class GraphDataset(InMemoryDataset):
@@ -294,7 +303,6 @@ class MyTransform(object):
         return new_data
 
 
-
 file_list = [
     "../../DATA1/er_SET2/200_200/alpha_0.75_setParam_100/train/",
     "../../DATA1/er_SET2/200_200/alpha_0.25_setParam_100/train/",
@@ -304,7 +312,7 @@ file_list = [
     "../../DATA1/er_SET2/300_300/alpha_0.5_setParam_100/train/",
     "../../DATA1/er_SET1/400_400/alpha_0.75_setParam_100/train/",
     "../../DATA1/er_SET1/400_400/alpha_0.5_setParam_100/train/",
-    #"../../DATA1/er_SET1/400_400/alpha_0.25_setParam_100/train/",
+    # "../../DATA1/er_SET1/400_400/alpha_0.25_setParam_100/train/",
 ]
 
 name_list = [
@@ -316,7 +324,7 @@ name_list = [
     "er_SET2_300_300_alpha_0_5_setParam_100_train_",
     "er_SET1_400_400_alpha_0_75_setParam_100_train_",
     "er_SET1_400_400_alpha_0_5_setParam_100_train_",
-    #"er_SET1_400_400_alpha_0_25_setParam_100_train_",
+    # "er_SET1_400_400_alpha_0_25_setParam_100_train_",
 ]
 
 results = []
@@ -429,7 +437,6 @@ for r, f in enumerate(file_list):
 
         # Break if learning rate is smaller 10**-6.
         if lr < 0.000001:
-
             break
 
         print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
