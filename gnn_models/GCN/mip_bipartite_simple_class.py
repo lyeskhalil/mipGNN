@@ -46,11 +46,11 @@ class SimpleBipartiteLayer(MessagePassing):
         reset(self.nn)
 
     def forward(self, source, target, edge_index, edge_attr, size):
-
-        out = self.propagate(edge_index, x=source, size=size)
+        edge_emb = self.edge_encoder(edge_attr)
+        out = self.propagate(edge_index, x=source, size=size, edge_emb = edge_emb)
         out = self.lin_l(out)
 
-        edge_emb = self.edge_encoder(edge_attr)
+
 
         out += self.lin_r(target)
 
@@ -58,8 +58,8 @@ class SimpleBipartiteLayer(MessagePassing):
 
         return out
 
-    def message(self, x_j):
-        return x_j
+    def message(self, x_j, edge_emb):
+        return x_j + edge_emb
 
     def message_and_aggregate(self, adj_t, x):
         adj_t = adj_t.set_value(None, layout=None)
