@@ -52,19 +52,17 @@ class SimpleBipartiteLayer(MessagePassing):
 
         row, col = edge_index
 
-        #edge_weight = torch.ones((edge_index.size(1), ), device=edge_index.device)
         deg = degree(row, target.size(0), dtype = target.dtype) + 1
         deg_inv_sqrt = deg.pow(-0.5)
         deg_inv_sqrt[deg_inv_sqrt == float('inf')] = 0
 
-
-
         norm = deg_inv_sqrt[row] * deg_inv_sqrt[col]
 
         out = self.propagate(edge_index, x=source, t=target, edge_attr=edge_embedding, size=size, norm=norm)
-        exit()
+        print("ss")
 
         out += F.relu(target + self.root_emb.weight) * 1./deg.view(-1,1)
+        exit()
 
         return out
 
