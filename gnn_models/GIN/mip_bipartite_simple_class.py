@@ -308,15 +308,15 @@ file_list = [
 ]
 
 name_list = [
-    "er_SET2_200_200_alpha_0_75_setParam_100_train",
-    "er_SET2_200_200_alpha_0_25_setParam_100_train",
-    "er_SET2_200_200_alpha_0_5_setParam_100_train",
-    "er_SET2_300_300_alpha_0_75_setParam_100_train",
-    "er_SET2_300_300_alpha_0_25_setParam_100_train",
-    "er_SET2_300_300_alpha_0_5_setParam_100_train",
-    "er_SET1_400_400_alpha_0_75_setParam_100_train",
-    "er_SET1_400_400_alpha_0_5_setParam_100_train",
-    "er_SET1_400_400_alpha_0_25_setParam_100_train",
+    "er_SET2_200_200_alpha_0_75_setParam_100_train_",
+    "er_SET2_200_200_alpha_0_25_setParam_100_train_",
+    "er_SET2_200_200_alpha_0_5_setParam_100_train_",
+    "er_SET2_300_300_alpha_0_75_setParam_100_train_",
+    "er_SET2_300_300_alpha_0_25_setParam_100_train_",
+    "er_SET2_300_300_alpha_0_5_setParam_100_train_",
+    "er_SET1_400_400_alpha_0_75_setParam_100_train_",
+    "er_SET1_400_400_alpha_0_5_setParam_100_train_",
+    "er_SET1_400_400_alpha_0_25_setParam_100_train_",
 ]
 
 results = []
