@@ -59,10 +59,8 @@ class SimpleBipartiteLayer(MessagePassing):
         norm = deg_inv_sqrt[row] * deg_inv_sqrt[col]
 
         out = self.propagate(edge_index, x=source, t=target, edge_attr=edge_embedding, size=size, norm=norm)
-        print("ss")
 
         out += F.relu(target + self.root_emb.weight) * 1./deg.view(-1,1)
-        exit()
 
         return out
 
