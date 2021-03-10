@@ -54,7 +54,7 @@ class SimpleBipartiteLayer(MessagePassing):
 
         deg = degree(row, target.size(0), dtype = target.dtype) + 1
         deg_inv_sqrt = deg.pow(-0.5)
-        deg_inv_sqrt[deg_inv_sqrt == float('inf')] = 0
+        #deg_inv_sqrt[deg_inv_sqrt == float('inf')] = 0
 
         norm = deg_inv_sqrt[row] * deg_inv_sqrt[col]
 
