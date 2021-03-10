@@ -144,7 +144,7 @@ class ConVarBipartiteLayer(MessagePassing):
         return out
 
 
-    def message(self, x_j, error_j, edge_attr):
+    def message(self, x_j, edge_attr):
         return F.relu(x_j + edge_attr)
 
     def update(self, aggr_out):
