@@ -134,7 +134,7 @@ class ConVarBipartiteLayer(MessagePassing):
         edge_embedding = self.edge_encoder(edge_attr)
         new_source = self.joint_con_encoder(torch.cat([source, error_con], dim=-1))
 
-        out = self.propagate(edge_index, x=new_source, size=size, edge_emb=edge_embedding)
+        out = self.propagate(edge_index, x=new_source, size=size, edge_attr=edge_embedding)
         out = self.lin_l(out)
 
         out += self.lin_r(target)
