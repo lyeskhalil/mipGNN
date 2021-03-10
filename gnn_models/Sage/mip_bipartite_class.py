@@ -56,7 +56,7 @@ class VarConBipartiteLayer(MessagePassing):
         # Compute joint embedding of variable embeddings and scalar variable assignment.
         new_source = self.joint_var(torch.cat([source, var_assignment], dim=-1))
 
-        out = self.propagate(edge_index, x=new_source, size=size, edge_emb=edge_embedding)
+        out = self.propagate(edge_index, x=new_source, size=size, edge_attr=edge_embedding)
         out = self.lin_l(out)
 
         out += self.lin_r(target)
