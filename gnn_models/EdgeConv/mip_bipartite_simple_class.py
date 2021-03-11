@@ -352,7 +352,7 @@ for dim in [32, 64, 128]:
                 if val_acc > best_val:
                     best_val = val_acc
                     test_acc = test(test_loader)
-                    best_hp = [dim, l, test_acc]
+                    best_hp = [dim, l, aggr, test_acc]
 
                 # Break if learning rate is smaller 10**-6.
                 if lr < 0.000001:
