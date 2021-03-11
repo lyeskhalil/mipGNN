@@ -259,12 +259,10 @@ class MyTransform(object):
         return new_data
 
 
-
 path = "../../DATA1/er_SET2/200_200/alpha_0.75_setParam_100/train/"
 name = "er_SET2_200_200_alpha_0_75_setParam_100_train_"
 
 results = []
-
 
 # Prepare data.
 path = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
@@ -275,7 +273,6 @@ sname = name
 bias_threshold = 0.050
 # Create dataset.
 dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform())  # .shuffle()
-
 
 # Split data.
 l = len(dataset)
@@ -330,8 +327,6 @@ def test(loader):
 best_val = 0.0
 test_acc = 0.0
 
-
-
 for dim in [32, 64, 128]:
     for l in [2, 3, 4, 5]:
         # Prepare batch loaders.
@@ -343,8 +338,6 @@ for dim in [32, 64, 128]:
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
                                                                factor=0.8, patience=10,
                                                                min_lr=0.0000001)
-
-
 
         for epoch in range(1, 100):
 
@@ -363,5 +356,3 @@ for dim in [32, 64, 128]:
             if lr < 0.000001:
                 results.append(test_acc)
                 break
-
-
