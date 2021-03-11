@@ -72,6 +72,9 @@ class SimpleNet(torch.nn.Module):
             self.layers_con.append(SimpleBipartiteLayer(1, hidden))
             self.layers_var.append(SimpleBipartiteLayer(1, hidden))
 
+        self.layers_con = torch.nn.ModuleList(self.layers_con)
+        self.layers_var = torch.nn.ModuleList(self.layers_var)
+
         # MLP used for classification.
         self.lin1 = Linear((num_layers+1)*hidden, hidden)
         self.lin2 = Linear(hidden, hidden)
