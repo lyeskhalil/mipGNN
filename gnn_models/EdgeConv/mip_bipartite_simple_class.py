@@ -326,10 +326,11 @@ def test(loader):
 
 best_val = 0.0
 test_acc = 0.0
+best_hp = []
 
 for dim in [32, 64, 128]:
     for l in [2, 3, 4, 5]:
-        # Prepare batch loaders.
+        print(dim, l)
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         model = SimpleNet(hidden=dim, num_layers=l).to(device)
@@ -351,8 +352,12 @@ for dim in [32, 64, 128]:
             if val_acc > best_val:
                 best_val = val_acc
                 test_acc = test(test_loader)
+                best_hp = [dim, l, test_acc]
 
             # Break if learning rate is smaller 10**-6.
             if lr < 0.000001:
                 results.append(test_acc)
                 break
+
+
+print(best_hp)
