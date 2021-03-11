@@ -24,8 +24,8 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 class SimpleBipartiteLayer(MessagePassing):
-    def __init__(self, edge_dim, dim):
-        super(SimpleBipartiteLayer, self).__init__(aggr="add", flow="source_to_target")
+    def __init__(self, edge_dim, dim, aggr):
+        super(SimpleBipartiteLayer, self).__init__(aggr=aggr, flow="source_to_target")
 
         self.edge_encoder = Sequential(Linear(edge_dim, dim), ReLU(), Linear(dim, dim), ReLU(),
                                        BN(dim))
@@ -53,7 +53,7 @@ class SimpleBipartiteLayer(MessagePassing):
 
 
 class SimpleNet(torch.nn.Module):
-    def __init__(self, hidden, num_layers=5):
+    def __init__(self, hidden, aggr, num_layers):
         super(SimpleNet, self).__init__()
         self.num_layers = num_layers
 
@@ -65,8 +65,8 @@ class SimpleNet(torch.nn.Module):
         self.layers_con = []
         self.layers_var = []
         for i in range(self.num_layers):
-            self.layers_con.append(SimpleBipartiteLayer(1, hidden))
-            self.layers_var.append(SimpleBipartiteLayer(1, hidden))
+            self.layers_con.append(SimpleBipartiteLayer(1, hidden, aggr=aggr))
+            self.layers_var.append(SimpleBipartiteLayer(1, hidden, aggr=aggr))
 
         self.layers_con = torch.nn.ModuleList(self.layers_con)
         self.layers_var = torch.nn.ModuleList(self.layers_var)
@@ -117,8 +117,7 @@ class SimpleNet(torch.nn.Module):
 
 # Preprocessing to create Torch dataset.
 class GraphDataset(InMemoryDataset):
-    def __init__(self, root, data_path, bias_threshold, transform=None, pre_transform=None,
-                 pre_filter=None):
+    def __init__(self, root, data_path, bias_threshold, transform=None, pre_transform=None, pre_filter=None):
         super(GraphDataset, self).__init__(root, transform, pre_transform, pre_filter)
         self.data, self.slices = torch.load(self.processed_paths[0])
         self.data_path = data_path
@@ -333,35 +332,36 @@ best_hp = []
 
 for dim in [32, 64, 128]:
     for l in [2, 3, 4, 5]:
-        print(dim, l)
+        for aggr in ["max", "add", "mean"]:
+            print(dim, l, aggr)
 
-        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        model = SimpleNet(hidden=dim, num_layers=l).to(device)
-        optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+            device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+            model = SimpleNet(hidden=dim, num_layers=l, aggr = aggr).to(device)
+            optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
-        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
-                                                               factor=0.8, patience=10,
-                                                               min_lr=0.0000001)
+            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
+                                                                   factor=0.8, patience=10,
+                                                                   min_lr=0.0000001)
 
-        for epoch in range(1, 100):
+            for epoch in range(1, 100):
 
-            train_loss = train(epoch)
-            train_acc = test(train_loader)
+                train_loss = train(epoch)
+                train_acc = test(train_loader)
 
-            val_acc = test(val_loader)
-            scheduler.step(val_acc)
-            lr = scheduler.optimizer.param_groups[0]['lr']
+                val_acc = test(val_loader)
+                scheduler.step(val_acc)
+                lr = scheduler.optimizer.param_groups[0]['lr']
 
-            if val_acc > best_val:
-                best_val = val_acc
-                test_acc = test(test_loader)
-                best_hp = [dim, l, test_acc]
+                if val_acc > best_val:
+                    best_val = val_acc
+                    test_acc = test(test_loader)
+                    best_hp = [dim, l, aggr, test_acc]
 
-            # Break if learning rate is smaller 10**-6.
-            if lr < 0.000001:
-                results.append(test_acc)
-                break
-
+                # Break if learning rate is smaller 10**-6.
+                if lr < 0.000001:
+                    results.append(test_acc)
+                    break
 
 print(best_hp)
+
 

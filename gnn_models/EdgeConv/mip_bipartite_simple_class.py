@@ -314,7 +314,6 @@ def test(loader):
 
     for data in loader:
         data = data.to(device)
-        # pred, err, cost = model(data)
         pred = model(data)
         pred = pred.max(dim=1)[1]
         correct += pred.eq(data.y).float().mean().item()
@@ -358,6 +357,5 @@ for dim in [32, 64, 128]:
                 if lr < 0.000001:
                     results.append(test_acc)
                     break
-
 
 print(best_hp)
