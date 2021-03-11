@@ -18,7 +18,6 @@ import torch.nn.functional as F
 from torch.nn import BatchNorm1d as BN
 from torch.nn import Sequential, Linear, ReLU
 from torch_geometric.nn import MessagePassing
-from torch_geometric.nn.inits import reset
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -28,13 +27,12 @@ class SimpleBipartiteLayer(MessagePassing):
     def __init__(self, edge_dim, dim):
         super(SimpleBipartiteLayer, self).__init__(aggr="max", flow="source_to_target")
 
-        self.nn = Sequential(Linear(3*dim, dim), ReLU(), Linear(dim, dim), ReLU(),
-                                       BN(dim))
+        self.nn = Sequential(Linear(3 * dim, dim), ReLU(), Linear(dim, dim), ReLU(),
+                             BN(dim))
 
         # Maps edge features to the same number of components as node features.
         self.edge_encoder = Sequential(Linear(edge_dim, dim), ReLU(), Linear(dim, dim), ReLU(),
                                        BN(dim))
-
 
     def forward(self, source, target, edge_index, edge_attr, size):
         # Map edge features to embeddings with the same number of components as node embeddings.
@@ -49,7 +47,6 @@ class SimpleBipartiteLayer(MessagePassing):
 
     def __repr__(self):
         return '{}(nn={})'.format(self.__class__.__name__, self.nn)
-
 
 
 class SimpleNet(torch.nn.Module):
@@ -72,7 +69,7 @@ class SimpleNet(torch.nn.Module):
         self.layers_var = torch.nn.ModuleList(self.layers_var)
 
         # MLP used for classification.
-        self.lin1 = Linear((num_layers+1)*hidden, hidden)
+        self.lin1 = Linear((num_layers + 1) * hidden, hidden)
         self.lin2 = Linear(hidden, hidden)
         self.lin3 = Linear(hidden, hidden)
         self.lin4 = Linear(hidden, 2)
@@ -98,25 +95,22 @@ class SimpleNet(torch.nn.Module):
 
         for i in range(self.num_layers):
             x_con.append(F.relu(self.layers_con[i](x_var[-1], x_con[-1], edge_index_var, edge_features_var,
-                               (num_nodes_var.sum(), num_nodes_con.sum()))))
+                                                   (num_nodes_var.sum(), num_nodes_con.sum()))))
 
             x_var.append(F.relu(self.layers_var[-1](x_con[-1], x_var[-1], edge_index_con, edge_features_con,
-                               (num_nodes_con.sum(), num_nodes_var.sum()))))
+                                                    (num_nodes_con.sum(), num_nodes_var.sum()))))
 
         x = torch.cat(x_var[:], dim=-1)
 
-        # TODO
         x = F.relu(self.lin1(x))
-        x = F.dropout(x, p=0.5, training=self.training)
         x = F.relu(self.lin2(x))
-        x = F.dropout(x, p=0.5, training=self.training)
         x = F.relu(self.lin3(x))
-        x = F.dropout(x, p=0.5, training=self.training)
         x = self.lin4(x)
         return F.log_softmax(x, dim=-1)
 
     def __repr__(self):
         return self.__class__.__name__
+
 
 # Preprocessing to create Torch dataset.
 class GraphDataset(InMemoryDataset):
@@ -265,150 +259,109 @@ class MyTransform(object):
         return new_data
 
 
-file_list = [
-    "../../DATA1/er_SET2/200_200/alpha_0.75_setParam_100/train/",
-    "../../DATA1/er_SET2/200_200/alpha_0.25_setParam_100/train/",
-    "../../DATA1/er_SET2/200_200/alpha_0.5_setParam_100/train/",
-    "../../DATA1/er_SET2/300_300/alpha_0.75_setParam_100/train/",
-    "../../DATA1/er_SET2/300_300/alpha_0.25_setParam_100/train/",
-    "../../DATA1/er_SET2/300_300/alpha_0.5_setParam_100/train/",
-    "../../DATA1/er_SET1/400_400/alpha_0.75_setParam_100/train/",
-    "../../DATA1/er_SET1/400_400/alpha_0.5_setParam_100/train/",
-    #"../../DATA1/er_SET1/400_400/alpha_0.25_setParam_100/train/",
-]
 
-name_list = [
-    "er_SET2_200_200_alpha_0_75_setParam_100_train_",
-    "er_SET2_200_200_alpha_0_25_setParam_100_train_",
-    "er_SET2_200_200_alpha_0_5_setParam_100_train_",
-    "er_SET2_300_300_alpha_0_75_setParam_100_train_",
-    "er_SET2_300_300_alpha_0_25_setParam_100_train_",
-    "er_SET2_300_300_alpha_0_5_setParam_100_train_",
-    "er_SET1_400_400_alpha_0_75_setParam_100_train_",
-    "er_SET1_400_400_alpha_0_5_setParam_100_train_",
-    #"er_SET1_400_400_alpha_0_25_setParam_100_train_",
-]
+path = "../../DATA1/er_SET2/200_200/alpha_0.75_setParam_100/train/"
+name = "er_SET2_200_200_alpha_0_75_setParam_100_train_"
 
 results = []
 
-for r, f in enumerate(file_list):
 
-    # Prepare data.
-    path = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
-    # Path to raw graph data.
-    data_path = f
-    sname = name_list[r]
-    # Threshold for computing class labels.
-    bias_threshold = 0.050
-    # Create dataset.
-    dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform())  # .shuffle()
-
-    len(dataset)
-
-    # Split data.
-
-    l = len(dataset)
-    train_index, rest = train_test_split(list(range(0, l)), test_size=0.2)
-    l = len(rest)
-    val_index = rest[0:int(l / 2)]
-    test_index = rest[int(l / 2):]
-
-    train_dataset = dataset[train_index].shuffle()
-    val_dataset = dataset[val_index].shuffle()
-    test_dataset = dataset[test_index].shuffle()
-
-    print(len(train_dataset))
-    print(len(val_dataset))
-    print(len(test_dataset))
-
-    # Prepare batch loaders.
-    batch_size = 15
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
-    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
-
-    print("### DATA LOADED.")
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model = SimpleNet(hidden=128).to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-
-    # Play with this.
-    # TODO: Change back
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
-                                                           factor=0.8, patience=10,
-                                                           min_lr=0.0000001)
-    print("### SETUP DONE.")
+# Prepare data.
+path = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
+# Path to raw graph data.
+data_path = path
+sname = name
+# Threshold for computing class labels.
+bias_threshold = 0.050
+# Create dataset.
+dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform())  # .shuffle()
 
 
-    def train(epoch):
-        model.train()
+# Split data.
+l = len(dataset)
+train_index, rest = train_test_split(list(range(0, l)), test_size=0.2)
+l = len(rest)
+val_index = rest[0:int(l / 2)]
+test_index = rest[int(l / 2):]
 
-        loss_all = 0
-        for data in train_loader:
-            data = data.to(device)
-            optimizer.zero_grad()
-            # output, err, cost = model(data)
-            output = model(data)
+train_dataset = dataset[train_index].shuffle()
+val_dataset = dataset[val_index].shuffle()
+test_dataset = dataset[test_index].shuffle()
 
-            loss = F.nll_loss(output, data.y)
-            loss.backward()
-            loss_all += batch_size * loss.item()
-            optimizer.step()
-        return loss_all / len(train_dataset)
-
-
-    def test(loader):
-        model.eval()
-
-        correct = 0
-        l = 0
-
-        err_total = 0.0
-        cost_total = 0.0
-        for data in loader:
-            data = data.to(device)
-            # pred, err, cost = model(data)
-            pred = model(data)
-            pred = pred.max(dim=1)[1]
-            correct += pred.eq(data.y).float().mean().item()
-            l += 1
-
-            # cost_total += cost.item()
-            # err_total += err.item()
-
-        # print(err_total / l)
-        # print(cost_total / l)
-
-        return correct / l
+batch_size = 15
+train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
 
-    best_val = 0.0
-    test_acc = 0.0
-    for epoch in range(1, 100):
+def train(epoch):
+    model.train()
 
-        train_loss = train(epoch)
-        train_acc = test(train_loader)
+    loss_all = 0
+    for data in train_loader:
+        data = data.to(device)
+        optimizer.zero_grad()
+        output = model(data)
 
-        val_acc = test(val_loader)
-        scheduler.step(val_acc)
-        lr = scheduler.optimizer.param_groups[0]['lr']
+        loss = F.nll_loss(output, data.y)
+        loss.backward()
+        loss_all += batch_size * loss.item()
+        optimizer.step()
+    return loss_all / len(train_dataset)
 
-        if val_acc > best_val:
-            best_val = val_acc
-            test_acc = test(test_loader)
 
-        # Break if learning rate is smaller 10**-6.
-        if lr < 0.000001:
-            results.append(test_acc)
-            break
+def test(loader):
+    model.eval()
 
-        print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
-              'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
-                                                                            train_acc, val_acc, test_acc))
-        print(r)
+    correct = 0
+    l = 0
 
-    results.append(test_acc)
-    torch.save(model.state_dict(), name_list[r])
+    for data in loader:
+        data = data.to(device)
+        # pred, err, cost = model(data)
+        pred = model(data)
+        pred = pred.max(dim=1)[1]
+        correct += pred.eq(data.y).float().mean().item()
+        l += 1
 
-print("###")
-print(results)
+    return correct / l
+
+
+best_val = 0.0
+test_acc = 0.0
+
+
+
+for dim in [32, 64, 128]:
+    for l in [2, 3, 4, 5]:
+        # Prepare batch loaders.
+
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        model = SimpleNet(hidden=dim, num_layers=l).to(device)
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
+                                                               factor=0.8, patience=10,
+                                                               min_lr=0.0000001)
+
+
+
+        for epoch in range(1, 100):
+
+            train_loss = train(epoch)
+            train_acc = test(train_loader)
+
+            val_acc = test(val_loader)
+            scheduler.step(val_acc)
+            lr = scheduler.optimizer.param_groups[0]['lr']
+
+            if val_acc > best_val:
+                best_val = val_acc
+                test_acc = test(test_loader)
+
+            # Break if learning rate is smaller 10**-6.
+            if lr < 0.000001:
+                results.append(test_acc)
+                break
+
+
