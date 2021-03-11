@@ -43,12 +43,6 @@ class VarConBipartiteLayer(MessagePassing):
         # Maps variable embeddings to scalar variable assigment.
         self.var_assigment = var_assigment
 
-        self.reset_parameters()
-
-    def reset_parameters(self):
-        reset(self.nn)
-        reset(self.edge_encoder)
-
     def forward(self, source, target, edge_index, edge_attr, rhs, size):
         # Compute scalar variable assignment.
         var_assignment = self.var_assigment(source)
@@ -111,11 +105,6 @@ class ConVarBipartiteLayer(MessagePassing):
         # Maps edge features to the same number of components as node features.
         self.edge_encoder = Sequential(Linear(edge_dim, dim), ReLU(), Linear(dim, dim), ReLU(),
                                        BN(dim))
-
-        self.reset_parameters()
-
-    def reset_parameters(self):
-        reset(self.nn)
 
     def forward(self, source, target, edge_index, edge_attr, error_con, size):
         # Map edge features to embeddings with the same number of components as node embeddings.

@@ -35,10 +35,6 @@ class SimpleBipartiteLayer(MessagePassing):
         self.edge_encoder = Sequential(Linear(edge_dim, dim), ReLU(), Linear(dim, dim), ReLU(),
                                        BN(dim))
 
-        self.reset_parameters()
-
-    def reset_parameters(self):
-        reset(self.nn)
 
     def forward(self, source, target, edge_index, edge_attr, size):
         # Map edge features to embeddings with the same number of components as node embeddings.
@@ -109,12 +105,13 @@ class SimpleNet(torch.nn.Module):
 
         x = torch.cat(x_var[:], dim=-1)
 
+        # TODO
         x = F.relu(self.lin1(x))
-        #x = F.dropout(x, p=0.5, training=self.training)
+        x = F.dropout(x, p=0.5, training=self.training)
         x = F.relu(self.lin2(x))
-        #x = F.dropout(x, p=0.5, training=self.training)
+        x = F.dropout(x, p=0.5, training=self.training)
         x = F.relu(self.lin3(x))
-        #x = F.dropout(x, p=0.5, training=self.training)
+        x = F.dropout(x, p=0.5, training=self.training)
         x = self.lin4(x)
         return F.log_softmax(x, dim=-1)
 

@@ -25,6 +25,7 @@ from torch_geometric.nn.inits import reset
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+
 # Update constraint embeddings based on variable embeddings.
 class VarConBipartiteLayer(MessagePassing):
     def __init__(self, edge_dim, dim, var_assigment):
@@ -71,13 +72,6 @@ class VarConBipartiteLayer(MessagePassing):
     def update(self, aggr_out):
         return aggr_out
 
-    def reset_parameters(self):
-        reset(self.edge_encoder)
-        reset(self.var_assigment)
-        reset(self.node_encoder)
-        reset(self.joint_var)
-        reset(self.mlp)
-        self.eps.data.fill_(self.initial_eps)
 
 
 # Compute error signal.
@@ -88,7 +82,6 @@ class ErrorLayer(MessagePassing):
         self.error_encoder = Sequential(Linear(1, dim), ReLU(), Linear(dim, dim), ReLU(),
                                         BN(dim))
 
-    # TODO: Change back!
     def forward(self, source, edge_index, edge_attr, rhs, index, size):
         # Compute scalar variable assignment.
         new_source = self.var_assignment(source)
@@ -128,7 +121,6 @@ class ConVarBipartiteLayer(MessagePassing):
         self.lin_l = Linear(dim, dim, bias=True)
         self.lin_r = Linear(dim, dim, bias=False)
 
-
     def forward(self, source, target, edge_index, edge_attr, error_con, size):
         # Map edge features to embeddings with the same number of components as node embeddings.
         edge_embedding = self.edge_encoder(edge_attr)
@@ -143,20 +135,11 @@ class ConVarBipartiteLayer(MessagePassing):
 
         return out
 
-
     def message(self, x_j, edge_attr):
         return F.relu(x_j + edge_attr)
 
     def update(self, aggr_out):
         return aggr_out
-
-    def reset_parameters(self):
-        pass
-        # reset(self.node_encoder)
-        # reset(self.edge_encoder)
-        # reset(self.joint_con_encoder)
-        # reset(self.mlp)
-        # self.eps.data.fill_(self.initial_eps)
 
 
 class SimpleNet(torch.nn.Module):
@@ -197,31 +180,6 @@ class SimpleNet(torch.nn.Module):
         self.lin3 = Linear(hidden, hidden)
         self.lin4 = Linear(hidden, 2)
 
-    def reset_parameters(self):
-        self.var_node_encoder.reset_parameters()
-        self.con_node_encoder.reset_parameters()
-
-        self.var_assigment_1.reset_parameters()
-        self.var_assigment_2.reset_parameters()
-        self.var_assigment_3.reset_parameters()
-        self.var_assigment_4.reset_parameters()
-
-        self.var_con_1.reset_parameters()
-        self.con_var_1.reset_parameters()
-
-        self.var_con_2.reset_parameters()
-        self.con_var_2.reset_parameters()
-
-        self.var_con_3.reset_parameters()
-        self.con_var_3.reset_parameters()
-
-        self.var_con_4.reset_parameters()
-        self.con_var_4.reset_parameters()
-
-        self.lin1.reset_parameters()
-        self.lin2.reset_parameters()
-        self.lin3.reset_parameters()
-        self.lin4.reset_parameters()
 
     def forward(self, data):
         # Get data of batch.
@@ -282,16 +240,6 @@ class SimpleNet(torch.nn.Module):
                            (con_node_features_4.size(0), var_node_features_3.size(0))))
 
         var = self.var_assigment_4(var_node_features_4)
-
-        # cost = torch.mul(var, obj)
-        # print(cost.size())
-        # print(data.index_var)
-        # cost = scatter_add(cost, index=data.index_var, dim=0)
-        #
-        # print(cost.size())
-        # exit()
-
-        # print(err_1.min(), print(err_1.max()))
 
         x = torch.cat(
             [var_node_features_0, var_node_features_1, var_node_features_2, var_node_features_3, var_node_features_4],
@@ -473,7 +421,6 @@ class MyTransform(object):
         return new_data
 
 
-
 file_list = [
     "../../DATA1/er_SET2/200_200/alpha_0.75_setParam_100/train/",
     "../../DATA1/er_SET2/200_200/alpha_0.25_setParam_100/train/",
@@ -483,7 +430,7 @@ file_list = [
     "../../DATA1/er_SET2/300_300/alpha_0.5_setParam_100/train/",
     "../../DATA1/er_SET1/400_400/alpha_0.75_setParam_100/train/",
     "../../DATA1/er_SET1/400_400/alpha_0.5_setParam_100/train/",
-    #"../../DATA1/er_SET1/400_400/alpha_0.25_setParam_100/train/",
+    # "../../DATA1/er_SET1/400_400/alpha_0.25_setParam_100/train/",
 ]
 
 name_list = [
@@ -495,7 +442,7 @@ name_list = [
     "er_SET2_300_300_alpha_0_5_setParam_100_train",
     "er_SET1_400_400_alpha_0_75_setParam_100_train",
     "er_SET1_400_400_alpha_0_5_setParam_100_train",
-    #"er_SET1_400_400_alpha_0_25_setParam_100_train",
+    # "er_SET1_400_400_alpha_0_25_setParam_100_train",
 ]
 
 results = []
@@ -608,7 +555,6 @@ for r, f in enumerate(file_list):
 
         # Break if learning rate is smaller 10**-6.
         if lr < 0.000001:
-
             break
 
         print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '

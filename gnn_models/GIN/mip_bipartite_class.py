@@ -47,11 +47,6 @@ class VarConBipartiteLayer(MessagePassing):
         self.eps = torch.nn.Parameter(torch.Tensor([0]))
         self.initial_eps = 0
 
-        self.reset_parameters()
-
-    def reset_parameters(self):
-        reset(self.edge_encoder)
-
     def forward(self, source, target, edge_index, edge_attr, rhs, size):
         # Compute scalar variable assignment.
         var_assignment = self.var_assigment(source)
@@ -128,11 +123,6 @@ class ConVarBipartiteLayer(MessagePassing):
         self.eps = torch.nn.Parameter(torch.Tensor([0]))
         self.initial_eps = 0
 
-        self.reset_parameters()
-
-    def reset_parameters(self):
-        pass
-
     def forward(self, source, target, edge_index, edge_attr, error_con, size):
         # Map edge features to embeddings with the same number of components as node embeddings.
         edge_embedding = self.edge_encoder(edge_attr)
@@ -190,31 +180,7 @@ class SimpleNet(torch.nn.Module):
         self.lin3 = Linear(hidden, hidden)
         self.lin4 = Linear(hidden, 2)
 
-    def reset_parameters(self):
-        self.var_node_encoder.reset_parameters()
-        self.con_node_encoder.reset_parameters()
 
-        self.var_assigment_1.reset_parameters()
-        self.var_assigment_2.reset_parameters()
-        self.var_assigment_3.reset_parameters()
-        self.var_assigment_4.reset_parameters()
-
-        self.var_con_1.reset_parameters()
-        self.con_var_1.reset_parameters()
-
-        self.var_con_2.reset_parameters()
-        self.con_var_2.reset_parameters()
-
-        self.var_con_3.reset_parameters()
-        self.con_var_3.reset_parameters()
-
-        self.var_con_4.reset_parameters()
-        self.con_var_4.reset_parameters()
-
-        self.lin1.reset_parameters()
-        self.lin2.reset_parameters()
-        self.lin3.reset_parameters()
-        self.lin4.reset_parameters()
 
     def forward(self, data):
         # Get data of batch.

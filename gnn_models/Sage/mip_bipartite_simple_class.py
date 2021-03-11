@@ -19,8 +19,7 @@ from torch.nn import BatchNorm1d as BN
 from torch.nn import Sequential, Linear, ReLU
 from torch_geometric.nn import MessagePassing
 from torch_geometric.nn.inits import reset
-from torch_geometric.utils import degree
-from torch_sparse import SparseTensor, matmul
+from torch_sparse import matmul
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -36,12 +35,6 @@ class SimpleBipartiteLayer(MessagePassing):
 
         self.lin_l = Linear(dim, dim, bias=True)
         self.lin_r = Linear(dim, dim, bias=False)
-
-        self.reset_parameters()
-
-    def reset_parameters(self):
-        pass
-        #reset(self.nn)
 
     def forward(self, source, target, edge_index, edge_attr, size):
         edge_emb = self.edge_encoder(edge_attr)
@@ -84,28 +77,12 @@ class SimpleNet(torch.nn.Module):
         self.con_var_4 = SimpleBipartiteLayer(1, hidden)
 
         # MLP used for classification.
-        self.lin1 = Linear(5*hidden, hidden)
+        self.lin1 = Linear(5 * hidden, hidden)
         self.lin2 = Linear(hidden, hidden)
         self.lin3 = Linear(hidden, hidden)
         self.lin4 = Linear(hidden, 2)
 
-    def reset_parameters(self):
-        self.var_con_1.reset_parameters()
-        self.con_var_1.reset_parameters()
-        self.var_con_2.reset_parameters()
-        self.con_var_2.reset_parameters()
-        self.var_con_3.reset_parameters()
-        self.con_var_3.reset_parameters()
-        self.var_con_4.reset_parameters()
-        self.con_var_4.reset_parameters()
-
-        self.lin1.reset_parameters()
-        self.lin2.reset_parameters()
-        self.lin3.reset_parameters()
-        self.lin4.reset_parameters()
-
     def forward(self, data):
-
         # Get data of batch.
         var_node_features = data.var_node_features
         con_node_features = data.con_node_features
@@ -120,40 +97,50 @@ class SimpleNet(torch.nn.Module):
         var_node_features_0 = self.var_node_encoder(var_node_features)
         con_node_features_0 = self.con_node_encoder(con_node_features)
 
-
-        con_node_features_1 = F.relu(self.var_con_1(var_node_features_0, con_node_features_0, edge_index_var, edge_features_var,
+        con_node_features_1 = F.relu(
+            self.var_con_1(var_node_features_0, con_node_features_0, edge_index_var, edge_features_var,
                            (num_nodes_var.sum(), num_nodes_con.sum())))
-        var_node_features_1 = F.relu(self.con_var_1(con_node_features_1, var_node_features_0, edge_index_con, edge_features_con,
+        var_node_features_1 = F.relu(
+            self.con_var_1(con_node_features_1, var_node_features_0, edge_index_con, edge_features_con,
                            (num_nodes_con.sum(), num_nodes_var.sum())))
 
-        con_node_features_2 = F.relu(self.var_con_2(var_node_features_1, con_node_features_1, edge_index_var, edge_features_var,
+        con_node_features_2 = F.relu(
+            self.var_con_2(var_node_features_1, con_node_features_1, edge_index_var, edge_features_var,
                            (num_nodes_var.sum(), num_nodes_con.sum())))
-        var_node_features_2 = F.relu(self.con_var_2(con_node_features_2, var_node_features_1, edge_index_con, edge_features_con,
+        var_node_features_2 = F.relu(
+            self.con_var_2(con_node_features_2, var_node_features_1, edge_index_con, edge_features_con,
                            (num_nodes_con.sum(), num_nodes_var.sum())))
 
-        con_node_features_3 = F.relu(self.var_con_3(var_node_features_2, con_node_features_2, edge_index_var, edge_features_var,
+        con_node_features_3 = F.relu(
+            self.var_con_3(var_node_features_2, con_node_features_2, edge_index_var, edge_features_var,
                            (num_nodes_var.sum(), num_nodes_con.sum())))
-        var_node_features_3 = F.relu(self.con_var_3(con_node_features_3, var_node_features_2, edge_index_con, edge_features_con,
+        var_node_features_3 = F.relu(
+            self.con_var_3(con_node_features_3, var_node_features_2, edge_index_con, edge_features_con,
                            (num_nodes_con.sum(), num_nodes_var.sum())))
 
-        con_node_features_4 = F.relu(self.var_con_4(var_node_features_3, con_node_features_3, edge_index_var, edge_features_var,
+        con_node_features_4 = F.relu(
+            self.var_con_4(var_node_features_3, con_node_features_3, edge_index_var, edge_features_var,
                            (num_nodes_var.sum(), num_nodes_con.sum())))
-        var_node_features_4 = F.relu(self.con_var_4(con_node_features_4, var_node_features_3, edge_index_con, edge_features_con,
+        var_node_features_4 = F.relu(
+            self.con_var_4(con_node_features_4, var_node_features_3, edge_index_con, edge_features_con,
                            (num_nodes_con.sum(), num_nodes_var.sum())))
 
-        x = torch.cat([var_node_features_0,var_node_features_1,var_node_features_2,var_node_features_3,var_node_features_4], dim=-1)
+        x = torch.cat(
+            [var_node_features_0, var_node_features_1, var_node_features_2, var_node_features_3, var_node_features_4],
+            dim=-1)
 
         x = F.relu(self.lin1(x))
-        #x = F.dropout(x, p=0.5, training=self.training)
+        # x = F.dropout(x, p=0.5, training=self.training)
         x = F.relu(self.lin2(x))
-        #x = F.dropout(x, p=0.5, training=self.training)
+        # x = F.dropout(x, p=0.5, training=self.training)
         x = F.relu(self.lin3(x))
-        #x = F.dropout(x, p=0.5, training=self.training)
+        # x = F.dropout(x, p=0.5, training=self.training)
         x = self.lin4(x)
         return F.log_softmax(x, dim=-1)
 
     def __repr__(self):
         return self.__class__.__name__
+
 
 # Preprocessing to create Torch dataset.
 class GraphDataset(InMemoryDataset):
@@ -311,7 +298,7 @@ file_list = [
     "../../DATA1/er_SET2/300_300/alpha_0.5_setParam_100/train/",
     "../../DATA1/er_SET1/400_400/alpha_0.75_setParam_100/train/",
     "../../DATA1/er_SET1/400_400/alpha_0.5_setParam_100/train/",
-    #"../../DATA1/er_SET1/400_400/alpha_0.25_setParam_100/train/",
+    # "../../DATA1/er_SET1/400_400/alpha_0.25_setParam_100/train/",
 ]
 
 name_list = [
@@ -323,7 +310,7 @@ name_list = [
     "er_SET2_300_300_alpha_0_5_setParam_100_train_",
     "er_SET1_400_400_alpha_0_75_setParam_100_train_",
     "er_SET1_400_400_alpha_0_5_setParam_100_train_",
-    #"er_SET1_400_400_alpha_0_25_setParam_100_train_",
+    # "er_SET1_400_400_alpha_0_25_setParam_100_train_",
 ]
 
 results = []

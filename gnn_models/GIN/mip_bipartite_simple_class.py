@@ -50,11 +50,6 @@ class SimpleBipartiteLayer(MessagePassing):
     def update(self, aggr_out):
         return aggr_out
 
-    def reset_parameters(self):
-        reset(self.node_encoder)
-        reset(self.edge_encoder)
-        reset(self.mlp)
-        self.eps.data.fill_(self.initial_eps)
 
 
 class SimpleNet(torch.nn.Module):
@@ -81,20 +76,7 @@ class SimpleNet(torch.nn.Module):
         self.lin3 = Linear(hidden, hidden)
         self.lin4 = Linear(hidden, 2)
 
-    def reset_parameters(self):
-        self.var_con_1.reset_parameters()
-        self.con_var_1.reset_parameters()
-        self.var_con_2.reset_parameters()
-        self.con_var_2.reset_parameters()
-        self.var_con_3.reset_parameters()
-        self.con_var_3.reset_parameters()
-        self.var_con_4.reset_parameters()
-        self.con_var_4.reset_parameters()
 
-        self.lin1.reset_parameters()
-        self.lin2.reset_parameters()
-        self.lin3.reset_parameters()
-        self.lin4.reset_parameters()
 
     def forward(self, data):
         # Get data of batch.
