@@ -264,7 +264,7 @@ class MyTransform(object):
 # Prepare data.
 path = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
 # Path to raw graph data.
-data_path = '../gisp_generator/DATA/er_200_SET2_1k/'
+data_path = '../../DATA1/er_SET2/200_200/alpha_0.75_setParam_100/train/'
 # Threshold for computing class labels.
 bias_threshold = 0.05
 # Create dataset.
