@@ -423,32 +423,35 @@ class MyTransform(object):
 
 file_list = [
     "../../DATA1/er_SET2/200_200/alpha_0.75_setParam_100/train/",
-    "../../DATA1/er_SET2/200_200/alpha_0.25_setParam_100/train/",
-    "../../DATA1/er_SET2/200_200/alpha_0.5_setParam_100/train/",
-    "../../DATA1/er_SET2/300_300/alpha_0.75_setParam_100/train/",
-    "../../DATA1/er_SET2/300_300/alpha_0.25_setParam_100/train/",
-    "../../DATA1/er_SET2/300_300/alpha_0.5_setParam_100/train/",
-    "../../DATA1/er_SET1/400_400/alpha_0.75_setParam_100/train/",
-    "../../DATA1/er_SET1/400_400/alpha_0.5_setParam_100/train/",
+    # "../../DATA1/er_SET2/200_200/alpha_0.25_setParam_100/train/",
+    # "../../DATA1/er_SET2/200_200/alpha_0.5_setParam_100/train/",
+    # "../../DATA1/er_SET2/300_300/alpha_0.75_setParam_100/train/",
+    # "../../DATA1/er_SET2/300_300/alpha_0.25_setParam_100/train/",
+    # "../../DATA1/er_SET2/300_300/alpha_0.5_setParam_100/train/",
+    # "../../DATA1/er_SET1/400_400/alpha_0.75_setParam_100/train/",
+    # "../../DATA1/er_SET1/400_400/alpha_0.5_setParam_100/train/",
     # "../../DATA1/er_SET1/400_400/alpha_0.25_setParam_100/train/",
 ]
 
 name_list = [
     "er_SET2_200_200_alpha_0_75_setParam_100_train",
-    "er_SET2_200_200_alpha_0_25_setParam_100_train",
-    "er_SET2_200_200_alpha_0_5_setParam_100_train",
-    "er_SET2_300_300_alpha_0_75_setParam_100_train",
-    "er_SET2_300_300_alpha_0_25_setParam_100_train",
-    "er_SET2_300_300_alpha_0_5_setParam_100_train",
-    "er_SET1_400_400_alpha_0_75_setParam_100_train",
-    "er_SET1_400_400_alpha_0_5_setParam_100_train",
+    # "er_SET2_200_200_alpha_0_25_setParam_100_train",
+    # "er_SET2_200_200_alpha_0_5_setParam_100_train",
+    # "er_SET2_300_300_alpha_0_75_setParam_100_train",
+    # "er_SET2_300_300_alpha_0_25_setParam_100_train",
+    # "er_SET2_300_300_alpha_0_5_setParam_100_train",
+    # "er_SET1_400_400_alpha_0_75_setParam_100_train",
+    # "er_SET1_400_400_alpha_0_5_setParam_100_train",
     # "er_SET1_400_400_alpha_0_25_setParam_100_train",
 ]
 
 results = []
 
-for r, f in enumerate(file_list):
 
+
+
+for r, f in enumerate(file_list):
+    plots = []
     # Prepare data.
     path = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
     # Path to raw graph data.
@@ -562,9 +565,13 @@ for r, f in enumerate(file_list):
                                                                             train_acc, val_acc, test_acc))
         print(r)
 
+
+        plots.append()
+
     results.append(test_acc)
 
     torch.save(model.state_dict(), name_list[r])
 
 print("###")
 print(results)
+print(plots)

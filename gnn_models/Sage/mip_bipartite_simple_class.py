@@ -366,6 +366,8 @@ test_acc = 0.0
 best_hp = []
 
 
+plots = []
+
 for dim in [128]:
     for l in [4]:
         for aggr in ["add"]:
@@ -402,4 +404,7 @@ for dim in [128]:
                       'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
                                                                                     train_acc, val_acc, test_acc))
 
+                plots.append(test_acc)
+
 print(best_hp)
+print(plots)
