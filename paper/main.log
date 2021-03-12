@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020) (preloaded format=pdflatex 2020.4.7)  10 MAR 2021 19:07
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020) (preloaded format=pdflatex 2020.4.7)  11 MAR 2021 18:19
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1460,21 +1460,21 @@ put line 363.
 [3]
 Package hyperref Info: bookmark level for unknown theorem defaults to 0 on inpu
 t line 368.
- [4]
-Underfull \hbox (badness 10000) in paragraph at lines 498--500
+ [4] [5]
+Underfull \hbox (badness 10000) in paragraph at lines 500--502
 
  []
 
-[5] (./main.bbl [6] [7])
+(./main.bbl [6] [7])
 
 Package natbib Warning: There were undefined citations.
 
 [8]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 514.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 514.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 516.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 516.
  (./main.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 514.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 514.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 516.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 516.
 Package rerunfilecheck Info: File `main.out' has not changed.
 (rerunfilecheck)             Checksum: D41D8CD98F00B204E9800998ECF8427E;0.
 
@@ -1514,7 +1514,7 @@ cal/texlive/2020/texmf-dist/fonts/type1/public/lm/lmsy6.pfb></usr/local/texlive
 /2020/texmf-dist/fonts/type1/public/lm/lmsy8.pfb></usr/local/texlive/2020/texmf
 -dist/fonts/type1/public/lm/lmtt10.pfb></usr/local/texlive/2020/texmf-dist/font
 s/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on main.pdf (8 pages, 355688 bytes).
+Output written on main.pdf (8 pages, 355751 bytes).
 PDF statistics:
  336 PDF objects out of 1000 (max. 8388607)
  286 compressed objects within 3 object streams
