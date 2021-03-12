@@ -447,7 +447,7 @@ name_list = [
 results = []
 
 for r, f in enumerate(file_list):
-
+    plots = []
     # Prepare data.
     path = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
     # Path to raw graph data.
@@ -554,15 +554,18 @@ for r, f in enumerate(file_list):
 
         # Break if learning rate is smaller 10**-6.
         if lr < 0.000001:
-            results.append(test_acc)
             break
 
         print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
               'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
                                                                             train_acc, val_acc, test_acc))
         print(r)
-    results.append(test_acc)
 
+
+        plots.append(test_acc)
+
+    results.append(test_acc)
+    print(plots)
     torch.save(model.state_dict(), name_list[r])
 
 print("###")
