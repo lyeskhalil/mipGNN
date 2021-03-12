@@ -289,7 +289,6 @@ name_list = [
 
 print(name_list[i])
 
-
 path = file_list[i]
 name = name_list[i]
 
@@ -359,9 +358,9 @@ test_acc = 0.0
 best_hp = []
 
 
-for dim in [32, 64, 128]:
-    for l in [2, 3, 4, 5]:
-        for aggr in ["max", "add", "mean"]:
+for dim in [128]:
+    for l in [5]:
+        for aggr in ["max"]:
             print(dim, l, aggr)
 
             device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -390,5 +389,9 @@ for dim in [32, 64, 128]:
                 if lr < 0.000001:
                     results.append(test_acc)
                     break
+
+                print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
+                      'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
+                                                                                    train_acc, val_acc, test_acc))
 
 print(best_hp)

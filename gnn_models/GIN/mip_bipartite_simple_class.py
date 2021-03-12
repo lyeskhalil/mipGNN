@@ -260,9 +260,39 @@ class MyTransform(object):
             new_data[key] = item
         return new_data
 
+print(sys.argv[1])
+i = int(sys.argv[1])
 
-path = "../../DATA1/er_SET2/200_200/alpha_0.75_setParam_100/train/"
-name = "er_SET2_200_200_alpha_0_75_setParam_100_train_"
+
+
+file_list = [
+    "../../DATA1/er_SET2/200_200/alpha_0.75_setParam_100/train/",
+    "../../DATA1/er_SET2/200_200/alpha_0.25_setParam_100/train/",
+    "../../DATA1/er_SET2/200_200/alpha_0.5_setParam_100/train/",
+    "../../DATA1/er_SET2/300_300/alpha_0.75_setParam_100/train/",
+    "../../DATA1/er_SET2/300_300/alpha_0.25_setParam_100/train/",
+    "../../DATA1/er_SET2/300_300/alpha_0.5_setParam_100/train/",
+    "../../DATA1/er_SET1/400_400/alpha_0.75_setParam_100/train/",
+    "../../DATA1/er_SET1/400_400/alpha_0.5_setParam_100/train/",
+    # "../../DATA1/er_SET1/400_400/alpha_0.25_setParam_100/train/",
+]
+
+name_list = [
+    "er_SET2_200_200_alpha_0_75_setParam_100_train",
+    "er_SET2_200_200_alpha_0_25_setParam_100_train",
+    "er_SET2_200_200_alpha_0_5_setParam_100_train",
+    "er_SET2_300_300_alpha_0_75_setParam_100_train",
+    "er_SET2_300_300_alpha_0_25_setParam_100_train",
+    "er_SET2_300_300_alpha_0_5_setParam_100_train",
+    "er_SET1_400_400_alpha_0_75_setParam_100_train",
+    "er_SET1_400_400_alpha_0_5_setParam_100_train",
+    # "er_SET1_400_400_alpha_0_25_setParam_100_train",
+]
+
+print(name_list[i])
+
+path = file_list[i]
+name = name_list[i]
 
 results = []
 
@@ -317,7 +347,6 @@ def test(loader):
 
     for data in loader:
         data = data.to(device)
-        # pred, err, cost = model(data)
         pred = model(data)
         pred = pred.max(dim=1)[1]
         correct += pred.eq(data.y).float().mean().item()
@@ -329,6 +358,7 @@ def test(loader):
 best_val = 0.0
 test_acc = 0.0
 best_hp = []
+
 
 for dim in [32, 64, 128]:
     for l in [2, 3, 4, 5]:
@@ -363,5 +393,3 @@ for dim in [32, 64, 128]:
                     break
 
 print(best_hp)
-
-
