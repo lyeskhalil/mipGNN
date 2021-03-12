@@ -360,9 +360,9 @@ test_acc = 0.0
 best_hp = []
 
 
-for dim in [32, 64, 128]:
-    for l in [2, 3, 4, 5]:
-        for aggr in ["max", "add", "mean"]:
+for dim in [128]:
+    for l in [5]:
+        for aggr in ["add"]:
             print(dim, l, aggr)
 
             device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
