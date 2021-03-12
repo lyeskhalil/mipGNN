@@ -566,12 +566,12 @@ for r, f in enumerate(file_list):
         print(r)
 
 
-        plots.append()
+        plots.append(test_acc)
 
     results.append(test_acc)
-
+    print(plots)
     torch.save(model.state_dict(), name_list[r])
 
 print("###")
 print(results)
-print(plots)
+
