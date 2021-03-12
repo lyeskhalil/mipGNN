@@ -259,8 +259,7 @@ class MyTransform(object):
 
 
 print(sys.argv[1])
-exit()
-
+i = int(sys.argv[1])
 
 file_list = [
     "../../DATA1/er_SET2/200_200/alpha_0.75_setParam_100/train/",
