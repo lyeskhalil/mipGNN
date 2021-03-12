@@ -398,4 +398,8 @@ for dim in [32, 64, 128]:
                     results.append(test_acc)
                     break
 
+                print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
+                      'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
+                                                                                    train_acc, val_acc, test_acc))
+
 print(best_hp)
