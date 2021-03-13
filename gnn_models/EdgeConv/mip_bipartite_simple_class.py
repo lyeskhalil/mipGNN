@@ -361,7 +361,7 @@ best_hp = []
 plots = []
 
 for dim in [128]:
-    for l in [4]:
+    for l in [3]:
         for aggr in ["add"]:
             print(dim, l, aggr)
 
