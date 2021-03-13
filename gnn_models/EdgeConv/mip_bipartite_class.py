@@ -424,10 +424,10 @@ file_list = [
     #"../../DATA1/er_SET2/200_200/alpha_0.75_setParam_100/train/",
     #"../../DATA1/er_SET2/200_200/alpha_0.25_setParam_100/train/",
     #"../../DATA1/er_SET2/200_200/alpha_0.5_setParam_100/train/",
-    "../../DATA1/er_SET2/300_300/alpha_0.75_setParam_100/train/",
+    #"../../DATA1/er_SET2/300_300/alpha_0.75_setParam_100/train/",
     #"../../DATA1/er_SET2/300_300/alpha_0.25_setParam_100/train/",
     #"../../DATA1/er_SET2/300_300/alpha_0.5_setParam_100/train/",
-    #"../../DATA1/er_SET1/400_400/alpha_0.75_setParam_100/train/",
+    "../../DATA1/er_SET1/400_400/alpha_0.75_setParam_100/train/",
     #"../../DATA1/er_SET1/400_400/alpha_0.5_setParam_100/train/",
     # "../../DATA1/er_SET1/400_400/alpha_0.25_setParam_100/train/",
 ]
@@ -436,10 +436,10 @@ name_list = [
     #"er_SET2_200_200_alpha_0_75_setParam_100_train",
     #"er_SET2_200_200_alpha_0_25_setParam_100_train",
     #"er_SET2_200_200_alpha_0_5_setParam_100_train",
-    "er_SET2_300_300_alpha_0_75_setParam_100_train",
+    #"er_SET2_300_300_alpha_0_75_setParam_100_train",
     #"er_SET2_300_300_alpha_0_25_setParam_100_train",
     #"er_SET2_300_300_alpha_0_5_setParam_100_train",
-    #"er_SET1_400_400_alpha_0_75_setParam_100_train",
+    "er_SET1_400_400_alpha_0_75_setParam_100_train",
     #"er_SET1_400_400_alpha_0_5_setParam_100_train",
     # "er_SET1_400_400_alpha_0_25_setParam_100_train",
 ]
@@ -539,7 +539,7 @@ for r, f in enumerate(file_list):
 
     best_val = 0.0
     test_acc = 0.0
-    for epoch in range(1, 100):
+    for epoch in range(1, 50):
 
         train_loss = train(epoch)
         train_acc = test(train_loader)
