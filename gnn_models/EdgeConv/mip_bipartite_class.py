@@ -154,7 +154,7 @@ class SimpleNet(torch.nn.Module):
         self.con_var_4 = ConVarBipartiteLayer(1, hidden)
 
         # MLP used for classification.
-        self.lin1 = Linear(5 * hidden, hidden)
+        self.lin1 = Linear(3 * hidden, hidden)
         self.lin2 = Linear(hidden, hidden)
         self.lin3 = Linear(hidden, hidden)
         self.lin4 = Linear(hidden, 2)
@@ -220,28 +220,28 @@ class SimpleNet(torch.nn.Module):
             self.con_var_2(con_node_features_2, var_node_features_1, edge_index_con, edge_features_con, err_2,
                            (con_node_features_2.size(0), var_node_features_1.size(0))))
 
-        con_node_features_3 = F.relu(
-            self.var_con_3(var_node_features_2, con_node_features_2, edge_index_var, edge_features_var, rhs,
-                           (var_node_features_2.size(0), con_node_features_2.size(0))))
-        err_3 = self.error_1(var_node_features_2, edge_index_var, edge_features_var, rhs, index,
-                             (var_node_features_2.size(0), con_node_features_2.size(0)))
-
-        var_node_features_3 = F.relu(
-            self.con_var_3(con_node_features_3, var_node_features_2, edge_index_con, edge_features_con, err_3,
-                           (con_node_features_3.size(0), var_node_features_2.size(0))))
-
-        con_node_features_4 = F.relu(
-            self.var_con_4(var_node_features_3, con_node_features_3, edge_index_var, edge_features_var, rhs,
-                           (var_node_features_3.size(0), con_node_features_3.size(0))))
-        err_4 = self.error_1(var_node_features_3, edge_index_var, edge_features_var, rhs, index,
-                             (var_node_features_3.size(0), con_node_features_3.size(0)))
-
-        var_node_features_4 = F.relu(
-            self.con_var_4(con_node_features_4, var_node_features_3, edge_index_con, edge_features_con, err_4,
-                           (con_node_features_4.size(0), var_node_features_3.size(0))))
+        # con_node_features_3 = F.relu(
+        #     self.var_con_3(var_node_features_2, con_node_features_2, edge_index_var, edge_features_var, rhs,
+        #                    (var_node_features_2.size(0), con_node_features_2.size(0))))
+        # err_3 = self.error_1(var_node_features_2, edge_index_var, edge_features_var, rhs, index,
+        #                      (var_node_features_2.size(0), con_node_features_2.size(0)))
+        #
+        # var_node_features_3 = F.relu(
+        #     self.con_var_3(con_node_features_3, var_node_features_2, edge_index_con, edge_features_con, err_3,
+        #                    (con_node_features_3.size(0), var_node_features_2.size(0))))
+        #
+        # con_node_features_4 = F.relu(
+        #     self.var_con_4(var_node_features_3, con_node_features_3, edge_index_var, edge_features_var, rhs,
+        #                    (var_node_features_3.size(0), con_node_features_3.size(0))))
+        # err_4 = self.error_1(var_node_features_3, edge_index_var, edge_features_var, rhs, index,
+        #                      (var_node_features_3.size(0), con_node_features_3.size(0)))
+        #
+        # var_node_features_4 = F.relu(
+        #     self.con_var_4(con_node_features_4, var_node_features_3, edge_index_con, edge_features_con, err_4,
+        #                    (con_node_features_4.size(0), var_node_features_3.size(0))))
 
         x = torch.cat(
-            [var_node_features_0, var_node_features_1, var_node_features_2, var_node_features_3, var_node_features_4],
+            [var_node_features_0, var_node_features_1, var_node_features_2], #var_node_features_3, var_node_features_4],
             dim=-1)
 
         x = F.relu(self.lin1(x))
