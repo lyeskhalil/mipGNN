@@ -151,7 +151,7 @@ class SimpleNet(torch.nn.Module):
 
         # Compute variable assignement.
         self.layers_ass = []
-        for i in num_layers:
+        for i in range(self.num_layers):
             self.layers_ass.append(Sequential(Linear(hidden, hidden), ReLU(), Linear(hidden, 1), Sigmoid()))
 
         # Bipartite GNN architecture.
