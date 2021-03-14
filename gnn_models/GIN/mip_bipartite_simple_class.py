@@ -97,10 +97,10 @@ class SimpleNet(torch.nn.Module):
         x_con = [con_node_features_0]
 
         for i in range(self.num_layers):
-            x_con.append(F.relu(self.layers_con[i](x_var[-1], x_con[-1], edge_index_var, edge_features_var,
+            x_con.append(F.relu(self.layers_var[i](x_var[-1], x_con[-1], edge_index_var, edge_features_var,
                                                    (num_nodes_var.sum(), num_nodes_con.sum()))))
 
-            x_var.append(F.relu(self.layers_var[i](x_con[-1], x_var[-1], edge_index_con, edge_features_con,
+            x_var.append(F.relu(self.layers_con[i](x_con[-1], x_var[-1], edge_index_con, edge_features_con,
                                                     (num_nodes_con.sum(), num_nodes_var.sum()))))
 
         x = torch.cat(x_var[:], dim=-1)
@@ -355,14 +355,15 @@ def test(loader):
     return correct / l
 
 
+
 best_val = 0.0
 test_acc = 0.0
 best_hp = []
 
 
-for dim in [128]:
-    for l in [5]:
-        for aggr in ["add"]:
+for dim in [32, 64, 128]:
+    for l in [2,3,4,5]:
+        for aggr in ["mean", "max", "add"]:
             print(dim, l, aggr)
 
             device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -397,3 +398,4 @@ for dim in [128]:
                                                                                     train_acc, val_acc, test_acc))
 
 print(best_hp)
+

@@ -97,7 +97,7 @@ class SimpleNet(torch.nn.Module):
                                                    (num_nodes_var.sum(), num_nodes_con.sum()))))
 
             x_var.append(F.relu(self.layers_con[i](x_con[-1], x_var[-1], edge_index_con, edge_features_con,
-                                                    (num_nodes_con.sum(), num_nodes_var.sum()))))
+                                                   (num_nodes_con.sum(), num_nodes_var.sum()))))
 
         x = torch.cat(x_var[:], dim=-1)
 
@@ -258,10 +258,8 @@ class MyTransform(object):
         return new_data
 
 
-print(sys.argv[1])
-i = int(sys.argv[1])
-
-
+#print(sys.argv[1])
+#i = int(sys.argv[1])
 
 file_list = [
     "../../DATA1/er_SET2/200_200/alpha_0.75_setParam_100/train/",
@@ -287,112 +285,120 @@ name_list = [
     # "er_SET1_400_400_alpha_0_25_setParam_100_train",
 ]
 
-print(name_list[i])
 
-path = file_list[i]
-name = name_list[i]
+hp_all = []
+for i in range(len(file_list)):
 
-results = []
+    print(name_list[i])
 
-# Prepare data.
-path = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
-# Path to raw graph data.
-data_path = path
-sname = name
-# Threshold for computing class labels.
-bias_threshold = 0.050
-# Create dataset.
-dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform())  # .shuffle()
+    path = file_list[i]
+    name = name_list[i]
 
-# Split data.
-l = len(dataset)
-train_index, rest = train_test_split(list(range(0, l)), test_size=0.2)
-l = len(rest)
-val_index = rest[0:int(l / 2)]
-test_index = rest[int(l / 2):]
+    results = []
 
-train_dataset = dataset[train_index].shuffle()
-val_dataset = dataset[val_index].shuffle()
-test_dataset = dataset[test_index].shuffle()
+    # Prepare data.
+    path = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
+    # Path to raw graph data.
+    data_path = path
+    sname = name
+    # Threshold for computing class labels.
+    bias_threshold = 0.050
+    # Create dataset.
+    dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform())  # .shuffle()
 
-batch_size = 15
-train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
+    # Split data.
+    l = len(dataset)
+    train_index, rest = train_test_split(list(range(0, l)), test_size=0.2)
+    l = len(rest)
+    val_index = rest[0:int(l / 2)]
+    test_index = rest[int(l / 2):]
 
+    train_dataset = dataset[train_index].shuffle()
+    val_dataset = dataset[val_index].shuffle()
+    test_dataset = dataset[test_index].shuffle()
 
-def train(epoch):
-    model.train()
-
-    loss_all = 0
-    for data in train_loader:
-        data = data.to(device)
-        optimizer.zero_grad()
-        output = model(data)
-
-        loss = F.nll_loss(output, data.y)
-        loss.backward()
-        loss_all += batch_size * loss.item()
-        optimizer.step()
-    return loss_all / len(train_dataset)
+    batch_size = 15
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
 
-def test(loader):
-    model.eval()
+    def train(epoch):
+        model.train()
 
-    correct = 0
-    l = 0
+        loss_all = 0
+        for data in train_loader:
+            data = data.to(device)
+            optimizer.zero_grad()
+            output = model(data)
 
-    for data in loader:
-        data = data.to(device)
-        pred = model(data)
-        pred = pred.max(dim=1)[1]
-        correct += pred.eq(data.y).float().mean().item()
-        l += 1
-
-    return correct / l
+            loss = F.nll_loss(output, data.y)
+            loss.backward()
+            loss_all += batch_size * loss.item()
+            optimizer.step()
+        return loss_all / len(train_dataset)
 
 
-best_val = 0.0
-test_acc = 0.0
-best_hp = []
+    def test(loader):
+        model.eval()
 
-plots = []
+        correct = 0
+        l = 0
 
-for i in range(5):
-    p = []
+        for data in loader:
+            data = data.to(device)
+            pred = model(data)
+            pred = pred.max(dim=1)[1]
+            correct += pred.eq(data.y).float().mean().item()
+            l += 1
 
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model = SimpleNet(hidden=128, num_layers=4, aggr="add").to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+        return correct / l
 
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
-                                                           factor=0.8, patience=10,
-                                                           min_lr=0.0000001)
-    for epoch in range(1, 50):
-        print(i)
 
-        train_loss = train(epoch)
-        train_acc = test(train_loader)
+    best_val = 0.0
+    test_acc = 0.0
+    best_hp = []
 
-        val_acc = test(val_loader)
-        scheduler.step(val_acc)
-        lr = scheduler.optimizer.param_groups[0]['lr']
 
-        if val_acc > best_val:
-            best_val = val_acc
-            test_acc = test(test_loader)
+    for dim in [32, 64, 128]:
+        for l in [2,3,4,5]:
+            for aggr in ["mean", "max", "add"]:
+                print(dim, l, aggr)
 
-        # Break if learning rate is smaller 10**-6.
-        if lr < 0.000001:
-            results.append(test_acc)
-            break
+                device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+                model = SimpleNet(hidden=dim, num_layers=l, aggr = aggr).to(device)
+                optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
-        print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
-              'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
-                                                                            train_acc, val_acc, test_acc))
+                scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
+                                                                       factor=0.8, patience=10,
+                                                                       min_lr=0.0000001)
 
-        p.append(test_acc)
-    plots.append(p)
+                for epoch in range(1, 100):
 
-print(plots)
+                    train_loss = train(epoch)
+                    train_acc = test(train_loader)
+
+                    val_acc = test(val_loader)
+                    scheduler.step(val_acc)
+                    lr = scheduler.optimizer.param_groups[0]['lr']
+
+                    if val_acc > best_val:
+                        best_val = val_acc
+                        test_acc = test(test_loader)
+                        best_hp = [dim, l, aggr, test_acc]
+
+                    # Break if learning rate is smaller 10**-6.
+                    if lr < 0.000001:
+                        results.append(test_acc)
+                        break
+
+                    #print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
+                    #      'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
+                    #                                                                    train_acc, val_acc, test_acc))
+
+    print(best_hp)
+    hp_all.append(best_hp)
+
+print("###")
+print(hp_all)
+
