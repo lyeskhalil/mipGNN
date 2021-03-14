@@ -21,7 +21,6 @@ import torch.nn.functional as F
 from torch.nn import BatchNorm1d as BN
 from torch.nn import Sequential, Linear, ReLU, Sigmoid
 from torch_geometric.nn import MessagePassing
-from torch_geometric.nn.inits import reset
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -200,12 +199,11 @@ class SimpleNet(torch.nn.Module):
             x_err.append(self.layers_err[i](x_var[-1], edge_index_var, edge_features_var, rhs, index,
                                             (var_node_features_0.size(0), con_node_features.size(0))))
 
-            x_var.append(F.relu(self.layers_con[i](x_con[-1], x_var[-1], edge_index_con, edge_features_con, x_err[-1],
-                                                   (num_nodes_con.sum(), num_nodes_var.sum()))))
-
             x_con.append(F.relu(self.layers_var[-1](x_var[-1], x_con[-1], edge_index_var, edge_features_var, rhs,
                                                     (num_nodes_var.sum(), num_nodes_con.sum()))))
 
+            x_var.append(F.relu(self.layers_con[i](x_con[-1], x_var[-1], edge_index_con, edge_features_con, x_err[-1],
+                                                   (num_nodes_con.sum(), num_nodes_var.sum()))))
 
         x = torch.cat(x_var[:], dim=-1)
 
