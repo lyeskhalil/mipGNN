@@ -205,8 +205,6 @@ class SimpleNet(torch.nn.Module):
             x_con.append(F.relu(self.layers_var[-1](x_var[-1], x_con[-1], edge_index_var, edge_features_var, rhs,
                                                     (num_nodes_var.sum(), num_nodes_con.sum()))))
 
-
-
         x = torch.cat(x_var[:], dim=-1)
 
         x = F.relu(self.lin1(x))
