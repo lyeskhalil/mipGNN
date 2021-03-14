@@ -108,9 +108,6 @@ class ConVarBipartiteLayer(MessagePassing):
     def __init__(self, edge_dim, dim, aggr):
         super(ConVarBipartiteLayer, self).__init__(aggr=aggr, flow="source_to_target")
 
-    def __init__(self, edge_dim, dim):
-        super(ConVarBipartiteLayer, self).__init__(aggr="add", flow="source_to_target")
-
         # Maps edge features to the same number of components as node features.
         self.edge_encoder = Sequential(Linear(edge_dim, dim), ReLU(), Linear(dim, dim), ReLU(),
                                        BN(dim))
