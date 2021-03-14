@@ -272,26 +272,26 @@ i = int(sys.argv[1])
 
 
 file_list = [
-    #"../../DATA1/er_SET2/200_200/alpha_0.75_setParam_100/train/",
+    "../../DATA1/er_SET2/200_200/alpha_0.75_setParam_100/train/",
     "../../DATA1/er_SET2/200_200/alpha_0.25_setParam_100/train/",
-    #"../../DATA1/er_SET2/200_200/alpha_0.5_setParam_100/train/",
-    #"../../DATA1/er_SET2/300_300/alpha_0.75_setParam_100/train/",
-    #"../../DATA1/er_SET2/300_300/alpha_0.25_setParam_100/train/",
-    #"../../DATA1/er_SET2/300_300/alpha_0.5_setParam_100/train/",
-    #"../../DATA1/er_SET1/400_400/alpha_0.75_setParam_100/train/",
-    #"../../DATA1/er_SET1/400_400/alpha_0.5_setParam_100/train/",
+    "../../DATA1/er_SET2/200_200/alpha_0.5_setParam_100/train/",
+    "../../DATA1/er_SET2/300_300/alpha_0.75_setParam_100/train/",
+    "../../DATA1/er_SET2/300_300/alpha_0.25_setParam_100/train/",
+    "../../DATA1/er_SET2/300_300/alpha_0.5_setParam_100/train/",
+    "../../DATA1/er_SET1/400_400/alpha_0.75_setParam_100/train/",
+    "../../DATA1/er_SET1/400_400/alpha_0.5_setParam_100/train/",
     # "../../DATA1/er_SET1/400_400/alpha_0.25_setParam_100/train/",
 ]
 
 name_list = [
-    #"er_SET2_200_200_alpha_0_75_setParam_100_train",
+    "er_SET2_200_200_alpha_0_75_setParam_100_train",
     "er_SET2_200_200_alpha_0_25_setParam_100_train",
-    #"er_SET2_200_200_alpha_0_5_setParam_100_train",
-    #"er_SET2_300_300_alpha_0_75_setParam_100_train",
-    #"er_SET2_300_300_alpha_0_25_setParam_100_train",
-    #"er_SET2_300_300_alpha_0_5_setParam_100_train",
-    #"er_SET1_400_400_alpha_0_75_setParam_100_train",
-    #"er_SET1_400_400_alpha_0_5_setParam_100_train",
+    "er_SET2_200_200_alpha_0_5_setParam_100_train",
+    "er_SET2_300_300_alpha_0_75_setParam_100_train",
+    "er_SET2_300_300_alpha_0_25_setParam_100_train",
+    "er_SET2_300_300_alpha_0_5_setParam_100_train",
+    "er_SET1_400_400_alpha_0_75_setParam_100_train",
+    "er_SET1_400_400_alpha_0_5_setParam_100_train",
     # "er_SET1_400_400_alpha_0_25_setParam_100_train",
 ]
 
@@ -365,46 +365,43 @@ best_val = 0.0
 test_acc = 0.0
 best_hp = []
 
-
 plots = []
 
-for dim in [128]:
-    for l in [4]:
-        for aggr in ["add"]:
-            print(dim, l, aggr)
+for i in range(5):
+    p = []
 
-            device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-            model = SimpleNet(hidden=dim, num_layers=l, aggr = aggr).to(device)
-            optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model = SimpleNet(hidden=128, num_layers=2, aggr="add").to(device)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
-            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
-                                                                   factor=0.8, patience=10,
-                                                                   min_lr=0.0000001)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
+                                                           factor=0.8, patience=10,
+                                                           min_lr=0.0000001)
+    for epoch in range(1, 50):
+        print(i)
 
-            for epoch in range(1, 100):
+        train_loss = train(epoch)
+        train_acc = test(train_loader)
 
-                train_loss = train(epoch)
-                train_acc = test(train_loader)
+        val_acc = test(val_loader)
+        scheduler.step(val_acc)
+        lr = scheduler.optimizer.param_groups[0]['lr']
 
-                val_acc = test(val_loader)
-                scheduler.step(val_acc)
-                lr = scheduler.optimizer.param_groups[0]['lr']
+        if val_acc > best_val:
+            best_val = val_acc
+            test_acc = test(test_loader)
 
-                if val_acc > best_val:
-                    best_val = val_acc
-                    test_acc = test(test_loader)
-                    best_hp = [dim, l, aggr, test_acc]
+        # Break if learning rate is smaller 10**-6.
+        if lr < 0.000001:
+            results.append(test_acc)
+            break
 
-                # Break if learning rate is smaller 10**-6.
-                if lr < 0.000001:
-                    results.append(test_acc)
-                    break
+        print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
+              'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
+                                                                            train_acc, val_acc, test_acc))
 
-                print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
-                      'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
-                                                                                    train_acc, val_acc, test_acc))
+        p.append(test_acc)
+    plots.append(p)
 
-                plots.append(test_acc)
-
-print(best_hp)
 print(plots)
+

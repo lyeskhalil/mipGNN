@@ -175,7 +175,7 @@ class SimpleNet(torch.nn.Module):
         self.con_var_4 = ConVarBipartiteLayer(1, hidden)
 
         # MLP used for classification.
-        self.lin1 = Linear(5 * hidden, hidden)
+        self.lin1 = Linear(3 * hidden, hidden)
         self.lin2 = Linear(hidden, hidden)
         self.lin3 = Linear(hidden, hidden)
         self.lin4 = Linear(hidden, 2)
@@ -219,30 +219,30 @@ class SimpleNet(torch.nn.Module):
             self.con_var_2(con_node_features_2, var_node_features_1, edge_index_con, edge_features_con, err_2,
                            (con_node_features_2.size(0), var_node_features_1.size(0))))
 
-        con_node_features_3 = F.relu(
-            self.var_con_3(var_node_features_2, con_node_features_2, edge_index_var, edge_features_var, rhs,
-                           (var_node_features_2.size(0), con_node_features_2.size(0))))
-        err_3 = self.error_1(var_node_features_2, edge_index_var, edge_features_var, rhs, index,
-                             (var_node_features_2.size(0), con_node_features_2.size(0)))
+        # con_node_features_3 = F.relu(
+        #     self.var_con_3(var_node_features_2, con_node_features_2, edge_index_var, edge_features_var, rhs,
+        #                    (var_node_features_2.size(0), con_node_features_2.size(0))))
+        # err_3 = self.error_1(var_node_features_2, edge_index_var, edge_features_var, rhs, index,
+        #                      (var_node_features_2.size(0), con_node_features_2.size(0)))
+        #
+        # var_node_features_3 = F.relu(
+        #     self.con_var_3(con_node_features_3, var_node_features_2, edge_index_con, edge_features_con, err_3,
+        #                    (con_node_features_3.size(0), var_node_features_2.size(0))))
+        #
+        # con_node_features_4 = F.relu(
+        #     self.var_con_4(var_node_features_3, con_node_features_3, edge_index_var, edge_features_var, rhs,
+        #                    (var_node_features_3.size(0), con_node_features_3.size(0))))
+        # err_4 = self.error_1(var_node_features_3, edge_index_var, edge_features_var, rhs, index,
+        #                      (var_node_features_3.size(0), con_node_features_3.size(0)))
+        #
+        # var_node_features_4 = F.relu(
+        #     self.con_var_4(con_node_features_4, var_node_features_3, edge_index_con, edge_features_con, err_4,
+        #                    (con_node_features_4.size(0), var_node_features_3.size(0))))
 
-        var_node_features_3 = F.relu(
-            self.con_var_3(con_node_features_3, var_node_features_2, edge_index_con, edge_features_con, err_3,
-                           (con_node_features_3.size(0), var_node_features_2.size(0))))
-
-        con_node_features_4 = F.relu(
-            self.var_con_4(var_node_features_3, con_node_features_3, edge_index_var, edge_features_var, rhs,
-                           (var_node_features_3.size(0), con_node_features_3.size(0))))
-        err_4 = self.error_1(var_node_features_3, edge_index_var, edge_features_var, rhs, index,
-                             (var_node_features_3.size(0), con_node_features_3.size(0)))
-
-        var_node_features_4 = F.relu(
-            self.con_var_4(con_node_features_4, var_node_features_3, edge_index_con, edge_features_con, err_4,
-                           (con_node_features_4.size(0), var_node_features_3.size(0))))
-
-        var = self.var_assigment_4(var_node_features_4)
+        #var = self.var_assigment_4(var_node_features_4)
 
         x = torch.cat(
-            [var_node_features_0, var_node_features_1, var_node_features_2, var_node_features_3, var_node_features_4],
+            [var_node_features_0, var_node_features_1, var_node_features_2], #, var_node_features_3, var_node_features_4],
             dim=-1)
 
         x = F.relu(self.lin1(x))
@@ -421,129 +421,120 @@ class MyTransform(object):
         return new_data
 
 
+
+print(sys.argv[1])
+i = int(sys.argv[1])
+
+
+
 file_list = [
-    #"../../DATA1/er_SET2/200_200/alpha_0.75_setParam_100/train/",
+    "../../DATA1/er_SET2/200_200/alpha_0.75_setParam_100/train/",
     "../../DATA1/er_SET2/200_200/alpha_0.25_setParam_100/train/",
-    # "../../DATA1/er_SET2/200_200/alpha_0.5_setParam_100/train/",
-    # "../../DATA1/er_SET2/300_300/alpha_0.75_setParam_100/train/",
-    # "../../DATA1/er_SET2/300_300/alpha_0.25_setParam_100/train/",
-    # "../../DATA1/er_SET2/300_300/alpha_0.5_setParam_100/train/",
-    # "../../DATA1/er_SET1/400_400/alpha_0.75_setParam_100/train/",
-    # "../../DATA1/er_SET1/400_400/alpha_0.5_setParam_100/train/",
+    "../../DATA1/er_SET2/200_200/alpha_0.5_setParam_100/train/",
+    "../../DATA1/er_SET2/300_300/alpha_0.75_setParam_100/train/",
+    "../../DATA1/er_SET2/300_300/alpha_0.25_setParam_100/train/",
+    "../../DATA1/er_SET2/300_300/alpha_0.5_setParam_100/train/",
+    "../../DATA1/er_SET1/400_400/alpha_0.75_setParam_100/train/",
+    "../../DATA1/er_SET1/400_400/alpha_0.5_setParam_100/train/",
     # "../../DATA1/er_SET1/400_400/alpha_0.25_setParam_100/train/",
 ]
 
 name_list = [
-    #"er_SET2_200_200_alpha_0_75_setParam_100_train",
+    "er_SET2_200_200_alpha_0_75_setParam_100_train",
     "er_SET2_200_200_alpha_0_25_setParam_100_train",
-    # "er_SET2_200_200_alpha_0_5_setParam_100_train",
-    # "er_SET2_300_300_alpha_0_75_setParam_100_train",
-    # "er_SET2_300_300_alpha_0_25_setParam_100_train",
-    # "er_SET2_300_300_alpha_0_5_setParam_100_train",
-    # "er_SET1_400_400_alpha_0_75_setParam_100_train",
-    # "er_SET1_400_400_alpha_0_5_setParam_100_train",
+    "er_SET2_200_200_alpha_0_5_setParam_100_train",
+    "er_SET2_300_300_alpha_0_75_setParam_100_train",
+    "er_SET2_300_300_alpha_0_25_setParam_100_train",
+    "er_SET2_300_300_alpha_0_5_setParam_100_train",
+    "er_SET1_400_400_alpha_0_75_setParam_100_train",
+    "er_SET1_400_400_alpha_0_5_setParam_100_train",
     # "er_SET1_400_400_alpha_0_25_setParam_100_train",
 ]
 
+print(name_list[i])
+
+path = file_list[i]
+name = name_list[i]
+
 results = []
 
+# Prepare data.
+path = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
+# Path to raw graph data.
+data_path = path
+sname = name
+# Threshold for computing class labels.
+bias_threshold = 0.050
+# Create dataset.
+dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform())  # .shuffle()
+
+# Split data.
+l = len(dataset)
+train_index, rest = train_test_split(list(range(0, l)), test_size=0.2)
+l = len(rest)
+val_index = rest[0:int(l / 2)]
+test_index = rest[int(l / 2):]
+
+train_dataset = dataset[train_index].shuffle()
+val_dataset = dataset[val_index].shuffle()
+test_dataset = dataset[test_index].shuffle()
+
+batch_size = 15
+train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
 
+def train(epoch):
+    model.train()
 
-for r, f in enumerate(file_list):
-    plots = []
-    # Prepare data.
-    path = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
-    # Path to raw graph data.
-    data_path = f
-    sname = name_list[r]
-    # Threshold for computing class labels.
-    bias_threshold = 0.050
-    # Create dataset.
-    dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform())  # .shuffle()
+    loss_all = 0
+    for data in train_loader:
+        data = data.to(device)
+        optimizer.zero_grad()
+        output = model(data)
 
-    len(dataset)
+        loss = F.nll_loss(output, data.y)
+        loss.backward()
+        loss_all += batch_size * loss.item()
+        optimizer.step()
+    return loss_all / len(train_dataset)
 
-    # Split data.
 
-    l = len(dataset)
-    train_index, rest = train_test_split(list(range(0, l)), test_size=0.2)
-    l = len(rest)
-    val_index = rest[0:int(l / 2)]
-    test_index = rest[int(l / 2):]
+def test(loader):
+    model.eval()
 
-    train_dataset = dataset[train_index].shuffle()
-    val_dataset = dataset[val_index].shuffle()
-    test_dataset = dataset[test_index].shuffle()
+    correct = 0
+    l = 0
 
-    print(len(train_dataset))
-    print(len(val_dataset))
-    print(len(test_dataset))
+    for data in loader:
+        data = data.to(device)
+        pred = model(data)
+        pred = pred.max(dim=1)[1]
+        correct += pred.eq(data.y).float().mean().item()
+        l += 1
 
-    # Prepare batch loaders.
-    batch_size = 15
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
-    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
+    return correct / l
 
-    print("### DATA LOADED.")
+
+best_val = 0.0
+test_acc = 0.0
+best_hp = []
+
+plots = []
+
+for i in range(5):
+    p = []
+
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = SimpleNet(hidden=128).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
-    # Play with this.
-    # TODO: Change back
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
                                                            factor=0.8, patience=10,
                                                            min_lr=0.0000001)
-    print("### SETUP DONE.")
-
-
-    def train(epoch):
-        model.train()
-
-        loss_all = 0
-        for data in train_loader:
-            data = data.to(device)
-            optimizer.zero_grad()
-            # output, err, cost = model(data)
-            output = model(data)
-
-            loss = F.nll_loss(output, data.y)
-            loss.backward()
-            loss_all += batch_size * loss.item()
-            optimizer.step()
-        return loss_all / len(train_dataset)
-
-
-    def test(loader):
-        model.eval()
-
-        correct = 0
-        l = 0
-
-        err_total = 0.0
-        cost_total = 0.0
-        for data in loader:
-            data = data.to(device)
-            # pred, err, cost = model(data)
-            pred = model(data)
-            pred = pred.max(dim=1)[1]
-            correct += pred.eq(data.y).float().mean().item()
-            l += 1
-
-            # cost_total += cost.item()
-            # err_total += err.item()
-
-        # print(err_total / l)
-        # print(cost_total / l)
-
-        return correct / l
-
-
-    best_val = 0.0
-    test_acc = 0.0
-    for epoch in range(1, 100):
+    for epoch in range(1, 50):
+        print(i)
 
         train_loss = train(epoch)
         train_acc = test(train_loader)
@@ -558,20 +549,14 @@ for r, f in enumerate(file_list):
 
         # Break if learning rate is smaller 10**-6.
         if lr < 0.000001:
+            results.append(test_acc)
             break
 
         print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
               'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
                                                                             train_acc, val_acc, test_acc))
-        print(r)
 
+        p.append(test_acc)
+    plots.append(p)
 
-        plots.append(test_acc)
-
-    results.append(test_acc)
-    print(plots)
-    torch.save(model.state_dict(), name_list[r])
-
-print("###")
-print(results)
-
+print(plots)
