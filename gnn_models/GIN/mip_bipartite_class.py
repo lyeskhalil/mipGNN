@@ -26,11 +26,10 @@ from torch_geometric.nn.inits import reset
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
-# Variables to constrains.
+# Update constraint embeddings based on variable embeddings.
 class VarConBipartiteLayer(MessagePassing):
-
-    def __init__(self, edge_dim, dim, var_assigment):
-        super(VarConBipartiteLayer, self).__init__(aggr="add", flow="source_to_target")
+    def __init__(self, edge_dim, dim, var_assigment, aggr):
+        super(VarConBipartiteLayer, self).__init__(aggr=aggr, flow="source_to_target")
 
         # Maps edge features to the same number of components as node features.
         self.edge_encoder = Sequential(Linear(edge_dim, dim), ReLU(), Linear(dim, dim), ReLU(),
@@ -104,8 +103,10 @@ class ErrorLayer(MessagePassing):
     def update(self, aggr_out):
         return aggr_out
 
-
+# Update variable embeddings based on constraint embeddings.
 class ConVarBipartiteLayer(MessagePassing):
+    def __init__(self, edge_dim, dim, aggr):
+        super(ConVarBipartiteLayer, self).__init__(aggr=aggr, flow="source_to_target")
 
     def __init__(self, edge_dim, dim):
         super(ConVarBipartiteLayer, self).__init__(aggr="add", flow="source_to_target")
@@ -143,44 +144,38 @@ class ConVarBipartiteLayer(MessagePassing):
 
 
 class SimpleNet(torch.nn.Module):
-    def __init__(self, hidden):
+    def __init__(self, hidden, aggr, num_layers):
         super(SimpleNet, self).__init__()
+        self.num_layers = num_layers
 
         # Embed initial node features.
         self.var_node_encoder = Sequential(Linear(2, hidden), ReLU(), Linear(hidden, hidden))
         self.con_node_encoder = Sequential(Linear(2, hidden), ReLU(), Linear(hidden, hidden))
 
         # Compute variable assignement.
-        self.var_assigment_1 = Sequential(Linear(hidden, hidden), ReLU(), Linear(hidden, 1), Sigmoid())
-        self.var_assigment_2 = Sequential(Linear(hidden, hidden), ReLU(), Linear(hidden, 1), Sigmoid())
-        self.var_assigment_3 = Sequential(Linear(hidden, hidden), ReLU(), Linear(hidden, 1), Sigmoid())
-        self.var_assigment_4 = Sequential(Linear(hidden, hidden), ReLU(), Linear(hidden, 1), Sigmoid())
+        self.layers_ass = []
+        for i in range(self.num_layers):
+            self.layers_ass.append(Sequential(Linear(hidden, hidden), ReLU(), Linear(hidden, 1), Sigmoid()))
 
         # Bipartite GNN architecture.
-        self.var_con_1 = VarConBipartiteLayer(1, hidden, self.var_assigment_1)
-        self.error_1 = ErrorLayer(hidden, self.var_assigment_1)
+        self.layers_con = []
+        self.layers_var = []
+        self.layers_err = []
 
-        self.con_var_1 = ConVarBipartiteLayer(1, hidden)
-        self.var_con_2 = VarConBipartiteLayer(1, hidden, self.var_assigment_2)
-        self.error_2 = ErrorLayer(hidden, self.var_assigment_2)
+        for i in range(self.num_layers):
+            self.layers_con.append(ConVarBipartiteLayer(1, hidden, aggr=aggr))
+            self.layers_var.append(VarConBipartiteLayer(1, hidden, self.layers_ass[i], aggr=aggr))
+            self.layers_err.append(ErrorLayer(hidden, self.layers_ass[i]))
 
-        self.con_var_2 = ConVarBipartiteLayer(1, hidden)
-        self.var_con_3 = VarConBipartiteLayer(1, hidden, self.var_assigment_3)
-        self.error_3 = ErrorLayer(hidden, self.var_assigment_3)
-
-        self.con_var_3 = ConVarBipartiteLayer(1, hidden)
-        self.var_con_4 = VarConBipartiteLayer(1, hidden, self.var_assigment_4)
-        self.error_4 = ErrorLayer(hidden, self.var_assigment_4)
-
-        self.con_var_4 = ConVarBipartiteLayer(1, hidden)
+        self.layers_con = torch.nn.ModuleList(self.layers_con)
+        self.layers_var = torch.nn.ModuleList(self.layers_var)
+        self.layers_err = torch.nn.ModuleList(self.layers_err)
 
         # MLP used for classification.
-        self.lin1 = Linear(5 * hidden, hidden)
+        self.lin1 = Linear((self.num_layers + 1) * hidden, hidden)
         self.lin2 = Linear(hidden, hidden)
         self.lin3 = Linear(hidden, hidden)
         self.lin4 = Linear(hidden, 2)
-
-
 
     def forward(self, data):
         # Get data of batch.
@@ -190,69 +185,40 @@ class SimpleNet(torch.nn.Module):
         edge_index_con = data.edge_index_con
         edge_features_var = data.edge_features_var
         edge_features_con = data.edge_features_con
+        num_nodes_var = data.num_nodes_var
+        num_nodes_con = data.num_nodes_con
         rhs = data.rhs
         index = data.index
+        obj = data.obj
 
         # Compute initial node embeddings.
         var_node_features_0 = self.var_node_encoder(var_node_features)
         con_node_features_0 = self.con_node_encoder(con_node_features)
 
-        err_1 = self.error_1(var_node_features_0, edge_index_var, edge_features_var, rhs, index,
-                             (var_node_features_0.size(0), con_node_features.size(0)))
-        con_node_features_1 = F.relu(
-            self.var_con_1(var_node_features_0, con_node_features_0, edge_index_var, edge_features_var, rhs,
-                           (var_node_features_0.size(0), con_node_features.size(0))))
+        x_var = [var_node_features_0]
+        x_con = [con_node_features_0]
+        x_err = []
 
-        var_node_features_1 = F.relu(
-            self.con_var_1(con_node_features_1, var_node_features_0, edge_index_con, edge_features_con, err_1,
-                           (con_node_features_1.size(0), var_node_features_0.size(0))))
+        for i in range(self.num_layers):
+            x_err.append(self.layers_err[i](x_var[-1], edge_index_var, edge_features_var, rhs, index,
+                                            (var_node_features_0.size(0), con_node_features.size(0))))
 
-        con_node_features_2 = F.relu(
-            self.var_con_2(var_node_features_1, con_node_features_1, edge_index_var, edge_features_var, rhs,
-                           (var_node_features_1.size(0), con_node_features_1.size(0))))
-        err_2 = self.error_1(var_node_features_1, edge_index_var, edge_features_var, rhs, index,
-                             (var_node_features_1.size(0), con_node_features_1.size(0)))
+            x_con.append(F.relu(self.layers_var[-1](x_var[-1], x_con[-1], edge_index_var, edge_features_var, rhs,
+                                                    (num_nodes_var.sum(), num_nodes_con.sum()))))
 
-        var_node_features_2 = F.relu(
-            self.con_var_2(con_node_features_2, var_node_features_1, edge_index_con, edge_features_con, err_2,
-                           (con_node_features_2.size(0), var_node_features_1.size(0))))
+            x_var.append(F.relu(self.layers_con[i](x_con[-1], x_var[-1], edge_index_con, edge_features_con, x_err[-1],
+                                                   (num_nodes_con.sum(), num_nodes_var.sum()))))
 
-        con_node_features_3 = F.relu(
-            self.var_con_3(var_node_features_2, con_node_features_2, edge_index_var, edge_features_var, rhs,
-                           (var_node_features_2.size(0), con_node_features_2.size(0))))
-        err_3 = self.error_1(var_node_features_2, edge_index_var, edge_features_var, rhs, index,
-                             (var_node_features_2.size(0), con_node_features_2.size(0)))
-
-        var_node_features_3 = F.relu(
-            self.con_var_3(con_node_features_3, var_node_features_2, edge_index_con, edge_features_con, err_3,
-                           (con_node_features_3.size(0), var_node_features_2.size(0))))
-
-        con_node_features_4 = F.relu(
-            self.var_con_4(var_node_features_3, con_node_features_3, edge_index_var, edge_features_var, rhs,
-                           (var_node_features_3.size(0), con_node_features_3.size(0))))
-        err_4 = self.error_1(var_node_features_3, edge_index_var, edge_features_var, rhs, index,
-                             (var_node_features_3.size(0), con_node_features_3.size(0)))
-
-        var_node_features_4 = F.relu(
-            self.con_var_4(con_node_features_4, var_node_features_3, edge_index_con, edge_features_con, err_4,
-                           (con_node_features_4.size(0), var_node_features_3.size(0))))
-
-        x = torch.cat(
-            [var_node_features_0, var_node_features_1, var_node_features_2, var_node_features_3, var_node_features_4],
-            dim=-1)
+        x = torch.cat(x_var[:], dim=-1)
 
         x = F.relu(self.lin1(x))
-        # x = F.dropout(x, p=0.5, training=self.training)
         x = F.relu(self.lin2(x))
-        # x = F.dropout(x, p=0.5, training=self.training)
         x = F.relu(self.lin3(x))
-        # x = F.dropout(x, p=0.5, training=self.training)
         x = self.lin4(x)
         return F.log_softmax(x, dim=-1)
 
     def __repr__(self):
         return self.__class__.__name__
-
 
 # Preprocessing to create Torch dataset.
 class GraphDataset(InMemoryDataset):
@@ -417,6 +383,9 @@ class MyTransform(object):
         return new_data
 
 
+print(sys.argv[1])
+i = int(sys.argv[1])
+
 file_list = [
     "../../DATA1/er_SET2/200_200/alpha_0.75_setParam_100/train/",
     "../../DATA1/er_SET2/200_200/alpha_0.25_setParam_100/train/",
@@ -441,102 +410,90 @@ name_list = [
     # "er_SET1_400_400_alpha_0_25_setParam_100_train",
 ]
 
+print(name_list[i])
+
+path = file_list[i]
+name = name_list[i]
+
 results = []
 
-for r, f in enumerate(file_list):
+# Prepare data.
+path = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
+# Path to raw graph data.
+data_path = path
+sname = name
+# Threshold for computing class labels.
+bias_threshold = 0.050
+# Create dataset.
+dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform())  # .shuffle()
 
-    # Prepare data.
-    path = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
-    # Path to raw graph data.
-    data_path = f
-    sname = name_list[r]
-    # Threshold for computing class labels.
-    bias_threshold = 0.050
-    # Create dataset.
-    dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform())  # .shuffle()
+# Split data.
+l = len(dataset)
+train_index, rest = train_test_split(list(range(0, l)), test_size=0.2)
+l = len(rest)
+val_index = rest[0:int(l / 2)]
+test_index = rest[int(l / 2):]
 
-    len(dataset)
+train_dataset = dataset[train_index].shuffle()
+val_dataset = dataset[val_index].shuffle()
+test_dataset = dataset[test_index].shuffle()
 
-    # Split data.
+batch_size = 15
+train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
-    l = len(dataset)
-    train_index, rest = train_test_split(list(range(0, l)), test_size=0.2)
-    l = len(rest)
-    val_index = rest[0:int(l / 2)]
-    test_index = rest[int(l / 2):]
 
-    train_dataset = dataset[train_index].shuffle()
-    val_dataset = dataset[val_index].shuffle()
-    test_dataset = dataset[test_index].shuffle()
+def train(epoch):
+    model.train()
 
-    print(len(train_dataset))
-    print(len(val_dataset))
-    print(len(test_dataset))
+    loss_all = 0
+    for data in train_loader:
+        data = data.to(device)
+        optimizer.zero_grad()
+        output = model(data)
 
-    # Prepare batch loaders.
-    batch_size = 15
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
-    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
+        loss = F.nll_loss(output, data.y)
+        loss.backward()
+        loss_all += batch_size * loss.item()
+        optimizer.step()
+    return loss_all / len(train_dataset)
 
-    print("### DATA LOADED.")
+
+def test(loader):
+    model.eval()
+
+    correct = 0
+    l = 0
+
+    for data in loader:
+        data = data.to(device)
+        pred = model(data)
+        pred = pred.max(dim=1)[1]
+        correct += pred.eq(data.y).float().mean().item()
+        l += 1
+
+    return correct / l
+
+
+best_val = 0.0
+test_acc = 0.0
+best_hp = []
+
+plots = []
+
+for i in range(5):
+    p = []
+
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model = SimpleNet(hidden=128).to(device)
+    model = SimpleNet(hidden=128, num_layers=2, aggr="add").to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
-    # Play with this.
-    # TODO: Change back
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
                                                            factor=0.8, patience=10,
                                                            min_lr=0.0000001)
-    print("### SETUP DONE.")
-
-
-    def train(epoch):
-        model.train()
-
-        loss_all = 0
-        for data in train_loader:
-            data = data.to(device)
-            optimizer.zero_grad()
-            # output, err, cost = model(data)
-            output = model(data)
-
-            loss = F.nll_loss(output, data.y)
-            loss.backward()
-            loss_all += batch_size * loss.item()
-            optimizer.step()
-        return loss_all / len(train_dataset)
-
-
-    def test(loader):
-        model.eval()
-
-        correct = 0
-        l = 0
-
-        err_total = 0.0
-        cost_total = 0.0
-        for data in loader:
-            data = data.to(device)
-            # pred, err, cost = model(data)
-            pred = model(data)
-            pred = pred.max(dim=1)[1]
-            correct += pred.eq(data.y).float().mean().item()
-            l += 1
-
-            # cost_total += cost.item()
-            # err_total += err.item()
-
-        # print(err_total / l)
-        # print(cost_total / l)
-
-        return correct / l
-
-
-    best_val = 0.0
-    test_acc = 0.0
-    for epoch in range(1, 100):
+    for epoch in range(1, 50):
+        print(i)
 
         train_loss = train(epoch)
         train_acc = test(train_loader)
@@ -557,10 +514,8 @@ for r, f in enumerate(file_list):
         print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
               'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
                                                                             train_acc, val_acc, test_acc))
-        print(r)
-    results.append(test_acc)
 
-    torch.save(model.state_dict(), name_list[r])
+        p.append(test_acc)
+    plots.append(p)
 
-print("###")
-print(results)
+print(plots)
