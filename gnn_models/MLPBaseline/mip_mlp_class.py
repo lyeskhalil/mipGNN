@@ -302,7 +302,7 @@ for dim in [128]:
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = SimpleNet(hidden=dim).to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
                                                            factor=0.8, patience=10,
