@@ -30,8 +30,6 @@ class SimpleNet(torch.nn.Module):
 
         # Embed initial node features.
         self.var_node_encoder = Sequential(Linear(2, hidden), ReLU(), Linear(hidden, hidden))
-        self.con_node_encoder = Sequential(Linear(2, hidden), ReLU(), Linear(hidden, hidden))
-
 
         # MLP used for classification.
         self.lin1 = Linear(hidden, hidden)
@@ -40,7 +38,6 @@ class SimpleNet(torch.nn.Module):
         self.lin4 = Linear(hidden, 2)
 
     def forward(self, data):
-
         # Get data of batch.
         var_node_features = data.var_node_features
 
@@ -301,7 +298,7 @@ best_val = 0.0
 test_acc = 0.0
 best_hp = []
 
-for dim in [32, 64, 128]:
+for dim in [128]:
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = SimpleNet(hidden=dim).to(device)
