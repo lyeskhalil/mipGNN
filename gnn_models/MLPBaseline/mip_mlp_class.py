@@ -26,7 +26,7 @@ class SimpleNet(torch.nn.Module):
         super(SimpleNet, self).__init__()
 
         # Embed initial node features.
-        #self.var_node_encoder = Sequential(Linear(2, hidden), ReLU(), Linear(hidden, hidden))
+        self.var_node_encoder = Sequential(Linear(2, hidden), ReLU(), Linear(hidden, hidden))
 
         # MLP used for classification.
         self.lin1 = Linear(2, hidden)
@@ -39,7 +39,7 @@ class SimpleNet(torch.nn.Module):
         var_node_features = data.var_node_features
 
         # Compute initial node embeddings.
-        var_node_features_0 = self.var_node_encoder(var_node_features)
+        #var_node_features_0 = self.var_node_encoder(var_node_features)
 
         x = F.relu(self.lin1(var_node_features))
         x = F.relu(self.lin2(x))
