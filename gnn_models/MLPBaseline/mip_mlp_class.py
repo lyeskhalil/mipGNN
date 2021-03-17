@@ -297,40 +297,37 @@ for i in range(len(file_list)):
 
 
     for dim in [32, 64, 128]:
-        for l in [2,3,4,5]:
-            for aggr in ["mean", "max", "add"]:
-                print(dim, l, aggr)
 
-                device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-                model = SimpleNet(hidden=dim, num_layers=l, aggr = aggr).to(device)
-                optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        model = SimpleNet(hidden=dim).to(device)
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
-                scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
-                                                                       factor=0.8, patience=10,
-                                                                       min_lr=0.0000001)
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
+                                                               factor=0.8, patience=10,
+                                                               min_lr=0.0000001)
 
-                for epoch in range(1, 100):
+        for epoch in range(1, 100):
 
-                    train_loss = train(epoch)
-                    train_acc = test(train_loader)
+            train_loss = train(epoch)
+            train_acc = test(train_loader)
 
-                    val_acc = test(val_loader)
-                    scheduler.step(val_acc)
-                    lr = scheduler.optimizer.param_groups[0]['lr']
+            val_acc = test(val_loader)
+            scheduler.step(val_acc)
+            lr = scheduler.optimizer.param_groups[0]['lr']
 
-                    if val_acc > best_val:
-                        best_val = val_acc
-                        test_acc = test(test_loader)
-                        best_hp = [dim, l, aggr, test_acc]
+            if val_acc > best_val:
+                best_val = val_acc
+                test_acc = test(test_loader)
+                best_hp = [dim, l, aggr, test_acc]
 
-                    # Break if learning rate is smaller 10**-6.
-                    if lr < 0.000001:
-                        results.append(test_acc)
-                        break
+            # Break if learning rate is smaller 10**-6.
+            if lr < 0.000001:
+                results.append(test_acc)
+                break
 
-                    #print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
-                    #      'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
-                    #                                                                    train_acc, val_acc, test_acc))
+            #print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
+            #      'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
+            #                                                                    train_acc, val_acc, test_acc))
 
     print(best_hp)
     hp_all.append(best_hp)
