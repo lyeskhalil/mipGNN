@@ -26,10 +26,10 @@ class SimpleNet(torch.nn.Module):
         super(SimpleNet, self).__init__()
 
         # Embed initial node features.
-        self.var_node_encoder = Sequential(Linear(2, hidden), ReLU(), Linear(hidden, hidden))
+        #self.var_node_encoder = Sequential(Linear(2, hidden), ReLU(), Linear(hidden, hidden))
 
         # MLP used for classification.
-        self.lin1 = Linear(hidden, hidden)
+        self.lin1 = Linear(2, hidden)
         self.lin2 = Linear(hidden, hidden)
         self.lin3 = Linear(hidden, hidden)
         self.lin4 = Linear(hidden, 2)
@@ -41,7 +41,7 @@ class SimpleNet(torch.nn.Module):
         # Compute initial node embeddings.
         var_node_features_0 = self.var_node_encoder(var_node_features)
 
-        x = F.relu(self.lin1(var_node_features_0))
+        x = F.relu(self.lin1(var_node_features))
         x = F.relu(self.lin2(x))
         x = F.relu(self.lin3(x))
         x = self.lin4(x)
@@ -299,7 +299,7 @@ for dim in [128]:
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = SimpleNet(hidden=dim).to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
                                                            factor=0.8, patience=10,
