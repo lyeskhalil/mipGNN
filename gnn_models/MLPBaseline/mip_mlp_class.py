@@ -295,7 +295,6 @@ for i in range(len(file_list)):
     test_acc = 0.0
     best_hp = []
 
-
     for dim in [32, 64, 128]:
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -318,16 +317,16 @@ for i in range(len(file_list)):
             if val_acc > best_val:
                 best_val = val_acc
                 test_acc = test(test_loader)
-                best_hp = [dim, l, aggr, test_acc]
+                best_hp = [dim, test_acc]
 
             # Break if learning rate is smaller 10**-6.
             if lr < 0.000001:
                 results.append(test_acc)
                 break
 
-            #print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
-            #      'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
-            #                                                                    train_acc, val_acc, test_acc))
+            print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
+                 'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
+                                                                               train_acc, val_acc, test_acc))
 
     print(best_hp)
     hp_all.append(best_hp)
