@@ -474,8 +474,10 @@ results = []
 for i in range(5):
     r = []
 
+    print(i)
+
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model = SimpleNet(hidden=64, num_layers=5, aggr = "mean").to(device)
+    model = SimpleNet(hidden=128, num_layers=5, aggr = "mean").to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
