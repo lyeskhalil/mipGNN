@@ -304,7 +304,6 @@ for dim in [128]:
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
                                                            factor=0.8, patience=10,
                                                            min_lr=0.0000001)
-
     for epoch in range(1, 100):
 
         train_loss = train(epoch)
