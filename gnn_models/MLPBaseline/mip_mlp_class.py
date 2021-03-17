@@ -15,10 +15,7 @@ from torch_geometric.data import DataLoader
 
 import torch
 import torch.nn.functional as F
-from torch.nn import BatchNorm1d as BN
 from torch.nn import Sequential, Linear, ReLU
-from torch_geometric.nn import MessagePassing
-from torch_sparse import matmul
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -302,7 +299,7 @@ for dim in [128]:
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = SimpleNet(hidden=dim).to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
 
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
                                                            factor=0.8, patience=10,
