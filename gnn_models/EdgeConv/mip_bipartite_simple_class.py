@@ -373,7 +373,7 @@ for i in range(5):
                                                            factor=0.8, patience=10,
                                                            min_lr=0.0000001)
 
-    for epoch in range(1, 100):
+    for epoch in range(1, 50):
 
 
 
@@ -403,7 +403,7 @@ for i in range(5):
     results.append(r)
 
 print(results)
-    
+
 
 
 
