@@ -152,7 +152,10 @@ class SimpleNet(torch.nn.Module):
         self.lin1 = Linear((self.num_layers + 1) * hidden, hidden)
         self.lin2 = Linear(hidden, hidden)
         self.lin3 = Linear(hidden, hidden)
-        self.lin4 = Linear(hidden, 2)
+        self.lin4 = Linear(hidden, hidden)
+        self.lin5 = Linear(hidden, hidden)
+        self.lin6 = Linear(hidden, hidden)
+        self.lin7 = Linear(hidden, 2)
 
     def forward(self, data):
         # Get data of batch.
@@ -192,7 +195,10 @@ class SimpleNet(torch.nn.Module):
         x = F.relu(self.lin1(x))
         x = F.relu(self.lin2(x))
         x = F.relu(self.lin3(x))
-        x = self.lin4(x)
+        x = F.relu(self.lin4(x))
+        x = F.relu(self.lin5(x))
+        x = F.relu(self.lin6(x))
+        x = self.lin7(x)
         return F.log_softmax(x, dim=-1)
 
     def __repr__(self):
@@ -476,14 +482,14 @@ for i in range(5):
     print(i)
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model = SimpleNet(hidden=128, num_layers=5, aggr = "mean").to(device)
+    model = SimpleNet(hidden=512, num_layers=5, aggr = "mean").to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
                                                            factor=0.8, patience=10,
                                                            min_lr=0.0000001)
 
-    for epoch in range(1, 50):
+    for epoch in range(1, 222):
 
 
 
