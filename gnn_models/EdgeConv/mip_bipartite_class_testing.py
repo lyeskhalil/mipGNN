@@ -482,7 +482,7 @@ for i in range(5):
     print(i)
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model = SimpleNet(hidden=512, num_layers=5, aggr = "mean").to(device)
+    model = SimpleNet(hidden=512, num_layers=10, aggr = "mean").to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
@@ -491,16 +491,12 @@ for i in range(5):
 
     for epoch in range(1, 222):
 
-
-
         train_loss = train(epoch)
         train_acc = test(train_loader)
 
         val_acc = test(val_loader)
         scheduler.step(val_acc)
         lr = scheduler.optimizer.param_groups[0]['lr']
-
-
 
         if val_acc > best_val:
             best_val = val_acc
