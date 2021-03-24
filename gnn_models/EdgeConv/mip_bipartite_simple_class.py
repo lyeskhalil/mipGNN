@@ -68,7 +68,7 @@ class SimpleNet(torch.nn.Module):
         self.layers_var = torch.nn.ModuleList(self.layers_var)
 
         # MLP used for classification.
-        self.lin1 = Linear((num_layers + 1) * hidden, hidden)
+        self.lin1 = Linear(hidden, hidden)
         self.lin2 = Linear(hidden, hidden)
         self.lin3 = Linear(hidden, hidden)
         self.lin4 = Linear(hidden, 2)
@@ -99,7 +99,7 @@ class SimpleNet(torch.nn.Module):
             x_var.append(F.relu(self.layers_con[i](x_con[-1], x_var[-1], edge_index_con, edge_features_con,
                                                    (num_nodes_con.sum(), num_nodes_var.sum()))))
 
-        x = torch.cat(x_var[:], dim=-1)
+        x = torch.cat([x_var[-1]], dim=-1)
 
         x = F.relu(self.lin1(x))
         x = F.relu(self.lin2(x))
