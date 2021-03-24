@@ -371,7 +371,7 @@ for i in range(5):
     # TODO
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = SimpleNet(hidden=32, num_layers=5, aggr = "mean").to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
                                                            factor=0.8, patience=10,
@@ -400,9 +400,9 @@ for i in range(5):
             results.append(test_acc)
             break
 
-        #print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
-        #      'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
-        #                                                                    train_acc, val_acc, test_acc))
+        print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
+              'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
+                                                                            train_acc, val_acc, test_acc))
     results.append(r)
 
 print(results)
