@@ -149,7 +149,7 @@ class SimpleNet(torch.nn.Module):
         self.layers_err = torch.nn.ModuleList(self.layers_err)
 
         # MLP used for classification.
-        self.lin1 = Linear(hidden, hidden)
+        self.lin1 = Linear((self.num_layers + 1) * hidden, hidden)
         self.lin2 = Linear(hidden, hidden)
         self.lin3 = Linear(hidden, hidden)
         self.lin4 = Linear(hidden, hidden)
@@ -190,8 +190,7 @@ class SimpleNet(torch.nn.Module):
             x_con.append(F.relu(self.layers_var[i](x_var[-1], x_con[-1], edge_index_var, edge_features_var, rhs,
                                                     (num_nodes_var.sum(), num_nodes_con.sum()))))
 
-        #x = torch.cat(x_var[:], dim=-1)
-        x = torch.cat([x_var[-1]], dim=-1)
+        x = torch.cat(x_var[:], dim=-1)
 
         x = F.relu(self.lin1(x))
         x = F.relu(self.lin2(x))
@@ -484,7 +483,7 @@ for i in range(5):
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = SimpleNet(hidden=128, num_layers=5, aggr = "mean").to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
                                                            factor=0.8, patience=10,
