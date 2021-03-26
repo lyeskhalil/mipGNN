@@ -411,6 +411,10 @@ bias_threshold = 0.250
 # Create dataset.
 dataset = GraphDataset(pathr, data_path, bias_threshold, transform=MyTransform())  # .shuffle()
 
+print("###")
+print(dataset.data.y.sum()/len(dataset))
+
+
 # Split data.
 l = len(dataset)
 train_index, rest = train_test_split(list(range(0, l)), test_size=0.2)
