@@ -367,8 +367,6 @@ print(sys.argv[1])
 i = int(sys.argv[1])
 
 
-print(sys.argv[1])
-i = int(sys.argv[1])
 
 file_list = [
     "../../DATA1/er_SET2/200_200/alpha_0.75_setParam_100/train/",
@@ -404,14 +402,14 @@ name = name_list[i]
 results = []
 
 # Prepare data.
-path = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
+pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
 # Path to raw graph data.
 data_path = path
 sname = name
 # Threshold for computing class labels.
 bias_threshold = 0.250
 # Create dataset.
-dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform())  # .shuffle()
+dataset = GraphDataset(pathr, data_path, bias_threshold, transform=MyTransform())  # .shuffle()
 
 # Split data.
 l = len(dataset)
