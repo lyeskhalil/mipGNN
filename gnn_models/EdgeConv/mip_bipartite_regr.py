@@ -152,7 +152,7 @@ class SimpleNet(torch.nn.Module):
         self.lin1 = Linear((self.num_layers + 1) * hidden, hidden)
         self.lin2 = Linear(hidden, hidden)
         self.lin3 = Linear(hidden, hidden)
-        self.lin4 = Linear(hidden, 2)
+        self.lin4 = Linear(hidden, 1)
 
     def forward(self, data):
         # Get data of batch.
@@ -194,7 +194,7 @@ class SimpleNet(torch.nn.Module):
         x = F.relu(self.lin2(x))
         x = F.relu(self.lin3(x))
         x = self.lin4(x)
-        return F.log_softmax(x, dim=-1)
+        return x.view(-1)
 
     def __repr__(self):
         return self.__class__.__name__
@@ -269,10 +269,12 @@ class GraphDataset(InMemoryDataset):
                     node_to_varnode[i] = num_nodes_var
                     num_nodes_var += 1
 
-                    if (node_data['bias'] < bias_threshold):
-                        y.append(0)
-                    else:
-                        y.append(1)
+                    # if (node_data['bias'] < bias_threshold):
+                    #     y.append(0)
+                    # else:
+                    #     y.append(1)
+
+                    y.append(node_data['bias'])
 
                     feat_var.append([node_data['objcoeff'], graph.degree[i]])
                     obj.append([node_data['objcoeff']])
@@ -322,7 +324,7 @@ class GraphDataset(InMemoryDataset):
             data.edge_index_var = edge_index_var
             data.edge_index_con = edge_index_con
 
-            data.y = torch.from_numpy(np.array(y)).to(torch.long)
+            data.y = torch.from_numpy(np.array(y)).to(torch.float)
             data.var_node_features = torch.from_numpy(np.array(feat_var)).to(torch.float)
             data.con_node_features = torch.from_numpy(np.array(feat_con)).to(torch.float)
             data.rhs = torch.from_numpy(np.array(feat_rhs)).to(torch.float)
@@ -411,8 +413,14 @@ bias_threshold = 0.05
 # Create dataset.
 dataset = GraphDataset(pathr, data_path, bias_threshold, transform=MyTransform())  # .shuffle()
 
-print("###")
-print(dataset.data.y.sum()/dataset.data.y.size(-1))
+#print("###")
+#print(dataset.data.y.sum()/dataset.data.y.size(-1))
+
+log = False
+if log:
+    eps = 1.
+    dataset.data.y = torch.log(dataset.data.y + eps)
+    print(dataset.data.y.mean())
 
 
 # Split data.
@@ -433,37 +441,64 @@ test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
 
 
+class RMSELoss(torch.nn.Module):
+    def __init__(self, eps=1e-6):
+        super().__init__()
+        self.mse = torch.nn.MSELoss()
+        self.eps = eps
+
+    def forward(self, yhat, y):
+        loss = torch.sqrt(self.mse(yhat, y) + self.eps)
+        return loss
 
 def train(epoch):
     model.train()
+    total_loss = 0
+    total_loss_mae = 0
+    loss = torch.nn.MSELoss()
+    rmse = RMSELoss()
+    mse = torch.nn.MSELoss()
+    mae = torch.nn.L1Loss()
+    sm = torch.nn.SmoothL1Loss()
 
-    loss_all = 0
+    lf = mse
+
     for data in train_loader:
-        data = data.to(device)
         optimizer.zero_grad()
-        output = model(data)
+        data = data.to(device)
+        out = model(data)
 
-        loss = F.nll_loss(output, data.y)
+        loss = lf(out, data.y)
+
         loss.backward()
-        loss_all += batch_size * loss.item()
+
+        total_loss += loss.item() * batch_size
         optimizer.step()
-    return loss_all / len(train_dataset)
+
+        if log:
+            total_loss_mae += mae(torch.exp(out) - eps, torch.exp(data.y) - eps).item() * batch_size
+        else:
+            total_loss_mae += mae(out, data.y).item() * batch_size
+
+    return total_loss_mae / len(train_loader.dataset), total_loss / len(train_loader.dataset)
 
 
 def test(loader):
     model.eval()
-
-    correct = 0
-    l = 0
+    error = 0
+    mae = torch.nn.L1Loss()
 
     for data in loader:
         data = data.to(device)
-        pred = model(data)
-        pred = pred.max(dim=1)[1]
-        correct += pred.eq(data.y).float().mean().item()
-        l += 1
+        out = model(data)
 
-    return correct / l
+        if log:
+            loss = mae(torch.exp(out) - eps, torch.exp(data.y) - eps)
+        else:
+            loss = mae(out, data.y)
+        error += loss.item() * batch_size
+
+    return error / len(loader.dataset)
 
 
 best_val = 0.0
@@ -490,7 +525,7 @@ for i in range(5):
 
 
 
-        train_loss = train(epoch)
+        _ , train_loss = train(epoch)
         train_acc = test(train_loader)
 
         val_acc = test(val_loader)
@@ -499,7 +534,7 @@ for i in range(5):
 
 
 
-        if val_acc > best_val:
+        if val_acc < best_val:
             best_val = val_acc
             test_acc = test(test_loader)
 
