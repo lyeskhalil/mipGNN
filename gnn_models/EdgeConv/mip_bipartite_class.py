@@ -412,7 +412,7 @@ bias_threshold = 0.250
 dataset = GraphDataset(pathr, data_path, bias_threshold, transform=MyTransform())  # .shuffle()
 
 print("###")
-print(dataset.data.y.sum()/len(dataset))
+print(dataset.data.y.sum()/dataset.data.y.size(-1))
 
 
 # Split data.
