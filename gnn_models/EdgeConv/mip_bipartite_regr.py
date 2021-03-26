@@ -502,7 +502,7 @@ def test(loader):
 
 
 best_val = 0.0
-test_acc = 0.0
+test_acc = None
 best_hp = []
 
 
@@ -523,7 +523,7 @@ for i in range(5):
 
     for epoch in range(1, 50):
 
-        _ , train_loss = train(epoch)
+        loss , train_loss = train(epoch)
         train_acc = test(train_loader)
 
         val_acc = test(val_loader)
@@ -532,7 +532,7 @@ for i in range(5):
 
 
 
-        if val_acc < best_val:
+        if val_acc < best_val or test_acc is None:
             best_val = val_acc
             test_acc = test(test_loader)
 
@@ -544,7 +544,7 @@ for i in range(5):
             break
 
         print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
-              'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
+              'Train MAE: {:.7f}, Val MAE: {:.7f}, Test MAE: {:.7f}'.format(epoch, lr, loss,
                                                                            train_acc, val_acc, test_acc))
     results.append(r)
 
