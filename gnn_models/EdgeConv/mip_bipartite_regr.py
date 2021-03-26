@@ -523,8 +523,6 @@ for i in range(5):
 
     for epoch in range(1, 50):
 
-
-
         _ , train_loss = train(epoch)
         train_acc = test(train_loader)
 
