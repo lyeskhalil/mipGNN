@@ -416,7 +416,7 @@ dataset = GraphDataset(pathr, data_path, bias_threshold, transform=MyTransform()
 #print("###")
 #print(dataset.data.y.sum()/dataset.data.y.size(-1))
 
-log = False
+log = True
 if log:
     eps = 1.
     dataset.data.y = torch.log(dataset.data.y + eps)
