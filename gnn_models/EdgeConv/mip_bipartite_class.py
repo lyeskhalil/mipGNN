@@ -428,10 +428,10 @@ test_dataset = dataset[test_index].shuffle()
 
 print(len(test_dataset))
 
-batch_size = 15
+batch_size = 10
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-val_loader = DataLoader(val_dataset, batch_size=15, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=15, shuffle=True)
+val_loader = DataLoader(val_dataset, batch_size=10, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=10, shuffle=True)
 
 
 def train(epoch):
