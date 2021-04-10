@@ -14,7 +14,7 @@ from torch_geometric.data import (InMemoryDataset, Data)
 from torch_geometric.data import DataLoader
 
 import torch_geometric.utils.softmax
-
+import matplotlib.pyplot as plt
 import torch
 
 import torch.nn.functional as F
@@ -489,7 +489,7 @@ scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
                                                        min_lr=0.0000001)
 
 all_softmax = []
-for epoch in range(1, 5):
+for epoch in range(1, 2):
 
     train_loss = train(epoch)
     train_acc, _ = test(train_loader)
@@ -513,7 +513,8 @@ for epoch in range(1, 5):
                                                                        train_acc, val_acc, test_acc))
 
 print(all_softmax)
-
+plt.hist(np.array(all_softmax), color = 'blue', edgecolor = 'black',
+         bins = 20)
 
 
 # hp_all = []
