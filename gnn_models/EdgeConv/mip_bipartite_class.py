@@ -462,7 +462,7 @@ def test(loader):
         data = data.to(device)
         pred, softmax = model(data)
 
-        s_all.extend(list(softmax[0,:]))
+        s_all.extend(list(softmax[0,:].cpu().numpy()))
 
         pred = pred.max(dim=1)[1]
         correct += pred.eq(data.y).float().mean().item()
