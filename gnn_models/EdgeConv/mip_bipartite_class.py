@@ -461,8 +461,7 @@ def test(loader):
         data = data.to(device)
         pred, softmax = model(data)
 
-        print(list(softmax[:,0].detach().cpu().numpy()))
-        exit()
+        
 
         s_all.extend(list(softmax[:,0].detach().cpu().numpy()))
 
@@ -518,7 +517,7 @@ print(len(all_softmax))
 print(all_softmax)
 
 
-plt.hist(np.array(all_softmax), color = 'blue', edgecolor = 'black',
+plt.hist(np.array(all_softmax), color = 'orange', edgecolor = 'black',
          bins = 40)
 
 plt.savefig('plot.png')
