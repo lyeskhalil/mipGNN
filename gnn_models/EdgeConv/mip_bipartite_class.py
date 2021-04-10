@@ -516,6 +516,7 @@ print(all_softmax)
 plt.hist(np.array(all_softmax), color = 'blue', edgecolor = 'black',
          bins = 20)
 
+plt.savefig('plot.png')
 
 # hp_all = []
 # for i in range(len(file_list)):
