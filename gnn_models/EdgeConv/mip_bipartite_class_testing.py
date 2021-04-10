@@ -430,10 +430,12 @@ train_dataset = dataset[train_index].shuffle()
 val_dataset = dataset[val_index].shuffle()
 test_dataset = dataset[test_index].shuffle()
 
+print(len(test_dataset))
+
 batch_size = 15
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
+val_loader = DataLoader(val_dataset, batch_size=256, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=256, shuffle=True)
 
 
 
@@ -445,8 +447,6 @@ def train(epoch):
         data = data.to(device)
         optimizer.zero_grad()
         output = model(data)
-
-        print(output)
 
         loss = F.nll_loss(output, data.y)
         loss.backward()
@@ -461,9 +461,12 @@ def test(loader):
     correct = 0
     l = 0
 
+
+
     for data in loader:
         data = data.to(device)
         pred = model(data)
+        print(pred)
         pred = pred.max(dim=1)[1]
         correct += pred.eq(data.y).float().mean().item()
         l += 1
