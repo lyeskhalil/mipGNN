@@ -456,7 +456,7 @@ def test(loader):
     correct = 0
     l = 0
 
-    s_all =
+    s_all = []
 
     for data in loader:
         data = data.to(device)
