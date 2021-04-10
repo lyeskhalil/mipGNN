@@ -428,10 +428,10 @@ test_dataset = dataset[test_index].shuffle()
 
 print(len(test_dataset))
 
-batch_size = 10
+batch_size = 5
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-val_loader = DataLoader(val_dataset, batch_size=10, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=10, shuffle=True)
+val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
 
 def train(epoch):
@@ -481,7 +481,7 @@ results = []
 
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = SimpleNet(hidden=128, num_layers=5, aggr = "mean").to(device)
+model = SimpleNet(hidden=64, num_layers=3, aggr = "mean").to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
