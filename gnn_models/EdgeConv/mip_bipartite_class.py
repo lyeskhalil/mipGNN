@@ -456,17 +456,19 @@ def test(loader):
     correct = 0
     l = 0
 
+    s_all =
+
     for data in loader:
         data = data.to(device)
         pred, softmax = model(data)
 
-        print(softmax)
+        s_all.extend(list(softmax[0,:]))
 
         pred = pred.max(dim=1)[1]
         correct += pred.eq(data.y).float().mean().item()
         l += 1
 
-    return correct / l
+    return correct / l, s_all
 
 
 best_val = 0.0
@@ -476,50 +478,41 @@ best_hp = []
 
 results = []
 
-for i in range(5):
-    r = []
-
-    print(i)
-
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model = SimpleNet(hidden=128, num_layers=5, aggr = "mean").to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
-                                                           factor=0.8, patience=10,
-                                                           min_lr=0.0000001)
-
-    for epoch in range(1, 50):
 
 
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+model = SimpleNet(hidden=128, num_layers=5, aggr = "mean").to(device)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
-        train_loss = train(epoch)
-        train_acc = test(train_loader)
+scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
+                                                       factor=0.8, patience=10,
+                                                       min_lr=0.0000001)
 
-        val_acc = test(val_loader)
-        scheduler.step(val_acc)
-        lr = scheduler.optimizer.param_groups[0]['lr']
+all_softmax = []
+for epoch in range(1, 5):
+
+    train_loss = train(epoch)
+    train_acc, _ = test(train_loader)
+
+    val_acc, _ = test(val_loader)
+    scheduler.step(val_acc)
+    lr = scheduler.optimizer.param_groups[0]['lr']
+
+    if val_acc > best_val:
+        best_val = val_acc
+        test_acc, all_softmax = test(test_loader)
 
 
+    # Break if learning rate is smaller 10**-6.
+    if lr < 0.000001:
+        results.append(test_acc)
+        break
 
-        if val_acc > best_val:
-            best_val = val_acc
-            test_acc = test(test_loader)
+    print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
+          'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
+                                                                       train_acc, val_acc, test_acc))
 
-        r.append(test_acc)
-
-        # Break if learning rate is smaller 10**-6.
-        if lr < 0.000001:
-            results.append(test_acc)
-            break
-
-        print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
-              'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
-                                                                           train_acc, val_acc, test_acc))
-    results.append(r)
-
-print(results)
-
+print(all_softmax)
 
 
 
