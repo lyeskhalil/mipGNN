@@ -511,7 +511,10 @@ for epoch in range(1, 30):
           'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
                                                                        train_acc, val_acc, test_acc))
 
+print(len(all_softmax))
 print(all_softmax)
+
+
 plt.hist(np.array(all_softmax), color = 'blue', edgecolor = 'black',
          bins = 40)
 
