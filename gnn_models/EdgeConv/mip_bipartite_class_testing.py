@@ -437,7 +437,6 @@ test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
 
 
-
 def train(epoch):
     model.train()
 
@@ -446,6 +445,8 @@ def train(epoch):
         data = data.to(device)
         optimizer.zero_grad()
         output = model(data)
+
+        print(output)
 
         loss = F.nll_loss(output, data.y)
         loss.backward()
@@ -490,7 +491,7 @@ for i in range(5):
                                                            factor=0.8, patience=10,
                                                            min_lr=0.0000001)
 
-    for epoch in range(1, 222):
+    for epoch in range(1, 50):
 
         train_loss = train(epoch)
         train_acc = test(train_loader)
