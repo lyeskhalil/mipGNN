@@ -426,8 +426,6 @@ train_dataset = dataset[train_index].shuffle()
 val_dataset = dataset[val_index].shuffle()
 test_dataset = dataset[test_index].shuffle()
 
-print(len(test_dataset))
-exit()
 
 batch_size = 5
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
@@ -463,7 +461,7 @@ def test(loader):
         data = data.to(device)
         pred, softmax = model(data)
 
-        s_all.extend(list(softmax[0,:].detach().cpu().numpy()))
+        s_all.extend(list(softmax[:,0].detach().cpu().numpy()))
 
         pred = pred.max(dim=1)[1]
         correct += pred.eq(data.y).float().mean().item()
