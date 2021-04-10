@@ -194,7 +194,7 @@ class SimpleNet(torch.nn.Module):
         x = F.relu(self.lin2(x))
         x = F.relu(self.lin3(x))
         x = self.lin4(x)
-        return F.log_softmax(x, dim=-1)
+        return F.log_softmax(x, dim=-1), F.softmax(x, dim=-1)
 
     def __repr__(self):
         return self.__class__.__name__
@@ -430,8 +430,8 @@ print(len(test_dataset))
 
 batch_size = 15
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-val_loader = DataLoader(val_dataset, batch_size=256, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=256, shuffle=True)
+val_loader = DataLoader(val_dataset, batch_size=200, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=200, shuffle=True)
 
 
 def train(epoch):
@@ -441,7 +441,7 @@ def train(epoch):
     for data in train_loader:
         data = data.to(device)
         optimizer.zero_grad()
-        output = model(data)
+        output, _ = model(data)
 
         loss = F.nll_loss(output, data.y)
         loss.backward()
@@ -458,9 +458,9 @@ def test(loader):
 
     for data in loader:
         data = data.to(device)
-        pred = model(data)
+        pred, softmax = model(data)
 
-        print(pred)
+        print(softmax)
 
         pred = pred.max(dim=1)[1]
         correct += pred.eq(data.y).float().mean().item()
