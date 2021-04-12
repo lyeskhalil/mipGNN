@@ -491,7 +491,7 @@ scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
 all_softmax = []
 all_softmax_first = []
 all_softmax_ten = []
-for epoch in range(1, 30):
+for epoch in range(1, 5):
 
     if epoch == 1:
         _, all_softmax_first = test(test_loader)
@@ -526,8 +526,8 @@ print(all_softmax)
 
 plt.hist(np.array(all_softmax), color = 'orange', edgecolor = 'black',
          bins = 40)
-plt.xlim([0.0, 1.0])
-plt.xlim([0.0, 20000.0])
+# plt.xlim([0.0, 1.0])
+# plt.xlim([0.0, 20000.0])
 
 plt.savefig('plot.png')
 plt.clf()
@@ -535,8 +535,8 @@ plt.clf()
 
 plt.hist(np.array(all_softmax_first), color = 'red', edgecolor = 'black',
          bins = 40)
-plt.xlim([0.0, 1.0])
-plt.xlim([0.0, 20000.0])
+# plt.xlim([0.0, 1.0])
+# plt.xlim([0.0, 20000.0])
 
 
 plt.savefig('plot_first.png')
@@ -547,8 +547,8 @@ plt.clf()
 
 plt.hist(np.array(all_softmax_ten), color = 'red', edgecolor = 'black',
          bins = 40)
-plt.xlim([0.0, 1.0])
-plt.xlim([0.0, 20000.0])
+# plt.xlim([0.0, 1.0])
+# plt.xlim([0.0, 20000.0])
 
 
 plt.savefig('plot_ten.png')
