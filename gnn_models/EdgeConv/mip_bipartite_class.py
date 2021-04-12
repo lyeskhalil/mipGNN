@@ -524,6 +524,8 @@ plt.hist(np.array(all_softmax), color = 'orange', edgecolor = 'black',
          bins = 40)
 
 plt.savefig('plot.png')
+plt.clf()
+
 
 plt.hist(np.array(all_softmax_first), color = 'red', edgecolor = 'black',
          bins = 40)
