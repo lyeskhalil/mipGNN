@@ -492,7 +492,8 @@ all_softmax = []
 all_softmax_first = []
 for epoch in range(1, 30):
 
-    _, all_softmax_first = test(test_loader)
+    if epoch == 1:
+        _, all_softmax_first = test(test_loader)
 
     train_loss = train(epoch)
     train_acc, _ = test(train_loader)
