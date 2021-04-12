@@ -492,7 +492,8 @@ all_softmax = []
 all_softmax_first = []
 all_softmax_five = []
 all_softmax_ten = []
-for epoch in range(1, 30):
+all_softmax_30 = []
+for epoch in range(1, 60):
 
     if epoch == 1:
         _, all_softmax_first = test(test_loader)
@@ -502,6 +503,9 @@ for epoch in range(1, 30):
 
     if epoch == 10:
         _, all_softmax_ten = test(test_loader)
+
+    if epoch == 30:
+        _, all_softmax_30 = test(test_loader)
 
     train_loss = train(epoch)
     train_acc, _ = test(train_loader)
@@ -556,6 +560,17 @@ plt.ylim([0.0, 20000.0])
 
 
 plt.savefig('plot_ten.png')
+
+plt.clf()
+
+
+plt.hist(np.array(all_softmax_30), color = 'red', edgecolor = 'black',
+         bins = 40)
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 20000.0])
+
+
+plt.savefig('plot_30.png')
 
 plt.clf()
 
