@@ -490,10 +490,14 @@ scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
 
 all_softmax = []
 all_softmax_first = []
+all_softmax_ten = []
 for epoch in range(1, 30):
 
     if epoch == 1:
         _, all_softmax_first = test(test_loader)
+
+    if epoch == 10:
+        _, all_softmax_ten = test(test_loader)
 
     train_loss = train(epoch)
     train_acc, _ = test(train_loader)
@@ -531,6 +535,15 @@ plt.hist(np.array(all_softmax_first), color = 'red', edgecolor = 'black',
          bins = 40)
 
 plt.savefig('plot_first.png')
+
+
+plt.clf()
+
+
+plt.hist(np.array(all_softmax_ten), color = 'red', edgecolor = 'black',
+         bins = 40)
+
+plt.savefig('plot_ten.png')
 
 # hp_all = []
 # for i in range(len(file_list)):
