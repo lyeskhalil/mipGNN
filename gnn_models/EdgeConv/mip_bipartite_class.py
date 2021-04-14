@@ -436,17 +436,21 @@ test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 def train(epoch):
     model.train()
 
+    s_all = []
+
     loss_all = 0
     for data in train_loader:
         data = data.to(device)
         optimizer.zero_grad()
-        output, _ = model(data)
+        output, softmax = model(data)
+
+        s_all.extend(list(softmax[:, 0].detach().cpu().numpy()))
 
         loss = F.nll_loss(output, data.y)
         loss.backward()
         loss_all += batch_size * loss.item()
         optimizer.step()
-    return loss_all / len(train_dataset)
+    return loss_all / len(train_dataset), s_all
 
 
 def test(loader):
@@ -461,8 +465,7 @@ def test(loader):
         data = data.to(device)
         pred, softmax = model(data)
 
-
-        s_all.extend(list(softmax[:,0].detach().cpu().numpy()))
+        s_all.extend(list(softmax[:, 0].detach().cpu().numpy()))
 
         pred = pred.max(dim=1)[1]
         correct += pred.eq(data.y).float().mean().item()
@@ -493,21 +496,31 @@ all_softmax_first = []
 all_softmax_five = []
 all_softmax_ten = []
 all_softmax_30 = []
+
+all_softmax_t = []
+all_softmax_first_t = []
+all_softmax_five_t = []
+all_softmax_ten_t = []
+all_softmax_30_t = []
 for epoch in range(1, 60):
 
     if epoch == 1:
         _, all_softmax_first = test(test_loader)
+        _, all_softmax_first_t = test(train_loader)
 
     if epoch == 5:
         _, all_softmax_five = test(test_loader)
+        _, all_softmax_five_t = test(train_loader)
 
     if epoch == 10:
         _, all_softmax_ten = test(test_loader)
+        _, all_softmax_ten_t = test(train_loader)
 
     if epoch == 30:
         _, all_softmax_30 = test(test_loader)
+        _, all_softmax_30_t = test(train_loader)
 
-    train_loss = train(epoch)
+    train_loss, _ = train(epoch)
     train_acc, _ = test(train_loader)
 
     val_acc, _ = test(val_loader)
@@ -517,6 +530,7 @@ for epoch in range(1, 60):
     if val_acc > best_val:
         best_val = val_acc
         test_acc, all_softmax = test(test_loader)
+        _, all_softmax_t = test(train_loader)
 
 
     # Break if learning rate is smaller 10**-6.
@@ -528,59 +542,79 @@ for epoch in range(1, 60):
           'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
                                                                        train_acc, val_acc, test_acc))
 
-print(len(all_softmax))
-print(all_softmax)
-
+#print(len(all_softmax))
+#print(all_softmax)
 
 plt.hist(np.array(all_softmax), color = 'orange', edgecolor = 'black',
          bins = 40)
 plt.xlim([0.0, 1.0])
 plt.ylim([0.0, 20000.0])
-
 plt.savefig('plot.png')
 plt.clf()
-
 
 plt.hist(np.array(all_softmax_first), color = 'red', edgecolor = 'black',
          bins = 40)
 plt.xlim([0.0, 1.0])
 plt.ylim([0.0, 20000.0])
-
-
 plt.savefig('plot_first.png')
-
-
 plt.clf()
-
 
 plt.hist(np.array(all_softmax_ten), color = 'red', edgecolor = 'black',
          bins = 40)
 plt.xlim([0.0, 1.0])
 plt.ylim([0.0, 20000.0])
-
-
 plt.savefig('plot_ten.png')
-
 plt.clf()
-
 
 plt.hist(np.array(all_softmax_30), color = 'red', edgecolor = 'black',
          bins = 40)
 plt.xlim([0.0, 1.0])
 plt.ylim([0.0, 20000.0])
-
-
 plt.savefig('plot_30.png')
-
 plt.clf()
 
 
-plt.hist(np.array(all_softmax_five), color = 'red', edgecolor = 'black',
+plt.hist(np.array(all_softmax_five_t), color = 'red', edgecolor = 'black',
          bins = 40)
 plt.xlim([0.0, 1.0])
 plt.ylim([0.0, 20000.0])
 
-plt.savefig('plot_five.png')
+plt.savefig('plot_five_t.png')
+
+plt.hist(np.array(all_softmax_t), color = 'orange', edgecolor = 'black',
+         bins = 40)
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 20000.0])
+plt.savefig('plot_t.png')
+plt.clf()
+
+plt.hist(np.array(all_softmax_first_t), color = 'red', edgecolor = 'black',
+         bins = 40)
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 20000.0])
+plt.savefig('plot_first_t.png')
+plt.clf()
+
+plt.hist(np.array(all_softmax_ten_t), color = 'red', edgecolor = 'black',
+         bins = 40)
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 20000.0])
+plt.savefig('plot_ten_t.png')
+plt.clf()
+
+plt.hist(np.array(all_softmax_30_t), color = 'red', edgecolor = 'black',
+         bins = 40)
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 20000.0])
+plt.savefig('plot_30_t.png')
+plt.clf()
+
+plt.hist(np.array(all_softmax_five_t), color = 'red', edgecolor = 'black',
+         bins = 40)
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 20000.0])
+
+plt.savefig('plot_five_t.png')
 
 # hp_all = []
 # for i in range(len(file_list)):
