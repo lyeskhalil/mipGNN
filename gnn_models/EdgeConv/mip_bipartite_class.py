@@ -408,7 +408,7 @@ data_path = path
 sname = name
 # Threshold for computing class labels.
 # TODO
-bias_threshold = 0.01
+bias_threshold = 0.005
 
 # Create dataset.
 dataset = GraphDataset(pathr, data_path, bias_threshold, transform=MyTransform())  # .shuffle()
@@ -502,7 +502,10 @@ all_softmax_first_t = []
 all_softmax_five_t = []
 all_softmax_ten_t = []
 all_softmax_30_t = []
-for epoch in range(1, 60):
+
+
+
+for epoch in range(1, 70):
 
     if epoch == 1:
         _, all_softmax_first = test(test_loader)
