@@ -300,7 +300,7 @@ path = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
 data_path = path
 sname = name
 # Threshold for computing class labels.
-bias_threshold = 0.050
+bias_threshold = 0.005
 # Create dataset.
 dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform())  # .shuffle()
 
