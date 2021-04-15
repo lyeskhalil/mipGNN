@@ -465,6 +465,9 @@ def test(loader):
         data = data.to(device)
         pred, softmax = model(data)
 
+
+
+
         s_all.extend(list(softmax[:, 0].detach().cpu().numpy()))
 
         pred = pred.max(dim=1)[1]
