@@ -408,7 +408,7 @@ data_path = path
 sname = name
 # Threshold for computing class labels.
 # TODO
-bias_threshold = 0.4
+bias_threshold = 0.05
 # Create dataset.
 dataset = GraphDataset(pathr, data_path, bias_threshold, transform=MyTransform())  # .shuffle()
 
@@ -445,7 +445,7 @@ def train(epoch):
         optimizer.zero_grad()
         output, softmax = model(data)
 
-        s_all.extend(list(softmax[:, 1].detach().cpu().numpy()))
+        s_all.extend(list(softmax[:, 0].detach().cpu().numpy()))
 
         loss = F.nll_loss(output, data.y)
         loss.backward()
@@ -466,7 +466,7 @@ def test(loader):
         data = data.to(device)
         pred, softmax = model(data)
 
-        s_all.extend(list(softmax[:, 1].detach().cpu().numpy()))
+        s_all.extend(list(softmax[:, 0].detach().cpu().numpy()))
 
         pred = pred.max(dim=1)[1]
         correct += pred.eq(data.y).float().mean().item()
