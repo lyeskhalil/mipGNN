@@ -408,7 +408,8 @@ data_path = path
 sname = name
 # Threshold for computing class labels.
 # TODO
-bias_threshold = 0.05
+bias_threshold = 0.01
+
 # Create dataset.
 dataset = GraphDataset(pathr, data_path, bias_threshold, transform=MyTransform())  # .shuffle()
 
