@@ -483,141 +483,154 @@ best_hp = []
 
 results = []
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = SimpleNet(hidden=64, num_layers=3, aggr = "mean").to(device)
-optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+for i in range(5):
+    r = []
 
-scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
-                                                       factor=0.8, patience=10,
-                                                       min_lr=0.0000001)
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model = SimpleNet(hidden=64, num_layers=3, aggr = "mean").to(device)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
-all_softmax = []
-all_softmax_first = []
-all_softmax_five = []
-all_softmax_ten = []
-all_softmax_30 = []
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
+                                                           factor=0.8, patience=10,
+                                                           min_lr=0.0000001)
 
-all_softmax_t = []
-all_softmax_first_t = []
-all_softmax_five_t = []
-all_softmax_ten_t = []
-all_softmax_30_t = []
+    all_softmax = []
+    all_softmax_first = []
+    all_softmax_five = []
+    all_softmax_ten = []
+    all_softmax_30 = []
 
-
-
-for epoch in range(1, 70):
-
-    if epoch == 1:
-        _, all_softmax_first = test(test_loader)
-        _, all_softmax_first_t = test(train_loader)
-
-    if epoch == 5:
-        _, all_softmax_five = test(test_loader)
-        _, all_softmax_five_t = test(train_loader)
-
-    if epoch == 10:
-        _, all_softmax_ten = test(test_loader)
-        _, all_softmax_ten_t = test(train_loader)
-
-    if epoch == 30:
-        _, all_softmax_30 = test(test_loader)
-        _, all_softmax_30_t = test(train_loader)
-
-    train_loss, _ = train(epoch)
-    train_acc, _ = test(train_loader)
-
-    val_acc, _ = test(val_loader)
-    scheduler.step(val_acc)
-    lr = scheduler.optimizer.param_groups[0]['lr']
-
-    if val_acc > best_val:
-        best_val = val_acc
-        test_acc, all_softmax = test(test_loader)
-        _, all_softmax_t = test(train_loader)
-
-    # Break if learning rate is smaller 10**-6.
-    if lr < 0.000001:
-        results.append(test_acc)
-        break
-
-    print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
-          'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
-                                                                       train_acc, val_acc, test_acc))
-
-#print(len(all_softmax))
-#print(all_softmax)
-
-plt.hist(np.array(all_softmax), color = 'orange', edgecolor = 'black',
-         bins = 40)
-plt.xlim([0.0, 1.0])
-plt.ylim([0.0, 10000.0])
-plt.savefig('plot.png')
-plt.clf()
-
-plt.hist(np.array(all_softmax_first), color = 'red', edgecolor = 'black',
-         bins = 40)
-plt.xlim([0.0, 1.0])
-plt.ylim([0.0, 10000.0])
-plt.savefig('plot_first.png')
-plt.clf()
-
-plt.hist(np.array(all_softmax_ten), color = 'red', edgecolor = 'black',
-         bins = 40)
-plt.xlim([0.0, 1.0])
-plt.ylim([0.0, 10000.0])
-plt.savefig('plot_ten.png')
-plt.clf()
-
-plt.hist(np.array(all_softmax_30), color = 'red', edgecolor = 'black',
-         bins = 40)
-plt.xlim([0.0, 1.0])
-plt.ylim([0.0, 10000.0])
-plt.savefig('plot_30.png')
-plt.clf()
+    all_softmax_t = []
+    all_softmax_first_t = []
+    all_softmax_five_t = []
+    all_softmax_ten_t = []
+    all_softmax_30_t = []
 
 
-plt.hist(np.array(all_softmax_five_t), color = 'red', edgecolor = 'black',
-         bins = 40)
-plt.xlim([0.0, 1.0])
-plt.ylim([0.0, 80000.0])
 
-plt.savefig('plot_five_t.png')
-plt.clf()
+    for epoch in range(1, 70):
 
-plt.hist(np.array(all_softmax_t), color = 'orange', edgecolor = 'black',
-         bins = 40)
-plt.xlim([0.0, 1.0])
-plt.ylim([0.0, 80000.0])
-plt.savefig('plot_t.png')
-plt.clf()
+        if epoch == 1:
+            _, all_softmax_first = test(test_loader)
+            _, all_softmax_first_t = test(train_loader)
 
-plt.hist(np.array(all_softmax_first_t), color = 'red', edgecolor = 'black',
-         bins = 40)
-plt.xlim([0.0, 1.0])
-plt.ylim([0.0, 80000.0])
-plt.savefig('plot_first_t.png')
-plt.clf()
+        if epoch == 5:
+            _, all_softmax_five = test(test_loader)
+            _, all_softmax_five_t = test(train_loader)
 
-plt.hist(np.array(all_softmax_ten_t), color = 'red', edgecolor = 'black',
-         bins = 40)
-plt.xlim([0.0, 1.0])
-plt.ylim([0.0, 80000.0])
-plt.savefig('plot_ten_t.png')
-plt.clf()
+        if epoch == 10:
+            _, all_softmax_ten = test(test_loader)
+            _, all_softmax_ten_t = test(train_loader)
 
-plt.hist(np.array(all_softmax_30_t), color = 'red', edgecolor = 'black',
-         bins = 40)
-plt.xlim([0.0, 1.0])
-plt.ylim([0.0, 80000.0])
-plt.savefig('plot_30_t.png')
-plt.clf()
+        if epoch == 30:
+            _, all_softmax_30 = test(test_loader)
+            _, all_softmax_30_t = test(train_loader)
 
-plt.hist(np.array(all_softmax_five_t), color = 'red', edgecolor = 'black',
-         bins = 40)
-plt.xlim([0.0, 1.0])
-plt.ylim([0.0, 80000.0])
+        train_loss, _ = train(epoch)
+        train_acc, _ = test(train_loader)
 
-plt.savefig('plot_five_t.png')
+        val_acc, _ = test(val_loader)
+        scheduler.step(val_acc)
+        lr = scheduler.optimizer.param_groups[0]['lr']
+
+        if val_acc > best_val:
+            best_val = val_acc
+            test_acc, all_softmax = test(test_loader)
+            _, all_softmax_t = test(train_loader)
+
+        r.append(test_acc)
+
+        # Break if learning rate is smaller 10**-6.
+        if lr < 0.000001:
+            results.append(test_acc)
+            break
+
+        print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
+              'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
+                                                                           train_acc, val_acc, test_acc))
+
+    results.append(r)
+
+
+
+
+    #print(len(all_softmax))
+    #print(all_softmax)
+
+    plt.hist(np.array(all_softmax), color = 'orange', edgecolor = 'black',
+             bins = 40)
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 10000.0])
+    plt.savefig('plot.png')
+    plt.clf()
+
+    plt.hist(np.array(all_softmax_first), color = 'red', edgecolor = 'black',
+             bins = 40)
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 10000.0])
+    plt.savefig('plot_first.png')
+    plt.clf()
+
+    plt.hist(np.array(all_softmax_ten), color = 'red', edgecolor = 'black',
+             bins = 40)
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 10000.0])
+    plt.savefig('plot_ten.png')
+    plt.clf()
+
+    plt.hist(np.array(all_softmax_30), color = 'red', edgecolor = 'black',
+             bins = 40)
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 10000.0])
+    plt.savefig('plot_30.png')
+    plt.clf()
+
+
+    plt.hist(np.array(all_softmax_five_t), color = 'red', edgecolor = 'black',
+             bins = 40)
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 80000.0])
+
+    plt.savefig('plot_five_t.png')
+    plt.clf()
+
+    plt.hist(np.array(all_softmax_t), color = 'orange', edgecolor = 'black',
+             bins = 40)
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 80000.0])
+    plt.savefig('plot_t.png')
+    plt.clf()
+
+    plt.hist(np.array(all_softmax_first_t), color = 'red', edgecolor = 'black',
+             bins = 40)
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 80000.0])
+    plt.savefig('plot_first_t.png')
+    plt.clf()
+
+    plt.hist(np.array(all_softmax_ten_t), color = 'red', edgecolor = 'black',
+             bins = 40)
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 80000.0])
+    plt.savefig('plot_ten_t.png')
+    plt.clf()
+
+    plt.hist(np.array(all_softmax_30_t), color = 'red', edgecolor = 'black',
+             bins = 40)
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 80000.0])
+    plt.savefig('plot_30_t.png')
+    plt.clf()
+
+    plt.hist(np.array(all_softmax_five_t), color = 'red', edgecolor = 'black',
+             bins = 40)
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 80000.0])
+
+    plt.savefig('plot_five_t.png')
+
+
+print(results)
 
 # hp_all = []
 # for i in range(len(file_list)):
