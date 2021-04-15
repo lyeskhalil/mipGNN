@@ -407,7 +407,8 @@ pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
 data_path = path
 sname = name
 # Threshold for computing class labels.
-bias_threshold = 0.05
+# TODO
+bias_threshold = 0.4
 # Create dataset.
 dataset = GraphDataset(pathr, data_path, bias_threshold, transform=MyTransform())  # .shuffle()
 
@@ -464,9 +465,6 @@ def test(loader):
     for data in loader:
         data = data.to(device)
         pred, softmax = model(data)
-
-
-
 
         s_all.extend(list(softmax[:, 0].detach().cpu().numpy()))
 
