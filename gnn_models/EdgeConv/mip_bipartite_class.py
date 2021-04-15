@@ -482,8 +482,6 @@ best_hp = []
 
 results = []
 
-
-
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = SimpleNet(hidden=64, num_layers=3, aggr = "mean").to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
@@ -532,7 +530,6 @@ for epoch in range(1, 60):
         best_val = val_acc
         test_acc, all_softmax = test(test_loader)
         _, all_softmax_t = test(train_loader)
-
 
     # Break if learning rate is smaller 10**-6.
     if lr < 0.000001:
