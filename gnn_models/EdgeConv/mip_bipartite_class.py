@@ -580,7 +580,7 @@ plt.clf()
 plt.hist(np.array(all_softmax_five_t), color = 'red', edgecolor = 'black',
          bins = 40)
 plt.xlim([0.0, 1.0])
-plt.ylim([0.0, 40000.0])
+plt.ylim([0.0, 80000.0])
 
 plt.savefig('plot_five_t.png')
 plt.clf()
@@ -588,35 +588,35 @@ plt.clf()
 plt.hist(np.array(all_softmax_t), color = 'orange', edgecolor = 'black',
          bins = 40)
 plt.xlim([0.0, 1.0])
-plt.ylim([0.0, 40000.0])
+plt.ylim([0.0, 80000.0])
 plt.savefig('plot_t.png')
 plt.clf()
 
 plt.hist(np.array(all_softmax_first_t), color = 'red', edgecolor = 'black',
          bins = 40)
 plt.xlim([0.0, 1.0])
-plt.ylim([0.0, 40000.0])
+plt.ylim([0.0, 80000.0])
 plt.savefig('plot_first_t.png')
 plt.clf()
 
 plt.hist(np.array(all_softmax_ten_t), color = 'red', edgecolor = 'black',
          bins = 40)
 plt.xlim([0.0, 1.0])
-plt.ylim([0.0, 40000.0])
+plt.ylim([0.0, 80000.0])
 plt.savefig('plot_ten_t.png')
 plt.clf()
 
 plt.hist(np.array(all_softmax_30_t), color = 'red', edgecolor = 'black',
          bins = 40)
 plt.xlim([0.0, 1.0])
-plt.ylim([0.0, 40000.0])
+plt.ylim([0.0, 80000.0])
 plt.savefig('plot_30_t.png')
 plt.clf()
 
 plt.hist(np.array(all_softmax_five_t), color = 'red', edgecolor = 'black',
          bins = 40)
 plt.xlim([0.0, 1.0])
-plt.ylim([0.0, 40000.0])
+plt.ylim([0.0, 80000.0])
 
 plt.savefig('plot_five_t.png')
 
