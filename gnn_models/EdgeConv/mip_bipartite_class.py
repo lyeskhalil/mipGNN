@@ -13,6 +13,12 @@ from sklearn.model_selection import train_test_split
 from torch_geometric.data import (InMemoryDataset, Data)
 from torch_geometric.data import DataLoader
 
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
+
+
 import torch_geometric.utils.softmax
 import matplotlib.pyplot as plt
 import torch
@@ -632,6 +638,25 @@ for i in range(5):
 
 print(results)
 
+plt.clf()
+data = np.array(results).transpose()
+data = pd.DataFrame(data=data,
+                    columns=["Err0", "Err0", "Err0", "Err0", "Err0"])
+
+
+sns.despine()
+sns.set_style("white")
+sns.set_style("ticks")
+sns.set_palette("muted")
+sns.set_context("paper")
+
+sns.set_context(font_scale=1.5, rc={"lines.linewidth": 2.5})
+
+p = sns.color_palette("husl")
+
+l = sns.lineplot(data=data.iloc[:, :], dashes=False)
+
+plt.savefig('acc.png')
 # hp_all = []
 # for i in range(len(file_list)):
 #
