@@ -363,12 +363,12 @@ best_hp = []
 results = []
 models = []
 for i in range(5):
-    best_val = 0.0
-    test_acc = 0.0
     models.append(SimpleNet(hidden=32, num_layers=5, aggr="mean"))
 
 
 for i in range(5):
+    best_val = 0.0
+    test_acc = 0.0
     r = []
 
     print(i)
