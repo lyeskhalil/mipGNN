@@ -363,7 +363,7 @@ best_hp = []
 results = []
 models = []
 for i in range(5):
-    models.append(SimpleNet(hidden=32, num_layers=5, aggr="mean").to(device))
+    models.append(SimpleNet(hidden=32, num_layers=5, aggr="mean"))
 
 
 for i in range(5):
@@ -374,7 +374,7 @@ for i in range(5):
 
     # TODO
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model = models[i]
+    model = models[i].to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
