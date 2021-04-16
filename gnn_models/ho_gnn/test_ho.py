@@ -25,7 +25,7 @@ for num, filename in enumerate(os.listdir(data_path)):
     graph_new = nx.Graph()
 
     for i,e in enumerate(graph.edges):
-        graph_new.add_node(i)
+        graph_new.add_node(i, type="AC")
 
     for i,v in enumerate(graph.nodes):
-        graph_new.add_node((i,i))
+        graph_new.add_node((i,i), type="VV")
