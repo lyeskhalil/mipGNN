@@ -21,3 +21,8 @@ for num, filename in enumerate(os.listdir(data_path)):
     # Make graph directed.
     graph = nx.convert_node_labels_to_integers(graph)
     graph = graph.to_directed() if not nx.is_directed(graph) else graph
+
+    graph_new = nx.Graph()
+
+    for e in graph.edges:
+        graph_new.add_node()
