@@ -29,3 +29,7 @@ for num, filename in enumerate(os.listdir(data_path)):
 
     for i,v in enumerate(graph.nodes):
         graph_new.add_node((i,i), type="VV")
+
+
+    for v in graph_new.nodes:
+        print(v)
