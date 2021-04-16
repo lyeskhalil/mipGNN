@@ -24,5 +24,5 @@ for num, filename in enumerate(os.listdir(data_path)):
 
     graph_new = nx.Graph()
 
-    for e in graph.edges:
-        graph_new.add_node()
+    for i,e in enumerate(graph.edges):
+        graph_new.add_node(i)
