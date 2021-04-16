@@ -31,5 +31,5 @@ for num, filename in enumerate(os.listdir(data_path)):
         graph_new.add_node((i,i), type="VV")
 
 
-    for v in graph_new.nodes:
-        print(v)
+    for v in graph_new.nodes():
+        print(v[type])
