@@ -28,5 +28,4 @@ for num, filename in enumerate(os.listdir(data_path)):
         graph_new.add_node(i)
 
     for i,v in enumerate(graph.nodes):
-        for j,w in enumerate(graph.nodes):
-            graph_new.add_node((i,j))
+        graph_new.add_node((i,i))
