@@ -32,4 +32,4 @@ for num, filename in enumerate(os.listdir(data_path)):
 
 
     for v in graph_new.nodes():
-        print(v[type])
+        print(graph_new.nodes[v]["type"])
