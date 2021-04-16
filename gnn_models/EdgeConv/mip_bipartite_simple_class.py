@@ -295,14 +295,14 @@ name = name_list[i]
 results = []
 
 # Prepare data.
-path = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
+pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
 # Path to raw graph data.
 data_path = path
 sname = name
 # Threshold for computing class labels.
 bias_threshold = 0.005
 # Create dataset.
-dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform())  # .shuffle()
+dataset = GraphDataset(pathr, data_path, bias_threshold, transform=MyTransform())  # .shuffle()
 
 # Split data.
 l = len(dataset)
