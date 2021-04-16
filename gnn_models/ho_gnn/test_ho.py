@@ -14,6 +14,7 @@ import networkx as nx
 data_path = "../../DATA1/er_SET2/200_200/alpha_0.75_setParam_100/train/"
 
 for num, filename in enumerate(os.listdir(data_path)):
+    print(num)
     # Get graph.
     graph = nx.read_gpickle(data_path + filename)
 
