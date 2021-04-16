@@ -519,7 +519,7 @@ for i in range(5):
 
 
 
-    for epoch in range(1, 70):
+    for epoch in range(1, 50):
         print(i)
         if epoch == 1:
             _, all_softmax_first = test(test_loader)
