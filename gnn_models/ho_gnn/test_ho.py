@@ -26,3 +26,7 @@ for num, filename in enumerate(os.listdir(data_path)):
 
     for i,e in enumerate(graph.edges):
         graph_new.add_node(i)
+
+    for i,v in enumerate(graph.vertices):
+        for j,w in enumerate(graph.vertices):
+            graph_new.add_node((i,j))
