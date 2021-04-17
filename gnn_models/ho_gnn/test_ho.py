@@ -30,15 +30,14 @@ from torch_geometric.nn import MessagePassing
 from torch_geometric.nn.inits import reset
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
+data_path = "../../DATA1/er_SET2/200_200/alpha_0.75_setParam_100/train/"
 
 # Preprocessing to create Torch dataset.
 class GraphDataset(InMemoryDataset):
-    def __init__(self, root, data_path, bias_threshold, transform=None, pre_transform=None,
+    def __init__(self, root, bias_threshold, transform=None, pre_transform=None,
                  pre_filter=None):
         super(GraphDataset, self).__init__(root, transform, pre_transform, pre_filter)
         self.data, self.slices = torch.load(self.processed_paths[0])
-        self.data_path = data_path
         self.bias_threshold = bias_threshold
 
     @property
@@ -56,13 +55,13 @@ class GraphDataset(InMemoryDataset):
         print("Preprocessing.")
 
         data_list = []
-        num_graphs = len(os.listdir(self.data_path))
+        num_graphs = len(os.listdir(data_path))
 
         # Iterate over instance files and create data objects.
-        for num, filename in enumerate(os.listdir(self.data_path)):
+        for num, filename in enumerate(os.listdir(data_path)):
             print(num)
             # Get graph.
-            graph = nx.read_gpickle(self.data_path + filename)
+            graph = nx.read_gpickle(data_path + filename)
 
             # Make graph directed.
             graph = nx.convert_node_labels_to_integers(graph)
