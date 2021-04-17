@@ -86,7 +86,7 @@ class GraphDataset(InMemoryDataset):
                 if graph.nodes[u]['bipartite'] == 0:
                     graph_new.add_node((u, v), type="VC", first=u, second=v, num=c, feauture = [graph.nodes[u]['objcoeff'], graph.degree[u], graph.nodes[v]['rhs'],  graph.degree[v]])
                     c += 1
-                    graph_new.add_node((v, u), type="CV", first=v, second=u, num=c, feauture = [graph.nodes[v]['objcoeff'], graph.degree[v], graph.nodes[u]['rhs'],  graph.degree[u]])
+                    graph_new.add_node((v, u), type="CV", first=v, second=u, num=c)
                     c += 1
 
             for i, v in enumerate(graph.nodes):
