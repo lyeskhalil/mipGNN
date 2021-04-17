@@ -258,17 +258,17 @@ class GraphDataset(InMemoryDataset):
 
             data.y = torch.from_numpy(np.array(y)).to(torch.long)
 
-            data.edge_index_vv_cv_1 = matrices_vv_cv_1
-            data.edge_index_vv_vc_2 = matrices_vv_vc_2
+            data.edge_index_vv_cv_1 = matrices_vv_cv_1.to(torch.long)
+            data.edge_index_vv_vc_2 = matrices_vv_vc_2.to(torch.long)
 
-            data.edge_index_cc_vc_1 = matrices_cc_vc_1
-            data.edge_index_cc_cv_2 = matrices_cc_cv_2
+            data.edge_index_cc_vc_1 = matrices_cc_vc_1.to(torch.long)
+            data.edge_index_cc_cv_2 = matrices_cc_cv_2.to(torch.long)
 
-            data.edge_index_vc_cc_1 = matrices_vc_cc_1
-            data.edge_index_vc_vv_2 = matrices_vc_vv_2
+            data.edge_index_vc_cc_1 = matrices_vc_cc_1.to(torch.long)
+            data.edge_index_vc_vv_2 = matrices_vc_vv_2.to(torch.long)
 
-            data.edge_index_cv_vv_1 = matrices_cv_vv_1
-            data.edge_index_cv_cc_2 = matrices_cv_cc_2
+            data.edge_index_cv_vv_1 = matrices_cv_vv_1.to(torch.long)
+            data.edge_index_cv_cc_2 = matrices_cv_cc_2.to(torch.long)
 
             data.num_nodes_vv = num_vv
             data.num_nodes_cc = num_cc
