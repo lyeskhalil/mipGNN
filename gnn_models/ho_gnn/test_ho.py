@@ -131,7 +131,7 @@ class GraphDataset(InMemoryDataset):
                         if graph.has_edge(first, n):
                             matrices_cv_cc_2.append([num, graph_new.nodes[(first, n)]["num"]])
 
-            matrices_vv_cv_1 = torch.tensor(matrices_vv_cv_1).t().contiguous()
+            matrices_vv_cv_1 = torch.tensor(matrices_vv_cv_1).contiguous()
             print(matrices_vv_cv_1.size())
             matrices_vv_vc_2 = torch.tensor(matrices_vv_vc_2).t().contiguous()
 
