@@ -54,10 +54,10 @@ class SimpleNet(torch.nn.Module):
         self.num_layers = num_layers
 
         # Embed initial node features.
-        self.vv_node_encoder = Sequential(Linear(2, hidden), ReLU(), Linear(hidden, hidden))
-        self.cc_node_encoder = Sequential(Linear(2, hidden), ReLU(), Linear(hidden, hidden))
-        self.vc_node_encoder = Sequential(Linear(2, hidden), ReLU(), Linear(hidden, hidden))
-        self.cv_node_encoder = Sequential(Linear(2, hidden), ReLU(), Linear(hidden, hidden))
+        self.vv_node_encoder = Sequential(Linear(4, hidden), ReLU(), Linear(hidden, hidden))
+        self.cc_node_encoder = Sequential(Linear(4, hidden), ReLU(), Linear(hidden, hidden))
+        self.vc_node_encoder = Sequential(Linear(5, hidden), ReLU(), Linear(hidden, hidden))
+        self.cv_node_encoder = Sequential(Linear(5, hidden), ReLU(), Linear(hidden, hidden))
 
         self.vv_cv_1 = SimpleBipartiteLayer(hidden, aggr=aggr)
 
@@ -88,12 +88,13 @@ class SimpleNet(torch.nn.Module):
         edge_index_cv_cc_2 = data.edge_index_cv_cc_2
 
         # Compute initial node embeddings.
-
-
-
         var_node_features_0 = self.vv_node_encoder(vv_node_features)
+        var_node_features_0 = self.cc_node_encoder(cc_node_features)
+        var_node_features_0 = self.vc_node_encoder(vc_node_features)
+        var_node_features_0 = self.cv_node_encoder(cv_node_features)
 
-
+        print("###")
+        exit()
 
 
 
@@ -309,3 +310,35 @@ print(dataset.data.vv_node_features.size())
 print(dataset.data.cc_node_features.size())
 print(dataset.data.vc_node_features.size())
 print(dataset.data.cv_node_features.size())
+
+batch_size = 2
+train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+model = SimpleNet(hidden=32, num_layers=5, aggr="mean").to(device)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
+                                                           factor=0.8, patience=10,
+                                                           min_lr=0.0000001)
+
+def train(epoch):
+    model.train()
+
+    loss_all = 0
+    for data in train_loader:
+        data = data.to(device)
+        optimizer.zero_grad()
+        output = model(data)
+        exit()
+
+
+        loss = F.nll_loss(output, data.y)
+        loss.backward()
+        loss_all += batch_size * loss.item()
+        optimizer.step()
+    #return loss_all / len(train_dataset)
+
+
+for epoch in range(1, 50):
+    train_loss = train(epoch)
