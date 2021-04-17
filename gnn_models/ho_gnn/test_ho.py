@@ -59,7 +59,7 @@ class SimpleNet(torch.nn.Module):
         self.vc_node_encoder = Sequential(Linear(5, hidden), ReLU(), Linear(hidden, hidden))
         self.cv_node_encoder = Sequential(Linear(5, hidden), ReLU(), Linear(hidden, hidden))
 
-        self.vv_cv_1 = SimpleBipartiteLayer(hidden, aggr=aggr)
+        self.cv_vv_1 = SimpleBipartiteLayer(hidden, aggr=aggr)
 
         # MLP used for classification.
         # self.lin1 = Linear((num_layers + 1) * hidden, hidden)
