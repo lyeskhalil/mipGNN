@@ -40,7 +40,7 @@ for num, filename in enumerate(os.listdir(data_path)):
         second = data["second"]
 
         for n in graph.neighbors(first):
-            print(n)
+            print(graph_new.nodes[(first,n)])
 
 
 
