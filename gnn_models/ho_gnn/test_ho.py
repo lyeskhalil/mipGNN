@@ -24,21 +24,24 @@ for num, filename in enumerate(os.listdir(data_path)):
 
     for i, (u, v) in enumerate(graph.edges):
         if graph.nodes[v]['bipartite'] == 0:
-            graph_new.add_node(i, type="VC", first=u, second=v)
+            graph_new.add_node((u,v), type="VC", first=u, second=v)
         else:
-            graph_new.add_node(i, type="CV", first=u, second=v)
+            graph_new.add_node((u,v), type="CV", first=u, second=v)
 
     for i, v in enumerate(graph.nodes):
         if graph.nodes[v]['bipartite'] == 0:
-            graph_new.add_node(i, type="VV", first=v, second=v)
+            graph_new.add_node((v,v), type="VV", first=v, second=v)
         else:
-            graph_new.add_node(i, type="CC", first=v, second=v)
+            graph_new.add_node((v,v), type="CC", first=v, second=v)
 
 
     for i, (v, data) in enumerate(graph_new.nodes(data=True)):
         first = data["first"]
         second = data["second"]
 
-        
+        for n in graph.neighbors[first]:
+            print(n)
+
+
 
 
