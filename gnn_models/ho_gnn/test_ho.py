@@ -99,7 +99,7 @@ class SimpleNet(torch.nn.Module):
         vc_0 = self.vc_node_encoder(vc_node_features)
         cv_0 = self.cv_node_encoder(cv_node_features)
 
-        self.vv_cv_1(cv_0, vv_0, edge_index_cv_vv_1, [num_nodes_cv.sum(), num_nodes_vv.sum()])
+        self.cv_vv_1(cv_0, vv_0, edge_index_cv_vv_1, [num_nodes_cv.sum(), num_nodes_vv.sum()])
 
         print("###")
         exit()
