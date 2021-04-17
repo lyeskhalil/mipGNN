@@ -35,7 +35,7 @@ for num, filename in enumerate(os.listdir(data_path)):
     matrices_cv_cc_2 = []
 
     for i, (u, v) in enumerate(graph.edges):
-        if graph.nodes[v]['bipartite'] == 0:
+        if graph.nodes[u]['bipartite'] == 0:
             graph_new.add_node((u,v), type="VC", first=u, second=v, num=i, )
         else:
             graph_new.add_node((u,v), type="CV", first=u, second=v, num=i)
