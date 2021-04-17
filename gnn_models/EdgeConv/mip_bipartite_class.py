@@ -322,7 +322,7 @@ class GraphDataset(InMemoryDataset):
                     edge_list_var.append([node_to_varnode[s], node_to_connode[t]])
                     edge_features_var.append([edge_data['coeff']])
 
-         
+
             edge_index_var = torch.tensor(edge_list_var).t().contiguous()
             edge_index_con = torch.tensor(edge_list_con).t().contiguous()
 
