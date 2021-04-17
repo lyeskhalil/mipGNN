@@ -5,11 +5,7 @@ sys.path.insert(0, '../..')
 sys.path.insert(0, '.')
 
 import os
-import os.path as osp
-import numpy as np
 import networkx as nx
-
-
 
 data_path = "../../DATA1/er_SET2/200_200/alpha_0.75_setParam_100/train/"
 
@@ -24,12 +20,14 @@ for num, filename in enumerate(os.listdir(data_path)):
 
     graph_new = nx.Graph()
 
-    for i,(u,v) in enumerate(graph.edges):
-        graph_new.add_node(i, type="AC")
+    for i, (u, v) in enumerate(graph.edges):
+        if graph.nodes[v]['bipartite'] == 0:
+            graph_new.add_node(i, type="VC", first=u, second=v)
+        else:
+            graph_new.add_node(i, type="CV", first=u, second=v)
 
-    for i,v in enumerate(graph.nodes):
-        graph_new.add_node((i,i), type="VV")
-
-
-    for v in graph_new.nodes():
-        print(graph_new.nodes[v]["type"])
+    for i, v in enumerate(graph.nodes):
+        if graph.nodes[v]['bipartite'] == 0:
+            graph_new.add_node(i, type="VV", first=v, second=v)
+        else:
+            graph_new.add_node(i, type="CC", first=v, second=v)
