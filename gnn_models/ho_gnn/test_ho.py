@@ -86,6 +86,11 @@ class GraphDataset(InMemoryDataset):
             features_vc = []
             features_cv = []
 
+            num_vv = 0
+            num_cc = 0
+            num_vc = 0
+            num_cv = 0
+
             c = 0
             for i, (u, v) in enumerate(graph.edges):
                 if graph.nodes[u]['bipartite'] == 0:
@@ -96,16 +101,21 @@ class GraphDataset(InMemoryDataset):
                     c += 1
                     features_cv.append([graph.nodes[v]['rhs'],  graph.degree[v], graph.nodes[u]['objcoeff'], graph.degree[u], graph.edges[(u,v)]["coeff"]])
 
+                    num_vc += 1
+                    num_cv += 1
                 for i, v in enumerate(graph.nodes):
                  if graph.nodes[v]['bipartite'] == 0:
                      graph_new.add_node((v,v), type="VV", first=v, second=v, num=c, feauture = [graph.nodes[v]['objcoeff'], graph.degree[v], graph.nodes[v]['objcoeff'], graph.degree[v]])
                      features_vv.append([graph.nodes[v]['objcoeff'], graph.degree[v], graph.nodes[v]['objcoeff'], graph.degree[v]])
                      c += 1
+                     num_vv += 1
                  elif graph.nodes[v]['bipartite'] == 1:
                      graph_new.add_node((v,v), type="CC", first=v, second=v, num=c,  feauture = [graph.nodes[v]['rhs'], graph.degree[v], graph.nodes[v]['rhs'], graph.degree[v]])
                      features_cc.append([graph.nodes[v]['rhs'], graph.degree[v], graph.nodes[v]['rhs'], graph.degree[v]])
                      c += 1
+                     num_cc += 1
 
+            y = []
             for i, (v, data) in enumerate(graph_new.nodes(data=True)):
                 first = data["first"]
                 second = data["second"]
@@ -116,6 +126,11 @@ class GraphDataset(InMemoryDataset):
                         if graph.has_edge(n, second):
                             # Source node is var. VV->CV
                             matrices_vv_cv_1.append([num, graph_new.nodes[(n, second)]["num"]])
+
+                            if (graph_new.nodes[v]['bias'] < 0.005):
+                                y.append(0)
+                            else:
+                                y.append(1)
                     if graph_new.nodes[v]["type"] == "CC":
                         if graph.has_edge(n, second):
                             matrices_cc_vc_1.append([num, graph_new.nodes[(n, second)]["num"]])
@@ -140,8 +155,6 @@ class GraphDataset(InMemoryDataset):
                         if graph.has_edge(first, n):
                             matrices_cv_cc_2.append([num, graph_new.nodes[(first, n)]["num"]])
 
-            print(graph_new.number_of_nodes(), graph_new.number_of_edges())
-
             matrices_vv_cv_1 = torch.tensor(matrices_vv_cv_1).t().contiguous()
             matrices_vv_vc_2 = torch.tensor(matrices_vv_vc_2).t().contiguous()
 
@@ -161,6 +174,8 @@ class GraphDataset(InMemoryDataset):
             data.vc_node_features = torch.from_numpy(np.array(features_vc)).to(torch.float)
             data.cv_node_features = torch.from_numpy(np.array(features_cv)).to(torch.float)
 
+            data.y = torch.from_numpy(np.array(y)).to(torch.long)
+
             data.edge_index_vv_cv_1 = matrices_vv_cv_1
             data.edge_index_vv_vc_2 = matrices_vv_vc_2
 
@@ -172,6 +187,11 @@ class GraphDataset(InMemoryDataset):
 
             data.edge_index_cv_vv_1 = matrices_cv_vv_1
             data.edge_index_cv_cc_2 = matrices_cv_cc_2
+
+            data.num_nodes_vv = num_vv
+            data.num_nodes_cc = num_cc
+            data.num_nodes_vc = num_vc
+            data.num_nodes_cv = num_cv
 
             data_list.append(data)
 
