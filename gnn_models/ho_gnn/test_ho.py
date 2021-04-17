@@ -87,11 +87,21 @@ class SimpleNet(torch.nn.Module):
         edge_index_cv_vv_1 = data.edge_index_cv_vv_1
         edge_index_cv_cc_2 = data.edge_index_cv_cc_2
 
+        num_nodes_var = data.num_nodes_var
+        num_nodes_con = data.num_nodes_con
+
+        num_nodes_vv = data.num_nodes_vv
+        num_nodes_cc = data.num_nodes_cc
+        num_nodes_vc = data.num_nodes_vc
+        num_nodes_cv = data.num_nodes_cv
+
         # Compute initial node embeddings.
-        var_node_features_0 = self.vv_node_encoder(vv_node_features)
-        var_node_features_0 = self.cc_node_encoder(cc_node_features)
-        var_node_features_0 = self.vc_node_encoder(vc_node_features)
-        var_node_features_0 = self.cv_node_encoder(cv_node_features)
+        vv_0 = self.vv_node_encoder(vv_node_features)
+        cc_0 = self.cc_node_encoder(cc_node_features)
+        vc_0 = self.vc_node_encoder(vc_node_features)
+        cv_0 = self.cv_node_encoder(cv_node_features)
+
+        self.vv_cv_1(vv_0, cv_0, edge_index_vv_cv_1, [num_nodes_vv.sum(), num_nodes_cv.sum()])
 
         print("###")
         exit()
@@ -306,10 +316,6 @@ class MyTransform(object):
 
 pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
 dataset = GraphDataset(pathr, 0.005, transform=MyTransform())  # .shuffle()
-print(dataset.data.vv_node_features.size())
-print(dataset.data.cc_node_features.size())
-print(dataset.data.vc_node_features.size())
-print(dataset.data.cv_node_features.size())
 
 batch_size = 2
 train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
