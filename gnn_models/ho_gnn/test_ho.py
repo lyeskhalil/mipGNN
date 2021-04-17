@@ -146,16 +146,16 @@ class GraphDataset(InMemoryDataset):
             data = Data()
 
             data.matrices_vv_cv_1 = matrices_vv_cv_1
-            data.matrices_vv_vc_2 = matrices_vv_vc_2
-
-            data.matrices_cc_vc_1 = matrices_cc_vc_1
-            data.matrices_cc_cv_2 = matrices_cc_cv_2
-
-            data.matrices_vc_cc_1 = matrices_vc_cc_1
-            data.matrices_vc_vv_2 = matrices_vc_vv_2
-
-            data.matrices_cv_vv_1 = matrices_cv_vv_1
-            data.matrices_cv_cc_2 = matrices_cv_cc_2
+            # data.matrices_vv_vc_2 = matrices_vv_vc_2
+            #
+            # data.matrices_cc_vc_1 = matrices_cc_vc_1
+            # data.matrices_cc_cv_2 = matrices_cc_cv_2
+            #
+            # data.matrices_vc_cc_1 = matrices_vc_cc_1
+            # data.matrices_vc_vv_2 = matrices_vc_vv_2
+            #
+            # data.matrices_cv_vv_1 = matrices_cv_vv_1
+            # data.matrices_cv_cc_2 = matrices_cv_cc_2
 
             data_list.append(data)
 
