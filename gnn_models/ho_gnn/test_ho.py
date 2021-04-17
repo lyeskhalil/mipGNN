@@ -162,7 +162,7 @@ class GraphDataset(InMemoryDataset):
             data_list.append(data)
 
         data, slices = self.collate(data_list)
-        #torch.save((data, slices), self.processed_paths[0])
+        torch.save((data, slices), self.processed_paths[0])
 
 pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
 dataset = GraphDataset(pathr, 0.005, transform=None)  # .shuffle()
