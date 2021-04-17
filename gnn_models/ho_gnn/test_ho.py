@@ -29,6 +29,78 @@ from torch.nn import Sequential, Linear, ReLU, Sigmoid
 from torch_geometric.nn import MessagePassing
 from torch_geometric.nn.inits import reset
 
+class SimpleBipartiteLayer(MessagePassing):
+    def __init__(self, dim, aggr):
+        super(SimpleBipartiteLayer, self).__init__(aggr=aggr, flow="source_to_target")
+
+        self.nn = Sequential(Linear(3 * dim, dim), ReLU(), Linear(dim, dim), ReLU(),
+                             BN(dim))
+
+    def forward(self, source, target, edge_index, size):
+        out = self.propagate(edge_index, x=source, t=target, size=size)
+
+        return out
+
+    def message(self, x_j, t_i):
+        return self.nn(torch.cat([t_i, x_j], dim=-1))
+
+    def __repr__(self):
+        return '{}(nn={})'.format(self.__class__.__name__, self.nn)
+
+
+class SimpleNet(torch.nn.Module):
+    def __init__(self, hidden, aggr, num_layers):
+        super(SimpleNet, self).__init__()
+        self.num_layers = num_layers
+
+        # Embed initial node features.
+        self.vv_node_encoder = Sequential(Linear(2, hidden), ReLU(), Linear(hidden, hidden))
+        self.cc_node_encoder = Sequential(Linear(2, hidden), ReLU(), Linear(hidden, hidden))
+        self.vc_node_encoder = Sequential(Linear(2, hidden), ReLU(), Linear(hidden, hidden))
+        self.cv_node_encoder = Sequential(Linear(2, hidden), ReLU(), Linear(hidden, hidden))
+
+        self.vv_cv_1 = SimpleBipartiteLayer(hidden, aggr=aggr)
+
+        # MLP used for classification.
+        # self.lin1 = Linear((num_layers + 1) * hidden, hidden)
+        # self.lin2 = Linear(hidden, hidden)
+        # self.lin3 = Linear(hidden, hidden)
+        # self.lin4 = Linear(hidden, 2)
+
+    def forward(self, data):
+
+        # Get data of batch.
+        vv_node_features = data.vv_node_features
+        cc_node_features = data.cc_node_features
+        vc_node_features = data.vc_node_features
+        cv_node_features = data.cv_node_features
+
+        edge_index_vv_cv_1 = data.edge_index_vv_cv_1
+        edge_index_vv_vc_2 = data.edge_index_vv_vc_2
+
+        edge_index_cc_vc_1 = data.edge_index_cc_vc_1
+        edge_index_cc_cv_2 = data.edge_index_cc_cv_2
+
+        edge_index_vc_cc_1 = data.edge_index_vc_cc_1
+        edge_index_vc_vv_2 = data.edge_index_vc_vv_2
+
+        edge_index_cv_vv_1 = data.edge_index_cv_vv_1
+        edge_index_cv_cc_2 = data.edge_index_cv_cc_2
+
+        # Compute initial node embeddings.
+
+
+
+        var_node_features_0 = self.vv_node_encoder(vv_node_features)
+
+
+
+
+
+    def __repr__(self):
+        return self.__class__.__name__
+
+
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 data_path = "../../DATA1/er_SET2/200_200/alpha_0.75_setParam_100/train/"
 
@@ -233,3 +305,4 @@ class MyTransform(object):
 
 pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
 dataset = GraphDataset(pathr, 0.005, transform=MyTransform())  # .shuffle()
+print(dataset.data.vv_node_features.size())
