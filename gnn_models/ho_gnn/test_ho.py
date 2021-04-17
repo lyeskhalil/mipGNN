@@ -58,29 +58,29 @@ for num, filename in enumerate(os.listdir(data_path)):
         for n in graph.neighbors(first):
 
             if graph_new.nodes[v]["type"] == "VV":
-                print("###")
-                print(graph.nodes[n], graph.nodes[second])
-
-                matrices_vv_cv_1.append([num, graph_new.nodes[(n, second)]["num"]])
+                if graph.has_edge(n, second):
+                    matrices_vv_cv_1.append([num, graph_new.nodes[(n, second)]["num"]])
             if graph_new.nodes[v]["type"] == "CC":
-                matrices_cc_vc_1.append([num, graph_new.nodes[(n, second)]["num"]])
+                if graph.has_edge(n, second):
+                    matrices_cc_vc_1.append([num, graph_new.nodes[(n, second)]["num"]])
             if graph_new.nodes[v]["type"] == "VC":
-                matrices_vc_cc_1.append([num, graph_new.nodes[(n, second)]["num"]])
+                if graph.has_edge(n, second):
+                    matrices_vc_cc_1.append([num, graph_new.nodes[(n, second)]["num"]])
             if graph_new.nodes[v]["type"] == "CV":
+                if graph.has_edge(n, second):
+                    matrices_cv_vv_1.append([num, graph_new.nodes[(n, second)]["num"]])
 
-                matrices_cv_vv_1.append([num, graph_new.nodes[(n, second)]["num"]])
 
-
-        for n in graph.neighbors(second):
-
-            if graph_new.nodes[v]["type"] == "VV":
-                matrices_vv_vc_2.append([num, graph_new.nodes[(first, n)]["num"]])
-            if graph_new.nodes[v]["type"] == "CC":
-                matrices_cc_cv_2.append([num, graph_new.nodes[(first, n)]["num"]])
-            if graph_new.nodes[v]["type"] == "VC":
-                matrices_vc_vv_2.append([num, graph_new.nodes[(first, n)]["num"]])
-            if graph_new.nodes[v]["type"] == "CV":
-                matrices_cv_cc_2.append([num, graph_new.nodes[(first, n)]["num"]])
+        # for n in graph.neighbors(second):
+        #
+        #     if graph_new.nodes[v]["type"] == "VV":
+        #         matrices_vv_vc_2.append([num, graph_new.nodes[(first, n)]["num"]])
+        #     if graph_new.nodes[v]["type"] == "CC":
+        #         matrices_cc_cv_2.append([num, graph_new.nodes[(first, n)]["num"]])
+        #     if graph_new.nodes[v]["type"] == "VC":
+        #         matrices_vc_vv_2.append([num, graph_new.nodes[(first, n)]["num"]])
+        #     if graph_new.nodes[v]["type"] == "CV":
+        #         matrices_cv_cc_2.append([num, graph_new.nodes[(first, n)]["num"]])
 
 
 
