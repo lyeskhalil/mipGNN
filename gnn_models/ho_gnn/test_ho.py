@@ -62,7 +62,7 @@ for num, filename in enumerate(os.listdir(data_path)):
                 print(graph.nodes[first], )
                 matrices_vc_cc_1.append([num, graph_new.nodes[(n, second)]["num"]])
             if graph_new.nodes[v]["type"] == "CV":
-                print(graph.nodes[n], graph.nodes[n]["bipartite"], graph.nodes[second], graph.nodes[second]["bipartite"])
+                print(graph.nodes[first]["bipartite"], graph.nodes[second]["bipartite"])
                 matrices_cv_vv_1.append([num, graph_new.nodes[(n, second)]["num"]])
 
 
