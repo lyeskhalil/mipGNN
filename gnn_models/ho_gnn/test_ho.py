@@ -30,9 +30,9 @@ for num, filename in enumerate(os.listdir(data_path)):
 
     for i, v in enumerate(graph.nodes):
         if graph.nodes[v]['bipartite'] == 0:
-            graph_new.add_node((v,v), type="VV", first=v, second=v)
+            graph_new.add_node((v,v), type="VV", first=v, second=v, num=i)
         else:
-            graph_new.add_node((v,v), type="CC", first=v, second=v)
+            graph_new.add_node((v,v), type="CC", first=v, second=v, num=i)
 
 
     for i, (v, data) in enumerate(graph_new.nodes(data=True)):
