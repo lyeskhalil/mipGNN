@@ -59,6 +59,9 @@ for num, filename in enumerate(os.listdir(data_path)):
 
             if graph_new.nodes[v]["type"] == "VV":
                 if graph.has_edge(n, second):
+                    print(graph.nodes[first],graph.nodes[second]),
+                    print(graph.has_edge(n, second))
+
                     matrices_vv_cv_1.append([num, graph_new.nodes[(n, second)]["num"]])
             if graph_new.nodes[v]["type"] == "CC":
                 if graph.has_edge(n, second):
