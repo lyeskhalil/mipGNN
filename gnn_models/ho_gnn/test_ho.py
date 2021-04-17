@@ -20,7 +20,17 @@ for num, filename in enumerate(os.listdir(data_path)):
 
     graph_new = nx.Graph()
 
-    matrices_vv_cv = []
+    matrices_vv_cv_1 = []
+    matrices_vv_vc_2 = []
+
+    matrices_cc_vc_1 = []
+    matrices_cc_cv_2 = []
+
+    matrices_vc_cc_1 = []
+    matrices_vc_vv_2 = []
+
+    matrices_cv_vv_1 = []
+    matrices_cv_cc_2 = []
 
     for i, (u, v) in enumerate(graph.edges):
         if graph.nodes[v]['bipartite'] == 0:
@@ -41,7 +51,26 @@ for num, filename in enumerate(os.listdir(data_path)):
         num = data["num"]
 
         for n in graph.neighbors(first):
-            matrices_vv_cv.append([num,graph_new.nodes[(first,n)]["num"]]    )
+
+            if graph_new.nodes[v]["type"] == "VV":
+                matrices_vv_cv_1.append([num, graph_new.nodes[(first, n)]["num"]])
+            if graph_new.nodes[v]["type"] == "CC":
+                matrices_cc_vc_1.append([num, graph_new.nodes[(first, n)]["num"]])
+            if graph_new.nodes[v]["type"] == "VC":
+                matrices_vc_cc_1.append([num, graph_new.nodes[(first, n)]["num"]])
+            if graph_new.nodes[v]["type"] == "CV":
+                matrices_cv_vv_1.append([num, graph_new.nodes[(first, n)]["num"]])
+
+        for n in graph.neighbors(second):
+
+            if graph_new.nodes[v]["type"] == "VV":
+                matrices_vv_vc_2.append([num, graph_new.nodes[(first, n)]["num"]])
+            if graph_new.nodes[v]["type"] == "CC":
+                matrices_cc_cv_2.append([num, graph_new.nodes[(first, n)]["num"]])
+            if graph_new.nodes[v]["type"] == "VC":
+                matrices_vc_vv_2.append([num, graph_new.nodes[(first, n)]["num"]])
+            if graph_new.nodes[v]["type"] == "CV":
+                matrices_cv_cc_2.append([num, graph_new.nodes[(first, n)]["num"]])
 
 
 
