@@ -44,10 +44,11 @@ for num, filename in enumerate(os.listdir(data_path)):
 
     # TODO Change i here.
     for i, v in enumerate(graph.nodes):
-        if graph.nodes[v]['bipartite'] == 0:
-            graph_new.add_node((v,v), type="VV", first=v, second=v, num=i)
-        else:
-            graph_new.add_node((v,v), type="CC", first=v, second=v, num=i)
+        for j, w in enumerate(graph.nodes):
+            if graph.nodes[v]['bipartite'] == 0 and graph.nodes[w]['bipartite'] == 0:
+                graph_new.add_node((v,v), type="VV", first=v, second=w, num=i)
+            elif graph.nodes[v]['bipartite'] == 1 and graph.nodes[w]['bipartite'] == 1:
+                graph_new.add_node((v,v), type="CC", first=v, second=w, num=i)
 
     for i, (v, data) in enumerate(graph_new.nodes(data=True)):
         first = data["first"]
@@ -61,9 +62,7 @@ for num, filename in enumerate(os.listdir(data_path)):
             if graph_new.nodes[v]["type"] == "CC":
                 matrices_cc_vc_1.append([num, graph_new.nodes[(n, second)]["num"]])
             if graph_new.nodes[v]["type"] == "VC":
-                print("###")
-                print(graph_new.nodes[(n, second)])
-                # matrices_vc_cc_1.append([num, graph_new.nodes[(n, second)]["num"]])
+                matrices_vc_cc_1.append([num, graph_new.nodes[(n, second)]["num"]])
             if graph_new.nodes[v]["type"] == "CV":
 
                 matrices_cv_vv_1.append([num, graph_new.nodes[(n, second)]["num"]])
