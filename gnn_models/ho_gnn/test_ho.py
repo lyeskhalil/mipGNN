@@ -34,18 +34,21 @@ for num, filename in enumerate(os.listdir(data_path)):
     matrices_cv_vv_1 = []
     matrices_cv_cc_2 = []
 
+    c = 0
     for i, (u, v) in enumerate(graph.edges):
         if graph.nodes[u]['bipartite'] == 0:
-            graph_new.add_node((u, v), type="VC", first=u, second=v, num=i)
-            graph_new.add_node((v, u), type="CV", first=v, second=u, num=i)
+            graph_new.add_node((u, v), type="VC", first=u, second=v, num=c)
+            c += 1
+            graph_new.add_node((v, u), type="CV", first=v, second=u, num=c)
+            c += 1
 
-    # TODO Change i here.
-    for i, v in enumerate(graph.nodes):
-        for j, w in enumerate(graph.nodes):
-            if graph.nodes[v]['bipartite'] == 0 and graph.nodes[w]['bipartite'] == 0:
-                graph_new.add_node((v,w), type="VV", first=v, second=w, num=i)
-            elif graph.nodes[v]['bipartite'] == 1 and graph.nodes[w]['bipartite'] == 1:
-                graph_new.add_node((v,w), type="CC", first=v, second=w, num=i)
+    # # TODO Change i here.
+    # for i, v in enumerate(graph.nodes):
+    #     for j, w in enumerate(graph.nodes):
+    #         if graph.nodes[v]['bipartite'] == 0 and graph.nodes[w]['bipartite'] == 0:
+    #             graph_new.add_node((v,w), type="VV", first=v, second=w, num=i)
+    #         elif graph.nodes[v]['bipartite'] == 1 and graph.nodes[w]['bipartite'] == 1:
+    #             graph_new.add_node((v,w), type="CC", first=v, second=w, num=i)
 
     for i, (v, data) in enumerate(graph_new.nodes(data=True)):
         first = data["first"]
