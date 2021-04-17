@@ -58,7 +58,7 @@ class GraphDataset(InMemoryDataset):
         num_graphs = len(os.listdir(data_path))
 
         # Iterate over instance files and create data objects.
-        for num, filename in enumerate(os.listdir(data_path)):
+        for num, filename in enumerate(os.listdir(data_path)[0:5]):
             print(num)
             # Get graph.
             graph = nx.read_gpickle(data_path + filename)
@@ -119,16 +119,16 @@ class GraphDataset(InMemoryDataset):
 
                 for n in graph.neighbors(second):
                     if graph_new.nodes[v]["type"] == "VV":
-                        if graph.has_edge(n, second):
+                        if graph.has_edge(first, n):
                             matrices_vv_vc_2.append([num, graph_new.nodes[(first, n)]["num"]])
                     if graph_new.nodes[v]["type"] == "CC":
-                        if graph.has_edge(n, second):
+                        if graph.has_edge(first, n):
                             matrices_cc_cv_2.append([num, graph_new.nodes[(first, n)]["num"]])
                     if graph_new.nodes[v]["type"] == "VC":
-                        if graph.has_edge(n, second):
+                        if graph.has_edge(first, n):
                             matrices_vc_vv_2.append([num, graph_new.nodes[(first, n)]["num"]])
                     if graph_new.nodes[v]["type"] == "CV":
-                        if graph.has_edge(n, second):
+                        if graph.has_edge(first, n):
                             matrices_cv_cc_2.append([num, graph_new.nodes[(first, n)]["num"]])
 
             matrices_vv_cv_1 = torch.tensor(matrices_vv_cv_1).t().contiguous()
