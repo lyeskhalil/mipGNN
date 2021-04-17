@@ -37,7 +37,7 @@ for num, filename in enumerate(os.listdir(data_path)):
     for i, (u, v) in enumerate(graph.edges):
         if graph.nodes[u]['bipartite'] == 0:
             graph_new.add_node((u, v), type="VC", first=u, second=v, num=i)
-            graph_new.add_node((v, u), type="CV", first=u, second=v, num=i)
+            graph_new.add_node((v, u), type="CV", first=v, second=u, num=i)
         else:
             graph_new.add_node((u, v), type="CV", first=u, second=v, num=i)
 
