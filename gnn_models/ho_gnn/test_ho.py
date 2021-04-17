@@ -38,11 +38,6 @@ for num, filename in enumerate(os.listdir(data_path)):
         if graph.nodes[u]['bipartite'] == 0:
             graph_new.add_node((u, v), type="VC", first=u, second=v, num=i)
             graph_new.add_node((v, u), type="CV", first=v, second=u, num=i)
-        # elif graph.nodes[u]['bipartite'] == 1:
-        #     graph_new.add_node((u, v), type="CV", first=u, second=v, num=i)
-        #     graph_new.add_node((v, u), type="VC", first=v, second=u, num=i)
-        # else:
-        #     print("Error in format.")
 
     # TODO Change i here.
     for i, v in enumerate(graph.nodes):
@@ -71,6 +66,9 @@ for num, filename in enumerate(os.listdir(data_path)):
             if graph_new.nodes[v]["type"] == "CV":
                 if graph.has_edge(n, second):
                     matrices_cv_vv_1.append([num, graph_new.nodes[(n, second)]["num"]])
+
+
+    print(graph_new.number_of_nodes())
 
 
         # for n in graph.neighbors(second):
