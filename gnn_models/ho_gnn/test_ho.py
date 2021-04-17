@@ -161,7 +161,7 @@ class GraphDataset(InMemoryDataset):
             data_list.append(data)
 
         data, slices = self.collate(data_list)
-        torch.save((data, slices), self.processed_paths[0])
+        #torch.save((data, slices), self.processed_paths[0])
 
 
 dataset = GraphDataset(".", 0.005, transform=None)  # .shuffle()
