@@ -87,8 +87,6 @@ class SimpleNet(torch.nn.Module):
         edge_index_cv_vv_1 = data.edge_index_cv_vv_1
         edge_index_cv_cc_2 = data.edge_index_cv_cc_2
 
-        num_nodes_var = data.num_nodes_var
-        num_nodes_con = data.num_nodes_con
 
         num_nodes_vv = data.num_nodes_vv
         num_nodes_cc = data.num_nodes_cc
