@@ -58,6 +58,9 @@ for num, filename in enumerate(os.listdir(data_path)):
         for n in graph.neighbors(first):
 
             if graph_new.nodes[v]["type"] == "VV":
+                print("###")
+                print(n, second)
+
                 matrices_vv_cv_1.append([num, graph_new.nodes[(n, second)]["num"]])
             if graph_new.nodes[v]["type"] == "CC":
                 matrices_cc_vc_1.append([num, graph_new.nodes[(n, second)]["num"]])
