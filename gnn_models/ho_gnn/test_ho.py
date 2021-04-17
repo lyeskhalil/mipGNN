@@ -53,13 +53,13 @@ for num, filename in enumerate(os.listdir(data_path)):
         for n in graph.neighbors(first):
 
             if graph_new.nodes[v]["type"] == "VV":
-                matrices_vv_cv_1.append([num, graph_new.nodes[(first, n)]["num"]])
+                matrices_vv_cv_1.append([num, graph_new.nodes[(n, second)]["num"]])
             if graph_new.nodes[v]["type"] == "CC":
-                matrices_cc_vc_1.append([num, graph_new.nodes[(first, n)]["num"]])
+                matrices_cc_vc_1.append([num, graph_new.nodes[(n, second)]["num"]])
             if graph_new.nodes[v]["type"] == "VC":
-                matrices_vc_cc_1.append([num, graph_new.nodes[(first, n)]["num"]])
+                matrices_vc_cc_1.append([num, graph_new.nodes[(n, second)]["num"]])
             if graph_new.nodes[v]["type"] == "CV":
-                matrices_cv_vv_1.append([num, graph_new.nodes[(first, n)]["num"]])
+                matrices_cv_vv_1.append([num, graph_new.nodes[(n, second)]["num"]])
 
         for n in graph.neighbors(second):
 
