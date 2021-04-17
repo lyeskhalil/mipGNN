@@ -24,9 +24,9 @@ for num, filename in enumerate(os.listdir(data_path)):
 
     for i, (u, v) in enumerate(graph.edges):
         if graph.nodes[v]['bipartite'] == 0:
-            graph_new.add_node((u,v), type="VC", first=u, second=v)
+            graph_new.add_node((u,v), type="VC", first=u, second=v, num=i)
         else:
-            graph_new.add_node((u,v), type="CV", first=u, second=v)
+            graph_new.add_node((u,v), type="CV", first=u, second=v, num=i)
 
     for i, v in enumerate(graph.nodes):
         if graph.nodes[v]['bipartite'] == 0:
@@ -38,9 +38,10 @@ for num, filename in enumerate(os.listdir(data_path)):
     for i, (v, data) in enumerate(graph_new.nodes(data=True)):
         first = data["first"]
         second = data["second"]
+        num = data["num"]
 
         for n in graph.neighbors(first):
-            print(graph_new.nodes[(first,n)])
+            print(graph_new.nodes[(first,n)]["num"])
 
 
 
