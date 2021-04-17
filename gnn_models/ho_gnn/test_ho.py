@@ -9,6 +9,8 @@ import networkx as nx
 
 data_path = "../../DATA1/er_SET2/200_200/alpha_0.75_setParam_100/train/"
 
+# TODO
+
 for num, filename in enumerate(os.listdir(data_path)):
     print(num)
     # Get graph.
@@ -34,7 +36,7 @@ for num, filename in enumerate(os.listdir(data_path)):
 
     for i, (u, v) in enumerate(graph.edges):
         if graph.nodes[v]['bipartite'] == 0:
-            graph_new.add_node((u,v), type="VC", first=u, second=v, num=i)
+            graph_new.add_node((u,v), type="VC", first=u, second=v, num=i, )
         else:
             graph_new.add_node((u,v), type="CV", first=u, second=v, num=i)
 
@@ -55,8 +57,13 @@ for num, filename in enumerate(os.listdir(data_path)):
             if graph_new.nodes[v]["type"] == "VV":
                 matrices_vv_cv_1.append([num, graph_new.nodes[(n, second)]["num"]])
             if graph_new.nodes[v]["type"] == "CC":
+                print(graph.nodes[n]["bipartite"])
+                print(graph.nodes[second]["bipartite"])
+
+
                 matrices_cc_vc_1.append([num, graph_new.nodes[(n, second)]["num"]])
             if graph_new.nodes[v]["type"] == "VC":
+                print(graph.nodes[first], )
                 matrices_vc_cc_1.append([num, graph_new.nodes[(n, second)]["num"]])
             if graph_new.nodes[v]["type"] == "CV":
                 matrices_cv_vv_1.append([num, graph_new.nodes[(n, second)]["num"]])
