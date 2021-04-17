@@ -91,6 +91,8 @@ class GraphDataset(InMemoryDataset):
             num_vc = 0
             num_cv = 0
 
+            y = []
+            
             c = 0
             for i, (u, v) in enumerate(graph.edges):
                 if graph.nodes[u]['bipartite'] == 0:
@@ -109,13 +111,17 @@ class GraphDataset(InMemoryDataset):
                      features_vv.append([graph.nodes[v]['objcoeff'], graph.degree[v], graph.nodes[v]['objcoeff'], graph.degree[v]])
                      c += 1
                      num_vv += 1
+
+                     if (graph.nodes[v]['bias'] < 0.005):
+                         y.append(0)
+                     else:
+                         y.append(1)
                  elif graph.nodes[v]['bipartite'] == 1:
                      graph_new.add_node((v,v), type="CC", first=v, second=v, num=c,  feauture = [graph.nodes[v]['rhs'], graph.degree[v], graph.nodes[v]['rhs'], graph.degree[v]])
                      features_cc.append([graph.nodes[v]['rhs'], graph.degree[v], graph.nodes[v]['rhs'], graph.degree[v]])
                      c += 1
                      num_cc += 1
 
-            y = []
             for i, (v, data) in enumerate(graph_new.nodes(data=True)):
                 first = data["first"]
                 second = data["second"]
@@ -126,11 +132,6 @@ class GraphDataset(InMemoryDataset):
                         if graph.has_edge(n, second):
                             # Source node is var. VV->CV
                             matrices_vv_cv_1.append([num, graph_new.nodes[(n, second)]["num"]])
-
-                            if (graph.nodes[v]['bias'] < 0.005):
-                                y.append(0)
-                            else:
-                                y.append(1)
                     if graph_new.nodes[v]["type"] == "CC":
                         if graph.has_edge(n, second):
                             matrices_cc_vc_1.append([num, graph_new.nodes[(n, second)]["num"]])
