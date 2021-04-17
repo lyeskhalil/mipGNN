@@ -84,9 +84,9 @@ class GraphDataset(InMemoryDataset):
             c = 0
             for i, (u, v) in enumerate(graph.edges):
                 if graph.nodes[u]['bipartite'] == 0:
-                    graph_new.add_node((u, v), type="VC", first=u, second=v, num=c)
+                    graph_new.add_node((u, v), type="VC", first=u, second=v, num=c, feauture = [graph.nodes[u]['objcoeff'], graph.degree[u], graph.nodes[v]['rhs'],  graph.degree[v]])
                     c += 1
-                    graph_new.add_node((v, u), type="CV", first=v, second=u, num=c)
+                    graph_new.add_node((v, u), type="CV", first=v, second=u, num=c, feauture = [graph.nodes[v]['objcoeff'], graph.degree[v], graph.nodes[u]['rhs'],  graph.degree[u]])
                     c += 1
 
             for i, v in enumerate(graph.nodes):
@@ -106,8 +106,7 @@ class GraphDataset(InMemoryDataset):
                     if graph_new.nodes[v]["type"] == "VV":
                         if graph.has_edge(n, second):
                             # Source node is var. VV->CV
-                            #matrices_vv_cv_1.append([num, graph_new.nodes[(n, second)]["num"]])
-                            matrices_vv_cv_1.append([num, 1])
+                            matrices_vv_cv_1.append([num, graph_new.nodes[(n, second)]["num"]])
                     if graph_new.nodes[v]["type"] == "CC":
                         if graph.has_edge(n, second):
                             matrices_cc_vc_1.append([num, graph_new.nodes[(n, second)]["num"]])
