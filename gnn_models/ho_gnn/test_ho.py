@@ -36,6 +36,9 @@ for num, filename in enumerate(os.listdir(data_path)):
 
 
     for i, (v, data) in enumerate(graph_new.nodes(data=True)):
-        print(data)
+        first = data["first"]
+        second = data["second"]
+
+        
 
 
