@@ -89,7 +89,7 @@ class GraphDataset(InMemoryDataset):
                     graph_new.add_node((v, u), type="CV", first=v, second=u, num=c, feauture = [graph.nodes[v]['rhs'],  graph.degree[v], graph.nodes[u]['objcoeff'], graph.degree[u], graph.edges[(u,v)]["coeff"]])
                     c += 1
 
-            for i, v in enumerate(graph.nodes):
+                for i, v in enumerate(graph.nodes):
                  if graph.nodes[v]['bipartite'] == 0:
                      graph_new.add_node((v,v), type="VV", first=v, second=v, num=c, feauture = [graph.nodes[v]['objcoeff'], graph.degree[v], graph.nodes[v]['objcoeff'], graph.degree[v]])
                      c += 1
@@ -131,6 +131,14 @@ class GraphDataset(InMemoryDataset):
                         if graph.has_edge(first, n):
                             matrices_cv_cc_2.append([num, graph_new.nodes[(first, n)]["num"]])
 
+            features_vv = []
+            features_cc = []
+            features_vc = []
+            features_cv = []
+            for i, (v,data) in enumerate(graph_new.nodes):
+                if data["type"] == "VV":
+                    features_vv.append(data["feature"])
+
 
             matrices_vv_cv_1 = torch.tensor(matrices_vv_cv_1).t().contiguous()
             matrices_vv_vc_2 = torch.tensor(matrices_vv_vc_2).t().contiguous()
@@ -145,6 +153,8 @@ class GraphDataset(InMemoryDataset):
             matrices_cv_cc_2 = torch.tensor(matrices_cv_cc_2).t().contiguous()
 
             data = Data()
+
+            data.vv_node_features = torch.from_numpy(np.array(features_vv)).to(torch.float)
 
             data.edge_index_vv_cv_1 = matrices_vv_cv_1
             data.edge_index_vv_vc_2 = matrices_vv_vc_2
