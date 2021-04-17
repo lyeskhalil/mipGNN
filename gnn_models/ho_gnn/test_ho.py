@@ -60,7 +60,7 @@ for num, filename in enumerate(os.listdir(data_path)):
                 matrices_cc_vc_1.append([num, graph_new.nodes[(n, second)]["num"]])
             if graph_new.nodes[v]["type"] == "VC":
                 print(graph.nodes[first]["bipartite"], graph.nodes[second]["bipartite"])
-
+                print(graph.nodes[n], graph.nodes[second])
                 print(graph.nodes[n]["bipartite"], graph.nodes[second]["bipartite"])
 
                 matrices_vc_cc_1.append([num, graph_new.nodes[(n, second)]["num"]])
