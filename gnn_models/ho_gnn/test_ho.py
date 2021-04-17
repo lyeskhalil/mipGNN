@@ -39,7 +39,7 @@ for num, filename in enumerate(os.listdir(data_path)):
         first = data["first"]
         second = data["second"]
 
-        for n in graph.neighbors[first]:
+        for n in graph.neighbors(first):
             print(n)
 
 
