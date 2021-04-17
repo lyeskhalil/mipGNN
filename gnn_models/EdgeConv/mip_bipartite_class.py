@@ -328,6 +328,7 @@ class GraphDataset(InMemoryDataset):
 
             # Create data object.
             data.edge_index_var = edge_index_var
+            print(data.edge_index_var.size())
             data.edge_index_con = edge_index_con
 
             data.y = torch.from_numpy(np.array(y)).to(torch.long)
