@@ -165,4 +165,4 @@ class GraphDataset(InMemoryDataset):
         #torch.save((data, slices), self.processed_paths[0])
 
 
-dataset = GraphDataset(".", 0.005, transform=None)  # .shuffle()
+dataset = GraphDataset("./data", 0.005, transform=None)  # .shuffle()
