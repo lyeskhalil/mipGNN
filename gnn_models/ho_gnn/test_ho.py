@@ -306,3 +306,6 @@ class MyTransform(object):
 pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
 dataset = GraphDataset(pathr, 0.005, transform=MyTransform())  # .shuffle()
 print(dataset.data.vv_node_features.size())
+print(dataset.data.cc_node_features.size())
+print(dataset.data.vc_node_features.size())
+print(dataset.data.cv_node_features.size())
