@@ -41,7 +41,7 @@ for num, filename in enumerate(os.listdir(data_path)):
         num = data["num"]
 
         for n in graph.neighbors(first):
-            print(graph_new.nodes[(first,n)]["num"])
+            matrices_vv_cv.append([num,graph_new.nodes[(first,n)]["num"]]    )
 
 
 
