@@ -35,7 +35,7 @@ for num, filename in enumerate(os.listdir(data_path)):
             graph_new.add_node(i, type="CC", first=v, second=v)
 
 
-    for i, v, data in enumerate(graph_new.nodes(data=True)):
+    for i, (v, data) in enumerate(graph_new.nodes(data=True)):
         print(data)
 
 
