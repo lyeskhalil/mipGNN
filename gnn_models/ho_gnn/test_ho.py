@@ -46,9 +46,9 @@ for num, filename in enumerate(os.listdir(data_path)):
     for i, v in enumerate(graph.nodes):
         for j, w in enumerate(graph.nodes):
             if graph.nodes[v]['bipartite'] == 0 and graph.nodes[w]['bipartite'] == 0:
-                graph_new.add_node((v,v), type="VV", first=v, second=w, num=i)
+                graph_new.add_node((v,w), type="VV", first=v, second=w, num=i)
             elif graph.nodes[v]['bipartite'] == 1 and graph.nodes[w]['bipartite'] == 1:
-                graph_new.add_node((v,v), type="CC", first=v, second=w, num=i)
+                graph_new.add_node((v,w), type="CC", first=v, second=w, num=i)
 
     for i, (v, data) in enumerate(graph_new.nodes(data=True)):
         first = data["first"]
