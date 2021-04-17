@@ -58,7 +58,7 @@ class GraphDataset(InMemoryDataset):
         num_graphs = len(os.listdir(data_path))
 
         # Iterate over instance files and create data objects.
-        for num, filename in enumerate(os.listdir(data_path)[0:3]):
+        for num, filename in enumerate(os.listdir(data_path)[0:2]):
             print(num)
             # Get graph.
             graph = nx.read_gpickle(data_path + filename)
@@ -92,7 +92,7 @@ class GraphDataset(InMemoryDataset):
             num_cv = 0
 
             y = []
-            
+
             c = 0
             for i, (u, v) in enumerate(graph.edges):
                 if graph.nodes[u]['bipartite'] == 0:
@@ -199,5 +199,37 @@ class GraphDataset(InMemoryDataset):
         data, slices = self.collate(data_list)
         torch.save((data, slices), self.processed_paths[0])
 
+# Preprocess indices of bipartite graphs to make batching work.
+class MyData(Data):
+    def __inc__(self, key, value):
+        if key in ['edge_index_vv_cv_1']:
+            return torch.tensor([self.num_nodes_vv, self.num_nodes_cv]).view(2, 1)
+        if key in ['edge_index_vv_cv_2']:
+            return torch.tensor([self.num_nodes_vv, self.num_nodes_cv]).view(2, 1)
+        if key in ['edge_index_cc_vc_1']:
+            return torch.tensor([self.num_nodes_cc, self.num_nodes_vc]).view(2, 1)
+        if key in ['edge_index_cc_cv_2']:
+            return torch.tensor([self.num_nodes_cc, self.num_nodes_cv]).view(2, 1)
+        if key in ['edge_index_vc_cc_1']:
+            return torch.tensor([self.num_nodes_vc, self.num_nodes_cc]).view(2, 1)
+        if key in ['edge_index_vc_vv_2']:
+            return torch.tensor([self.num_nodes_vc, self.num_nodes_vv]).view(2, 1)
+        if key in ['edge_index_cv_vv_1']:
+            return torch.tensor([self.num_nodes_cv, self.num_nodes_vv]).view(2, 1)
+        if key in ['edge_index_cv_cc_2']:
+            return torch.tensor([self.num_nodes_cv, self.num_nodes_cc]).view(2, 1)
+
+        else:
+            return 0
+
+
+class MyTransform(object):
+    def __call__(self, data):
+        new_data = MyData()
+        for key, item in data:
+            new_data[key] = item
+        return new_data
+
+
 pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
-dataset = GraphDataset(pathr, 0.005, transform=None)  # .shuffle()
+dataset = GraphDataset(pathr, 0.005, transform=MyTransform())  # .shuffle()
