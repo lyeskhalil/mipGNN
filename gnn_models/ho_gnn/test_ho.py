@@ -127,7 +127,7 @@ class GraphDataset(InMemoryDataset):
                             # Source node is var. VV->CV
                             matrices_vv_cv_1.append([num, graph_new.nodes[(n, second)]["num"]])
 
-                            if (graph_new.nodes[v]['bias'] < 0.005):
+                            if (graph.nodes[v]['bias'] < 0.005):
                                 y.append(0)
                             else:
                                 y.append(1)
