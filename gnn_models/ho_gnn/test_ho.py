@@ -79,7 +79,6 @@ class SimpleNet(torch.nn.Module):
         edge_index_cv_vv_1 = data.edge_index_cv_vv_1
         edge_index_cv_cc_2 = data.edge_index_cv_cc_2
 
-
         num_nodes_vv = data.num_nodes_vv
         num_nodes_cc = data.num_nodes_cc
         num_nodes_vc = data.num_nodes_vc
@@ -274,6 +273,7 @@ class GraphDataset(InMemoryDataset):
             data.edge_index_cv_cc_2 = matrices_cv_cc_2.to(torch.long)
 
             data.num_nodes_vv = num_vv
+            print(data.num_nodes_vv)
             data.num_nodes_cc = num_cc
             data.num_nodes_vc = num_vc
             data.num_nodes_cv = num_cv
