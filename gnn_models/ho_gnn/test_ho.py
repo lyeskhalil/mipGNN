@@ -118,7 +118,7 @@ class SimpleNet(torch.nn.Module):
         self.cv_joint_3 = Sequential(Linear(2 * hidden, hidden), ReLU(), Linear(hidden, hidden))
 
         # MLP used for classification.
-        self.lin1 = Linear(4 * hidden, hidden)
+        self.lin1 = Linear(1 * hidden, hidden)
         self.lin2 = Linear(hidden, hidden)
         self.lin3 = Linear(hidden, hidden)
         self.lin4 = Linear(hidden, 2)
@@ -201,7 +201,8 @@ class SimpleNet(torch.nn.Module):
         vc_3 = self.vv_joint_1(torch.cat([vc_1_3, vc_2_3], dim=-1))
         cv_3 = self.vv_joint_1(torch.cat([cv_1_3, cv_2_3], dim=-1))
 
-        x = torch.cat([vv_0, vv_1, vv_2, vv_3], dim=-1)
+        # TODO
+        x = torch.cat([vv_0], dim=-1)
 
         x = F.relu(self.lin1(x))
         x = F.relu(self.lin2(x))
@@ -442,7 +443,7 @@ test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = SimpleNet(hidden=256, aggr="add").to(device)
-optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
                                                            factor=0.8, patience=10,
                                                            min_lr=0.0000001)
