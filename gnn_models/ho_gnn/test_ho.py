@@ -117,15 +117,15 @@ class SimpleNet(torch.nn.Module):
         vc_0 = self.vc_node_encoder(vc_node_features)
         cv_0 = self.cv_node_encoder(cv_node_features)
 
-        cv_1_1 = self.vv_cv_1(vv_0, cv_0, edge_index_vv_cv_1, [num_nodes_vv.sum(), num_nodes_cv.sum()])
-        cc_1_1 = self.vc_cc_1(vc_0, cc_0, edge_index_vc_cc_1, [num_nodes_vc.sum(), num_nodes_cc.sum()])
-        vc_1_1 = self.cc_vc_1(cc_0, vc_0, edge_index_cc_vc_1, [num_nodes_cc.sum(), num_nodes_vc.sum()])
-        cv_1_1 = self.cv_vv_1(cv_0, vv_0, edge_index_cv_vv_1, [num_nodes_cv.sum(), num_nodes_vv.sum()])
+        cv_1_1 = self.vv_cv_1_1(vv_0, cv_0, edge_index_vv_cv_1, [num_nodes_vv.sum(), num_nodes_cv.sum()])
+        cc_1_1 = self.vc_cc_1_1(vc_0, cc_0, edge_index_vc_cc_1, [num_nodes_vc.sum(), num_nodes_cc.sum()])
+        vc_1_1 = self.cc_vc_1_1(cc_0, vc_0, edge_index_cc_vc_1, [num_nodes_cc.sum(), num_nodes_vc.sum()])
+        cv_1_1 = self.cv_vv_1_1(cv_0, vv_0, edge_index_cv_vv_1, [num_nodes_cv.sum(), num_nodes_vv.sum()])
 
-        vc_2_1 = self.vv_vc_2(vv_0, vc_0, edge_index_vv_vc_2, [num_nodes_vv.sum(), num_nodes_vc.sum()])
-        vv_2_1 = self.vc_vv_2(vc_0, vv_0, edge_index_vc_vv_2, [num_nodes_vc.sum(), num_nodes_vv.sum()])
-        cv_2_1 = self.cc_cv_2(cc_0, cv_0, edge_index_cc_cv_2, [num_nodes_cc.sum(), num_nodes_cv.sum()])
-        cc_2_1 = self.cv_cc_2(cv_0, cc_0, edge_index_cv_cc_2, [num_nodes_cv.sum(), num_nodes_cc.sum()])
+        vc_2_1 = self.vv_vc_2_1(vv_0, vc_0, edge_index_vv_vc_2, [num_nodes_vv.sum(), num_nodes_vc.sum()])
+        vv_2_1 = self.vc_vv_2_1(vc_0, vv_0, edge_index_vc_vv_2, [num_nodes_vc.sum(), num_nodes_vv.sum()])
+        cv_2_1 = self.cc_cv_2_1(cc_0, cv_0, edge_index_cc_cv_2, [num_nodes_cc.sum(), num_nodes_cv.sum()])
+        cc_2_1 = self.cv_cc_2_1(cv_0, cc_0, edge_index_cv_cc_2, [num_nodes_cv.sum(), num_nodes_cc.sum()])
 
         exit()
 
