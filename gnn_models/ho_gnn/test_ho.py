@@ -6,28 +6,20 @@ sys.path.insert(0, '.')
 
 import os
 import os.path as osp
-import numpy as np
 import networkx as nx
-from sklearn.model_selection import train_test_split
 
 from torch_geometric.data import (InMemoryDataset, Data)
 from torch_geometric.data import DataLoader
 
-import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
-import seaborn as sns
 
-
-import torch_geometric.utils.softmax
-import matplotlib.pyplot as plt
 import torch
 
 import torch.nn.functional as F
 from torch.nn import BatchNorm1d as BN
-from torch.nn import Sequential, Linear, ReLU, Sigmoid
+from torch.nn import Sequential, Linear, ReLU
 from torch_geometric.nn import MessagePassing
-from torch_geometric.nn.inits import reset
+
 
 class SimpleBipartiteLayer(MessagePassing):
     def __init__(self, dim, aggr):
@@ -190,22 +182,28 @@ class GraphDataset(InMemoryDataset):
 
                     num_vc += 1
                     num_cv += 1
-                for i, v in enumerate(graph.nodes):
-                 if graph.nodes[v]['bipartite'] == 0:
-                     graph_new.add_node((v,v), type="VV", first=v, second=v, num=c, feauture = [graph.nodes[v]['objcoeff'], graph.degree[v], graph.nodes[v]['objcoeff'], graph.degree[v]])
-                     features_vv.append([graph.nodes[v]['objcoeff'], graph.degree[v], graph.nodes[v]['objcoeff'], graph.degree[v]])
-                     c += 1
-                     num_vv += 1
 
-                     if (graph.nodes[v]['bias'] < 0.005):
-                         y.append(0)
-                     else:
-                         y.append(1)
-                 elif graph.nodes[v]['bipartite'] == 1:
-                     graph_new.add_node((v,v), type="CC", first=v, second=v, num=c,  feauture = [graph.nodes[v]['rhs'], graph.degree[v], graph.nodes[v]['rhs'], graph.degree[v]])
-                     features_cc.append([graph.nodes[v]['rhs'], graph.degree[v], graph.nodes[v]['rhs'], graph.degree[v]])
-                     c += 1
-                     num_cc += 1
+            for i, v in enumerate(graph.nodes):
+                if graph.nodes[v]['bipartite'] == 0:
+                    graph_new.add_node((v, v), type="VV", first=v, second=v, num=c,
+                                       feauture=[graph.nodes[v]['objcoeff'], graph.degree[v],
+                                                 graph.nodes[v]['objcoeff'], graph.degree[v]])
+                    features_vv.append(
+                        [graph.nodes[v]['objcoeff'], graph.degree[v], graph.nodes[v]['objcoeff'], graph.degree[v]])
+                    c += 1
+                    num_vv += 1
+
+                    if (graph.nodes[v]['bias'] < 0.005):
+                        y.append(0)
+                    else:
+                        y.append(1)
+                elif graph.nodes[v]['bipartite'] == 1:
+                    graph_new.add_node((v, v), type="CC", first=v, second=v, num=c,
+                                       feauture=[graph.nodes[v]['rhs'], graph.degree[v], graph.nodes[v]['rhs'],
+                                                 graph.degree[v]])
+                    features_cc.append([graph.nodes[v]['rhs'], graph.degree[v], graph.nodes[v]['rhs'], graph.degree[v]])
+                    c += 1
+                    num_cc += 1
 
             for i, (v, data) in enumerate(graph_new.nodes(data=True)):
                 first = data["first"]
