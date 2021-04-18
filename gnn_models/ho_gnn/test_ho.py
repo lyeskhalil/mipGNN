@@ -380,7 +380,7 @@ pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
 dataset = GraphDataset(pathr, 0.005, transform=MyTransform())  # .shuffle()
 #dataset = GraphDataset(pathr, 0.005)  # .shuffle()
 
-batch_size = 2
+batch_size = 15
 train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
 
