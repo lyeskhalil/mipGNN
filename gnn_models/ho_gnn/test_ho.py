@@ -176,10 +176,10 @@ class GraphDataset(InMemoryDataset):
             c = 0
             for i, (u, v) in enumerate(graph.edges):
                 if graph.nodes[u]['bipartite'] == 0:
-                    graph_new.add_node((u, v), type="VC", first=u, second=v, num=c, feauture = [graph.nodes[u]['objcoeff'], graph.degree[u], graph.nodes[v]['rhs'],  graph.degree[v], graph.edges[(u,v)]["coeff"]])
+                    graph_new.add_node((u, v), type="VC", first=u, second=v, num=num_vc, feauture = [graph.nodes[u]['objcoeff'], graph.degree[u], graph.nodes[v]['rhs'],  graph.degree[v], graph.edges[(u,v)]["coeff"]])
                     features_vc.append([graph.nodes[u]['objcoeff'], graph.degree[u], graph.nodes[v]['rhs'],  graph.degree[v], graph.edges[(u,v)]["coeff"]])
                     c += 1
-                    graph_new.add_node((v, u), type="CV", first=v, second=u, num=c, feauture = [graph.nodes[v]['rhs'],  graph.degree[v], graph.nodes[u]['objcoeff'], graph.degree[u], graph.edges[(u,v)]["coeff"]])
+                    graph_new.add_node((v, u), type="CV", first=v, second=u, num=num_cv, feauture = [graph.nodes[v]['rhs'],  graph.degree[v], graph.nodes[u]['objcoeff'], graph.degree[u], graph.edges[(u,v)]["coeff"]])
                     c += 1
                     features_cv.append([graph.nodes[v]['rhs'],  graph.degree[v], graph.nodes[u]['objcoeff'], graph.degree[u], graph.edges[(u,v)]["coeff"]])
 
@@ -188,7 +188,7 @@ class GraphDataset(InMemoryDataset):
 
             for i, v in enumerate(graph.nodes):
                 if graph.nodes[v]['bipartite'] == 0:
-                    graph_new.add_node((v, v), type="VV", first=v, second=v, num=c,
+                    graph_new.add_node((v, v), type="VV", first=v, second=v, num=num_vv,
                                        feauture=[graph.nodes[v]['objcoeff'], graph.degree[v],
                                                  graph.nodes[v]['objcoeff'], graph.degree[v]])
                     features_vv.append(
@@ -201,7 +201,7 @@ class GraphDataset(InMemoryDataset):
                     else:
                         y.append(1)
                 elif graph.nodes[v]['bipartite'] == 1:
-                    graph_new.add_node((v, v), type="CC", first=v, second=v, num=c,
+                    graph_new.add_node((v, v), type="CC", first=v, second=v, num=num_cc,
                                        feauture=[graph.nodes[v]['rhs'], graph.degree[v], graph.nodes[v]['rhs'],
                                                  graph.degree[v]])
                     features_cc.append([graph.nodes[v]['rhs'], graph.degree[v], graph.nodes[v]['rhs'], graph.degree[v]])
