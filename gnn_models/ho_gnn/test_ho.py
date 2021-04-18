@@ -25,7 +25,7 @@ class SimpleBipartiteLayer(MessagePassing):
     def __init__(self, dim, aggr):
         super(SimpleBipartiteLayer, self).__init__(aggr=aggr, flow="source_to_target")
 
-        self.nn = Sequential(Linear(9, dim), ReLU(), Linear(dim, dim), ReLU(),
+        self.nn = Sequential(Linear(2*dim, dim), ReLU(), Linear(dim, dim), ReLU(),
                              BN(dim))
 
     def forward(self, source, target, edge_index, size):
@@ -34,8 +34,6 @@ class SimpleBipartiteLayer(MessagePassing):
         return out
 
     def message(self, x_j, t_i):
-        print(torch.cat([t_i, x_j], dim=-1).size())
-        exit()
         return self.nn(torch.cat([t_i, x_j], dim=-1))
 
     def __repr__(self):
