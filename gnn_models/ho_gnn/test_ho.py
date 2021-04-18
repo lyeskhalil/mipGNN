@@ -404,5 +404,6 @@ def train(epoch):
     #return loss_all / len(train_dataset)
 
 
-for epoch in range(1, 2):
+for epoch in range(1, 5):
+    print(epoch)
     train_loss = train(epoch)
