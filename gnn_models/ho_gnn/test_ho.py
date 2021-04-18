@@ -273,7 +273,6 @@ class GraphDataset(InMemoryDataset):
             data.edge_index_cv_cc_2 = matrices_cv_cc_2.to(torch.long)
 
             data.num_nodes_vv = num_vv
-            print(data.num_nodes_vv)
             data.num_nodes_cc = num_cc
             data.num_nodes_vc = num_vc
             data.num_nodes_cv = num_cv
