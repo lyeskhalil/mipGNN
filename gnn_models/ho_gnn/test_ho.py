@@ -41,9 +41,8 @@ class SimpleBipartiteLayer(MessagePassing):
 
 
 class SimpleNet(torch.nn.Module):
-    def __init__(self, hidden, aggr, num_layers):
+    def __init__(self, hidden, aggr,):
         super(SimpleNet, self).__init__()
-        self.num_layers = num_layers
 
         # Embed initial node features.
         self.vv_node_encoder = Sequential(Linear(4, hidden), ReLU(), Linear(hidden, hidden))
@@ -51,23 +50,41 @@ class SimpleNet(torch.nn.Module):
         self.vc_node_encoder = Sequential(Linear(5, hidden), ReLU(), Linear(hidden, hidden))
         self.cv_node_encoder = Sequential(Linear(5, hidden), ReLU(), Linear(hidden, hidden))
 
-        self.vv_cv_1 = SimpleBipartiteLayer(hidden, aggr=aggr)
-        self.cc_vc_1 = SimpleBipartiteLayer(hidden, aggr=aggr)
-        self.vc_cc_1 = SimpleBipartiteLayer(hidden, aggr=aggr)
-        self.cv_vv_1 = SimpleBipartiteLayer(hidden, aggr=aggr)
+        self.vv_cv_1_1 = SimpleBipartiteLayer(hidden, aggr=aggr)
+        self.cc_vc_1_1 = SimpleBipartiteLayer(hidden, aggr=aggr)
+        self.vc_cc_1_1 = SimpleBipartiteLayer(hidden, aggr=aggr)
+        self.cv_vv_1_1 = SimpleBipartiteLayer(hidden, aggr=aggr)
 
-        self.vv_vc_2 = SimpleBipartiteLayer(hidden, aggr=aggr)
-        self.cc_cv_2 = SimpleBipartiteLayer(hidden, aggr=aggr)
-        self.vc_vv_2 = SimpleBipartiteLayer(hidden, aggr=aggr)
-        self.cv_cc_2 = SimpleBipartiteLayer(hidden, aggr=aggr)
+        self.vv_vc_2_1 = SimpleBipartiteLayer(hidden, aggr=aggr)
+        self.cc_cv_2_1 = SimpleBipartiteLayer(hidden, aggr=aggr)
+        self.vc_vv_2_1 = SimpleBipartiteLayer(hidden, aggr=aggr)
+        self.cv_cc_2_1 = SimpleBipartiteLayer(hidden, aggr=aggr)
 
+        self.vv_cv_1_2 = SimpleBipartiteLayer(hidden, aggr=aggr)
+        self.cc_vc_1_2 = SimpleBipartiteLayer(hidden, aggr=aggr)
+        self.vc_cc_1_2 = SimpleBipartiteLayer(hidden, aggr=aggr)
+        self.cv_vv_1_2 = SimpleBipartiteLayer(hidden, aggr=aggr)
 
+        self.vv_vc_2_2 = SimpleBipartiteLayer(hidden, aggr=aggr)
+        self.cc_cv_2_2 = SimpleBipartiteLayer(hidden, aggr=aggr)
+        self.vc_vv_2_2 = SimpleBipartiteLayer(hidden, aggr=aggr)
+        self.cv_cc_2_2 = SimpleBipartiteLayer(hidden, aggr=aggr)
+
+        self.vv_cv_1_3 = SimpleBipartiteLayer(hidden, aggr=aggr)
+        self.cc_vc_1_3 = SimpleBipartiteLayer(hidden, aggr=aggr)
+        self.vc_cc_1_3 = SimpleBipartiteLayer(hidden, aggr=aggr)
+        self.cv_vv_1_3 = SimpleBipartiteLayer(hidden, aggr=aggr)
+
+        self.vv_vc_2_3 = SimpleBipartiteLayer(hidden, aggr=aggr)
+        self.cc_cv_2_3 = SimpleBipartiteLayer(hidden, aggr=aggr)
+        self.vc_vv_2_3 = SimpleBipartiteLayer(hidden, aggr=aggr)
+        self.cv_cc_2_3 = SimpleBipartiteLayer(hidden, aggr=aggr)
 
         # MLP used for classification.
-        # self.lin1 = Linear((num_layers + 1) * hidden, hidden)
-        # self.lin2 = Linear(hidden, hidden)
-        # self.lin3 = Linear(hidden, hidden)
-        # self.lin4 = Linear(hidden, 2)
+        self.lin1 = Linear(4 * hidden, hidden)
+        self.lin2 = Linear(hidden, hidden)
+        self.lin3 = Linear(hidden, hidden)
+        self.lin4 = Linear(hidden, 2)
 
     def forward(self, data):
 
@@ -100,24 +117,17 @@ class SimpleNet(torch.nn.Module):
         vc_0 = self.vc_node_encoder(vc_node_features)
         cv_0 = self.cv_node_encoder(cv_node_features)
 
+        cv_1_1 = self.vv_cv_1(vv_0, cv_0, edge_index_vv_cv_1, [num_nodes_vv.sum(), num_nodes_cv.sum()])
+        cc_1_1 = self.vc_cc_1(vc_0, cc_0, edge_index_vc_cc_1, [num_nodes_vc.sum(), num_nodes_cc.sum()])
+        vc_1_1 = self.cc_vc_1(cc_0, vc_0, edge_index_cc_vc_1, [num_nodes_cc.sum(), num_nodes_vc.sum()])
+        cv_1_1 = self.cv_vv_1(cv_0, vv_0, edge_index_cv_vv_1, [num_nodes_cv.sum(), num_nodes_vv.sum()])
 
+        vc_2_1 = self.vv_vc_2(vv_0, vc_0, edge_index_vv_vc_2, [num_nodes_vv.sum(), num_nodes_vc.sum()])
+        vv_2_1 = self.vc_vv_2(vc_0, vv_0, edge_index_vc_vv_2, [num_nodes_vc.sum(), num_nodes_vv.sum()])
+        cv_2_1 = self.cc_cv_2(cc_0, cv_0, edge_index_cc_cv_2, [num_nodes_cc.sum(), num_nodes_cv.sum()])
+        cc_2_1 = self.cv_cc_2(cv_0, cc_0, edge_index_cv_cc_2, [num_nodes_cv.sum(), num_nodes_cc.sum()])
 
-        print(num_nodes_vv, num_nodes_cv)
-        print(vv_0.size(0), cv_0.size(0))
-        print(edge_index_vv_cv_1[0, :].max(), edge_index_vv_cv_1[1, :].max())
-
-        self.vv_cv_1(vv_0, cv_0, edge_index_vv_cv_1, [num_nodes_vv.sum(), num_nodes_cv.sum()])
-        self.vc_cc_1(vc_0, cc_0, edge_index_vc_cc_1, [num_nodes_vc.sum(), num_nodes_cc.sum()])
-        self.cc_vc_1(cc_0, vc_0, edge_index_cc_vc_1, [num_nodes_cc.sum(), num_nodes_vc.sum()])
-        self.cv_vv_1(cv_0, vv_0, edge_index_cv_vv_1, [num_nodes_cv.sum(), num_nodes_vv.sum()])
-
-
-        self.vv_vc_2(vv_0, vc_0, edge_index_vv_vc_2, [num_nodes_vv.sum(), num_nodes_vc.sum()])
-        self.vc_vv_2(vc_0, vv_0, edge_index_vc_vv_2, [num_nodes_vc.sum(), num_nodes_vv.sum()])
-        self.cc_cv_2(cc_0, cv_0, edge_index_cc_cv_2, [num_nodes_cc.sum(), num_nodes_cv.sum()])
-        self.cv_cc_2(cv_0, cc_0, edge_index_cv_cc_2, [num_nodes_cv.sum(), num_nodes_cc.sum()])
-
-
+        exit()
 
     def __repr__(self):
         return self.__class__.__name__
@@ -152,7 +162,7 @@ class GraphDataset(InMemoryDataset):
         num_graphs = len(os.listdir(data_path))
 
         # Iterate over instance files and create data objects.
-        for num, filename in enumerate(os.listdir(data_path)[0:10]):
+        for num, filename in enumerate(os.listdir(data_path)):
             print(num)
             # Get graph.
             graph = nx.read_gpickle(data_path + filename)
@@ -339,7 +349,7 @@ train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = SimpleNet(hidden=32, num_layers=5, aggr="mean").to(device)
+model = SimpleNet(hidden=32, aggr="mean").to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
                                                            factor=0.8, patience=10,
