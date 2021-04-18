@@ -97,10 +97,6 @@ class SimpleNet(torch.nn.Module):
         print(edge_index_vv_cv_1[0, :].max(), edge_index_vv_cv_1[1, :].max())
 
         self.vv_cv_1(vv_0, cv_0, edge_index_vv_cv_1, [num_nodes_vv.sum(), num_nodes_cv.sum()])
-        exit()
-
-        print("###")
-        exit()
 
 
 
@@ -137,7 +133,7 @@ class GraphDataset(InMemoryDataset):
         num_graphs = len(os.listdir(data_path))
 
         # Iterate over instance files and create data objects.
-        for num, filename in enumerate(os.listdir(data_path)[0:1]):
+        for num, filename in enumerate(os.listdir(data_path)[0:10]):
             print(num)
             # Get graph.
             graph = nx.read_gpickle(data_path + filename)
@@ -336,12 +332,12 @@ def train(epoch):
     for data in train_loader:
         data = data.to(device)
         optimizer.zero_grad()
-        output = model(data)
-        exit()
+        model(data)
+
 
 
     #return loss_all / len(train_dataset)
 
 
-for epoch in range(1, 50):
+for epoch in range(1, 2):
     train_loss = train(epoch)
