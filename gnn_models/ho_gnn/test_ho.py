@@ -421,6 +421,9 @@ class MyTransform(object):
 
 pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
 dataset = GraphDataset(pathr, 0.005, transform=MyTransform())  # .shuffle()
+print("###")
+print(dataset.data.y.sum()/dataset.data.y.size(-1))
+
 l = len(dataset)
 train_index, rest = train_test_split(list(range(0, l)), test_size=0.2)
 l = len(rest)
