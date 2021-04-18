@@ -93,9 +93,10 @@ class SimpleNet(torch.nn.Module):
 
 
         print(edge_index_vv_cv_1[0,:].max(), edge_index_vv_cv_1[1,:].max(),  vv_0.size(), cv_0.size())
-        exit()
+
 
         self.vv_cv_1(vv_0, cv_0, edge_index_vv_cv_1, [num_nodes_vv.sum(), num_nodes_cv.sum()])
+        exit()
 
         print("###")
         exit()
