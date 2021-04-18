@@ -37,7 +37,7 @@ class SimpleBipartiteLayer(MessagePassing):
 
         return out
 
-    def message(self, x_j, edge_attr):
+    def message(self, x_j):
         return F.relu(x_j)
 
     def update(self, aggr_out):
