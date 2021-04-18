@@ -10,6 +10,7 @@ import networkx as nx
 
 from torch_geometric.data import (InMemoryDataset, Data)
 from torch_geometric.data import DataLoader
+from sklearn.model_selection import train_test_split
 
 import numpy as np
 
@@ -385,7 +386,6 @@ class MyData(Data):
             return torch.tensor([self.num_nodes_cv, self.num_nodes_vv]).view(2, 1)
         if key in ['edge_index_cv_cc_2']:
             return torch.tensor([self.num_nodes_cv, self.num_nodes_cc]).view(2, 1)
-
         else:
             return 0
 
@@ -400,10 +400,20 @@ class MyTransform(object):
 
 pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
 dataset = GraphDataset(pathr, 0.005, transform=MyTransform())  # .shuffle()
-#dataset = GraphDataset(pathr, 0.005)  # .shuffle()
+l = len(dataset)
+train_index, rest = train_test_split(list(range(0, l)), test_size=0.2)
+l = len(rest)
+val_index = rest[0:int(l / 2)]
+test_index = rest[int(l / 2):]
+
+train_dataset = dataset[train_index].shuffle()
+val_dataset = dataset[val_index].shuffle()
+test_dataset = dataset[test_index].shuffle()
 
 batch_size = 15
-train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -413,17 +423,21 @@ scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
                                                            factor=0.8, patience=10,
                                                            min_lr=0.0000001)
 
+
 def train(epoch):
     model.train()
 
+    loss_all = 0
     for data in train_loader:
         data = data.to(device)
         optimizer.zero_grad()
-        model(data)
+        output = model(data)
 
-
-
-    #return loss_all / len(train_dataset)
+        loss = F.nll_loss(output, data.y)
+        loss.backward()
+        loss_all += batch_size * loss.item()
+        optimizer.step()
+    return loss_all / len(train_dataset)
 
 
 for epoch in range(1, 5):
