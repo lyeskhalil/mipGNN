@@ -137,7 +137,7 @@ class GraphDataset(InMemoryDataset):
         num_graphs = len(os.listdir(data_path))
 
         # Iterate over instance files and create data objects.
-        for num, filename in enumerate(os.listdir(data_path)[0:2]):
+        for num, filename in enumerate(os.listdir(data_path)[0:1]):
             print(num)
             # Get graph.
             graph = nx.read_gpickle(data_path + filename)
@@ -321,8 +321,8 @@ pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
 #dataset = GraphDataset(pathr, 0.005, transform=MyTransform())  # .shuffle()
 dataset = GraphDataset(pathr, 0.005)  # .shuffle()
 
-batch_size = 1
-train_loader = DataLoader(dataset[0], batch_size=batch_size, shuffle=True)
+#batch_size = 1
+#train_loader = DataLoader(dataset[0], batch_size=batch_size, shuffle=True)
 
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -335,18 +335,13 @@ scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
 def train(epoch):
     model.train()
 
-    loss_all = 0
-    for data in train_loader:
-        data = data.to(device)
-        optimizer.zero_grad()
-        output = model(data)
-        exit()
+
+    data = dataset.data.to(device)
+    optimizer.zero_grad()
+    output = model(data)
+    exit()
 
 
-        loss = F.nll_loss(output, data.y)
-        loss.backward()
-        loss_all += batch_size * loss.item()
-        optimizer.step()
     #return loss_all / len(train_dataset)
 
 
