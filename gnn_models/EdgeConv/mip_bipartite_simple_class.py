@@ -374,7 +374,6 @@ for i in range(5):
 
     print(i)
 
-
     # TODO
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = models[i].to(device)
@@ -386,15 +385,12 @@ for i in range(5):
 
     for epoch in range(1, 50):
 
-
         train_loss = train(epoch)
         train_acc = test(train_loader)
 
         val_acc = test(val_loader)
         scheduler.step(val_acc)
         lr = scheduler.optimizer.param_groups[0]['lr']
-
-
 
         if val_acc > best_val:
             best_val = val_acc

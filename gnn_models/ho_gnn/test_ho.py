@@ -439,7 +439,42 @@ def train(epoch):
         optimizer.step()
     return loss_all / len(train_dataset)
 
+def test(loader):
+    model.eval()
 
-for epoch in range(1, 5):
-    print(epoch)
+    correct = 0
+    l = 0
+
+    for data in loader:
+        data = data.to(device)
+        pred = model(data)
+        pred = pred.max(dim=1)[1]
+        correct += pred.eq(data.y).float().mean().item()
+        l += 1
+
+    return correct / l
+
+
+best_val = 0.0
+test_acc = 0.0
+
+
+for epoch in range(1, 50):
     train_loss = train(epoch)
+    train_acc = test(train_loader)
+
+    val_acc = test(val_loader)
+    scheduler.step(val_acc)
+    lr = scheduler.optimizer.param_groups[0]['lr']
+
+    if val_acc > best_val:
+        best_val = val_acc
+        test_acc = test(test_loader)
+
+    # Break if learning rate is smaller 10**-6.
+    if lr < 0.000001:
+        break
+
+    print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
+          'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
+                                                                        train_acc, val_acc, test_acc))
