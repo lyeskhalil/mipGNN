@@ -148,22 +148,44 @@ class SimpleNet(torch.nn.Module):
         cv_1 = self.vv_joint_1(torch.cat([cv_1_1, cv_2_1], dim=-1))
 
 
-        cv_1_2 = self.vv_cv_1_1(vv_1, cv_1, edge_index_vv_cv_1, [num_nodes_vv.sum(), num_nodes_cv.sum()])
-        cc_1_2 = self.vc_cc_1_1(vc_1, cc_1, edge_index_vc_cc_1, [num_nodes_vc.sum(), num_nodes_cc.sum()])
-        vc_1_2 = self.cc_vc_1_1(cc_1, vc_1, edge_index_cc_vc_1, [num_nodes_cc.sum(), num_nodes_vc.sum()])
-        vv_1_2 = self.cv_vv_1_1(cv_1, vv_1, edge_index_cv_vv_1, [num_nodes_cv.sum(), num_nodes_vv.sum()])
+        cv_1_2 = self.vv_cv_1_2(vv_1, cv_1, edge_index_vv_cv_1, [num_nodes_vv.sum(), num_nodes_cv.sum()])
+        cc_1_2 = self.vc_cc_1_2(vc_1, cc_1, edge_index_vc_cc_1, [num_nodes_vc.sum(), num_nodes_cc.sum()])
+        vc_1_2 = self.cc_vc_1_2(cc_1, vc_1, edge_index_cc_vc_1, [num_nodes_cc.sum(), num_nodes_vc.sum()])
+        vv_1_2 = self.cv_vv_1_2(cv_1, vv_1, edge_index_cv_vv_1, [num_nodes_cv.sum(), num_nodes_vv.sum()])
 
-        vc_2_2 = self.vv_vc_2_1(vv_1, vc_1, edge_index_vv_vc_2, [num_nodes_vv.sum(), num_nodes_vc.sum()])
-        vv_2_2 = self.vc_vv_2_1(vc_1, vv_1, edge_index_vc_vv_2, [num_nodes_vc.sum(), num_nodes_vv.sum()])
-        cv_2_2 = self.cc_cv_2_1(cc_1, cv_1, edge_index_cc_cv_2, [num_nodes_cc.sum(), num_nodes_cv.sum()])
-        cc_2_2 = self.cv_cc_2_1(cv_1, cc_1, edge_index_cv_cc_2, [num_nodes_cv.sum(), num_nodes_cc.sum()])
+        vc_2_2 = self.vv_vc_2_2(vv_1, vc_1, edge_index_vv_vc_2, [num_nodes_vv.sum(), num_nodes_vc.sum()])
+        vv_2_2 = self.vc_vv_2_2(vc_1, vv_1, edge_index_vc_vv_2, [num_nodes_vc.sum(), num_nodes_vv.sum()])
+        cv_2_2 = self.cc_cv_2_2(cc_1, cv_1, edge_index_cc_cv_2, [num_nodes_cc.sum(), num_nodes_cv.sum()])
+        cc_2_2 = self.cv_cc_2_2(cv_1, cc_1, edge_index_cv_cc_2, [num_nodes_cv.sum(), num_nodes_cc.sum()])
 
-        vv_2 = self.vv_joint_1(torch.cat([vv_1_2, vv_2_2], dim=-1))
-        cc_2 = self.vv_joint_1(torch.cat([cc_1_2, cc_2_2], dim=-1))
-        vc_2 = self.vv_joint_1(torch.cat([vc_1_2, vc_2_2], dim=-1))
-        cv_2 = self.vv_joint_1(torch.cat([cv_1_2, cv_2_2], dim=-1))
+        vv_2 = self.vv_joint_2(torch.cat([vv_1_2, vv_2_2], dim=-1))
+        cc_2 = self.vv_joint_2(torch.cat([cc_1_2, cc_2_2], dim=-1))
+        vc_2 = self.vv_joint_2(torch.cat([vc_1_2, vc_2_2], dim=-1))
+        cv_2 = self.vv_joint_2(torch.cat([cv_1_2, cv_2_2], dim=-1))
 
 
+        cv_1_3 = self.vv_cv_1_3(vv_2, cv_2, edge_index_vv_cv_1, [num_nodes_vv.sum(), num_nodes_cv.sum()])
+        cc_1_3 = self.vc_cc_1_3(vc_2, cc_2, edge_index_vc_cc_1, [num_nodes_vc.sum(), num_nodes_cc.sum()])
+        vc_1_3 = self.cc_vc_1_3(cc_2, vc_2, edge_index_cc_vc_1, [num_nodes_cc.sum(), num_nodes_vc.sum()])
+        vv_1_3 = self.cv_vv_1_3(cv_2, vv_2, edge_index_cv_vv_1, [num_nodes_cv.sum(), num_nodes_vv.sum()])
+
+        vc_2_3 = self.vv_vc_2_3(vv_2, vc_2, edge_index_vv_vc_2, [num_nodes_vv.sum(), num_nodes_vc.sum()])
+        vv_2_3 = self.vc_vv_2_3(vc_2, vv_2, edge_index_vc_vv_2, [num_nodes_vc.sum(), num_nodes_vv.sum()])
+        cv_2_3 = self.cc_cv_2_3(cc_2, cv_2, edge_index_cc_cv_2, [num_nodes_cc.sum(), num_nodes_cv.sum()])
+        cc_2_3 = self.cv_cc_2_3(cv_2, cc_2, edge_index_cv_cc_2, [num_nodes_cv.sum(), num_nodes_cc.sum()])
+
+        vv_3 = self.vv_joint_1(torch.cat([vv_1_3, vv_2_3], dim=-1))
+        cc_3 = self.vv_joint_1(torch.cat([cc_1_3, cc_2_3], dim=-1))
+        vc_3 = self.vv_joint_1(torch.cat([vc_1_3, vc_2_3], dim=-1))
+        cv_3 = self.vv_joint_1(torch.cat([cv_1_3, cv_2_3], dim=-1))
+
+        x = torch.cat([vv_0, vv_1, vv_2, vc_3], dim=-1)
+
+        x = F.relu(self.lin1(x))
+        x = F.relu(self.lin2(x))
+        x = F.relu(self.lin3(x))
+        x = self.lin4(x)
+        return F.log_softmax(x, dim=-1)
 
     def __repr__(self):
         return self.__class__.__name__
