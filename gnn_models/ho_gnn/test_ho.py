@@ -25,7 +25,7 @@ class SimpleBipartiteLayer(MessagePassing):
     def __init__(self, dim, aggr):
         super(SimpleBipartiteLayer, self).__init__(aggr=aggr, flow="source_to_target")
 
-        self.nn = Sequential(Linear(3 * dim, dim), ReLU(), Linear(dim, dim), ReLU(),
+        self.nn = Sequential(Linear(9, dim), ReLU(), Linear(dim, dim), ReLU(),
                              BN(dim))
 
     def forward(self, source, target, edge_index, size):
@@ -95,7 +95,7 @@ class SimpleNet(torch.nn.Module):
         print(num_nodes_vv, num_nodes_cv)
         print(vv_0.size(0), cv_0.size(0))
         print(edge_index_vv_cv_1[0, :].max(), edge_index_vv_cv_1[1, :].max())
-        
+
         self.vv_cv_1(vv_0, cv_0, edge_index_vv_cv_1, [num_nodes_vv, num_nodes_cv])
         exit()
 
