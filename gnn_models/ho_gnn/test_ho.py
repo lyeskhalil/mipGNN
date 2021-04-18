@@ -179,7 +179,7 @@ class SimpleNet(torch.nn.Module):
         vc_3 = self.vv_joint_1(torch.cat([vc_1_3, vc_2_3], dim=-1))
         cv_3 = self.vv_joint_1(torch.cat([cv_1_3, cv_2_3], dim=-1))
 
-        x = torch.cat([vv_0, vv_1, vv_2, vc_3], dim=-1)
+        x = torch.cat([vv_0, vv_1, vv_2, vv_3], dim=-1)
 
         x = F.relu(self.lin1(x))
         x = F.relu(self.lin2(x))
