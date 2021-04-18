@@ -34,6 +34,8 @@ class SimpleBipartiteLayer(MessagePassing):
         return out
 
     def message(self, x_j, t_i):
+        print(torch.cat([t_i, x_j], dim=-1).size())
+        exit()
         return self.nn(torch.cat([t_i, x_j], dim=-1))
 
     def __repr__(self):
