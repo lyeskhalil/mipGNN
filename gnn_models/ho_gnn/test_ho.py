@@ -144,7 +144,7 @@ class GraphDataset(InMemoryDataset):
 
             # Make graph directed.
             graph = nx.convert_node_labels_to_integers(graph)
-            graph = graph.to_directed() if not nx.is_directed(graph) else graph
+            graph = graph.to_undirected() if nx.is_directed(graph) else graph
 
             graph_new = nx.Graph()
 
@@ -178,16 +178,11 @@ class GraphDataset(InMemoryDataset):
                     graph_new.add_node((u, v), type="VC", first=u, second=v, num=num_vc, feauture = [graph.nodes[u]['objcoeff'], graph.degree[u], graph.nodes[v]['rhs'],  graph.degree[v], graph.edges[(u,v)]["coeff"]])
                     features_vc.append([graph.nodes[u]['objcoeff'], graph.degree[u], graph.nodes[v]['rhs'],  graph.degree[v], graph.edges[(u,v)]["coeff"]])
                     c += 1
-                    num_vc += 1
-
-                else:
-                    graph_new.add_node((v, u), type="CV", first=v, second=u, num=num_cv,
-                                       feauture=[graph.nodes[v]['rhs'], graph.degree[v], graph.nodes[u]['objcoeff'],
-                                                 graph.degree[u], graph.edges[(u, v)]["coeff"]])
-                    features_cv.append(
-                        [graph.nodes[v]['rhs'], graph.degree[v], graph.nodes[u]['objcoeff'], graph.degree[u],
-                         graph.edges[(u, v)]["coeff"]])
+                    graph_new.add_node((v, u), type="CV", first=v, second=u, num=num_cv, feauture = [graph.nodes[v]['rhs'],  graph.degree[v], graph.nodes[u]['objcoeff'], graph.degree[u], graph.edges[(u,v)]["coeff"]])
                     c += 1
+                    features_cv.append([graph.nodes[v]['rhs'],  graph.degree[v], graph.nodes[u]['objcoeff'], graph.degree[u], graph.edges[(u,v)]["coeff"]])
+
+                    num_vc += 1
                     num_cv += 1
 
             for i, v in enumerate(graph.nodes):
