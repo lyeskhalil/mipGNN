@@ -96,7 +96,7 @@ class SimpleNet(torch.nn.Module):
         print(vv_0.size(0), cv_0.size(0))
         print(edge_index_vv_cv_1[0, :].max(), edge_index_vv_cv_1[1, :].max())
 
-        self.vv_cv_1(vv_0, cv_0, edge_index_vv_cv_1, [num_nodes_vv, num_nodes_cv])
+        self.vv_cv_1(vv_0, cv_0, edge_index_vv_cv_1, [num_nodes_vv.sum(), num_nodes_cv.sum()])
         exit()
 
         print("###")
@@ -316,13 +316,11 @@ class MyTransform(object):
 
 
 pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
+dataset = GraphDataset(pathr, 0.005, transform=MyTransform())  # .shuffle()
+#dataset = GraphDataset(pathr, 0.005)  # .shuffle()
 
-# TODO CHANGE BACK
-#dataset = GraphDataset(pathr, 0.005, transform=MyTransform())  # .shuffle()
-dataset = GraphDataset(pathr, 0.005)  # .shuffle()
-
-#batch_size = 1
-#train_loader = DataLoader(dataset[0], batch_size=batch_size, shuffle=True)
+batch_size = 2
+train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -335,11 +333,11 @@ scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
 def train(epoch):
     model.train()
 
-
-    data = dataset.data.to(device)
-    optimizer.zero_grad()
-    output = model(data)
-    exit()
+    for data in train_loader:
+        data = data.to(device)
+        optimizer.zero_grad()
+        output = model(data)
+        exit()
 
 
     #return loss_all / len(train_dataset)
