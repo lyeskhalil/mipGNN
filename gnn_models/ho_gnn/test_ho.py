@@ -93,6 +93,7 @@ class SimpleNet(torch.nn.Module):
 
 
         print(edge_index_vv_cv_1[0,:].max(), edge_index_vv_cv_1[1,:].max(),  vv_0.size(), cv_0.size())
+        exit()
 
         # TODO sum
         self.vv_cv_1(vv_0, cv_0, edge_index_vv_cv_1, [num_nodes_vv, num_nodes_cv])
@@ -315,7 +316,10 @@ class MyTransform(object):
 
 
 pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
-dataset = GraphDataset(pathr, 0.005, transform=MyTransform())  # .shuffle()
+
+# TODO CHANGE BACK
+#dataset = GraphDataset(pathr, 0.005, transform=MyTransform())  # .shuffle()
+dataset = GraphDataset(pathr, 0.005)  # .shuffle()
 
 batch_size = 1
 train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
