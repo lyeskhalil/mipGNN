@@ -94,8 +94,8 @@ class SimpleNet(torch.nn.Module):
 
         print(edge_index_vv_cv_1[0,:].max(), edge_index_vv_cv_1[1,:].max(),  vv_0.size(), cv_0.size())
 
-
-        self.vv_cv_1(vv_0, cv_0, edge_index_vv_cv_1, [num_nodes_vv.sum(), num_nodes_cv.sum()])
+        # TODO sum
+        self.vv_cv_1(vv_0, cv_0, edge_index_vv_cv_1, [num_nodes_vv, num_nodes_cv])
         exit()
 
         print("###")
@@ -214,7 +214,6 @@ class GraphDataset(InMemoryDataset):
                 for n in graph.neighbors(first):
                     if graph_new.nodes[v]["type"] == "VV":
                         if graph.has_edge(n, second):
-                            # Source node is var. VV->CV
                             matrices_vv_cv_1.append([num, graph_new.nodes[(n, second)]["num"]])
                     if graph_new.nodes[v]["type"] == "CC":
                         if graph.has_edge(n, second):
@@ -318,7 +317,7 @@ class MyTransform(object):
 pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
 dataset = GraphDataset(pathr, 0.005, transform=MyTransform())  # .shuffle()
 
-batch_size = 2
+batch_size = 1
 train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
 
