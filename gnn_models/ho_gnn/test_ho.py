@@ -26,19 +26,40 @@ class SimpleBipartiteLayer(MessagePassing):
     def __init__(self, dim, aggr):
         super(SimpleBipartiteLayer, self).__init__(aggr=aggr, flow="source_to_target")
 
-        self.nn = Sequential(Linear(2*dim, dim), ReLU(), Linear(dim, dim), ReLU(),
-                             BN(dim))
+        self.mlp = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim), ReLU(), BN(dim))
+        self.eps = torch.nn.Parameter(torch.Tensor([0]))
+        self.initial_eps = 0
 
     def forward(self, source, target, edge_index, size):
-        out = self.propagate(edge_index, x=source, t=target, size=size)
+        tmp = self.propagate(edge_index, x=source, size=size)
+
+        out = self.mlp((1 + self.eps) * target + tmp)
 
         return out
 
-    def message(self, x_j, t_i):
-        return self.nn(torch.cat([t_i, x_j], dim=-1))
+    def message(self, x_j, edge_attr):
+        return F.relu(x_j)
 
-    def __repr__(self):
-        return '{}(nn={})'.format(self.__class__.__name__, self.nn)
+    def update(self, aggr_out):
+        return aggr_out
+
+# class SimpleBipartiteLayer(MessagePassing):
+#     def __init__(self, dim, aggr):
+#         super(SimpleBipartiteLayer, self).__init__(aggr=aggr, flow="source_to_target")
+#
+#         self.nn = Sequential(Linear(2*dim, dim), ReLU(), Linear(dim, dim), ReLU(),
+#                              BN(dim))
+#
+#     def forward(self, source, target, edge_index, size):
+#         out = self.propagate(edge_index, x=source, t=target, size=size)
+#
+#         return out
+#
+#     def message(self, x_j, t_i):
+#         return self.nn(torch.cat([t_i, x_j], dim=-1))
+#
+#     def __repr__(self):
+#         return '{}(nn={})'.format(self.__class__.__name__, self.nn)
 
 
 class SimpleNet(torch.nn.Module):
