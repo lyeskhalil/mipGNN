@@ -127,8 +127,6 @@ class SimpleNet(torch.nn.Module):
         cv_2_1 = self.cc_cv_2_1(cc_0, cv_0, edge_index_cc_cv_2, [num_nodes_cc.sum(), num_nodes_cv.sum()])
         cc_2_1 = self.cv_cc_2_1(cv_0, cc_0, edge_index_cv_cc_2, [num_nodes_cv.sum(), num_nodes_cc.sum()])
 
-        exit()
-
     def __repr__(self):
         return self.__class__.__name__
 
