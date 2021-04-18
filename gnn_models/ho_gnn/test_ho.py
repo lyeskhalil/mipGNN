@@ -322,7 +322,7 @@ pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
 dataset = GraphDataset(pathr, 0.005)  # .shuffle()
 
 batch_size = 1
-train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+train_loader = DataLoader(dataset[0], batch_size=batch_size, shuffle=True)
 
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
