@@ -217,6 +217,7 @@ class SimpleNet(torch.nn.Module):
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 data_path = "../../DATA1/er_SET2/200_200/alpha_0.75_setParam_100/train/"
 
+
 # Preprocessing to create Torch dataset.
 class GraphDataset(InMemoryDataset):
     def __init__(self, root, bias_threshold, transform=None, pre_transform=None,
