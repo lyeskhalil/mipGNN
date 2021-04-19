@@ -309,8 +309,7 @@ class GraphDataset(InMemoryDataset):
                         y.append(1)
                 elif graph.nodes[v]['bipartite'] == 1:
                     graph_new.add_node((v, v), type="CC", first=v, second=v, num=num_cc,
-                                       feauture=[graph.nodes[v]['rhs'], graph.degree[v], graph.nodes[v]['rhs'],
-                                                 graph.degree[v]])
+                                       feauture=[graph.nodes[v]['rhs'], graph.degree[v]])
                     features_cc.append([graph.nodes[v]['rhs'], graph.degree[v], graph.nodes[v]['rhs'], graph.degree[v]])
                     num_cc += 1
 
