@@ -43,6 +43,7 @@ class SimpleBipartiteLayer(MessagePassing):
     def update(self, aggr_out):
         return aggr_out
 
+
 # class SimpleBipartiteLayer(MessagePassing):
 #     def __init__(self, dim, aggr):
 #         super(SimpleBipartiteLayer, self).__init__(aggr=aggr, flow="source_to_target")
@@ -63,7 +64,7 @@ class SimpleBipartiteLayer(MessagePassing):
 
 
 class SimpleNet(torch.nn.Module):
-    def __init__(self, hidden, aggr,):
+    def __init__(self, hidden, aggr, ):
         super(SimpleNet, self).__init__()
 
         # Embed initial node features.
@@ -124,7 +125,6 @@ class SimpleNet(torch.nn.Module):
         self.lin4 = Linear(hidden, 2)
 
     def forward(self, data):
-
         # Get data of batch.
         vv_node_features = data.vv_node_features
         cc_node_features = data.cc_node_features
@@ -159,25 +159,25 @@ class SimpleNet(torch.nn.Module):
         cv_0 = self.cv_node_encoder(cv_node_features)
 
         cv_1_1 = self.vv_cv_1_1(vv_0, cv_0, edge_index_vv_cv_1, [num_nodes_vv.sum(), num_nodes_cv.sum()])
-        #cc_1_1 = self.vc_cc_1_1(vc_0, cc_0, edge_index_vc_cc_1, [num_nodes_vc.sum(), num_nodes_cc.sum()])
-        #vc_1_1 = self.cc_vc_1_1(cc_0, vc_0, edge_index_cc_vc_1, [num_nodes_cc.sum(), num_nodes_vc.sum()])
+        # cc_1_1 = self.vc_cc_1_1(vc_0, cc_0, edge_index_vc_cc_1, [num_nodes_vc.sum(), num_nodes_cc.sum()])
+        # vc_1_1 = self.cc_vc_1_1(cc_0, vc_0, edge_index_cc_vc_1, [num_nodes_cc.sum(), num_nodes_vc.sum()])
         vv_1_1 = self.cv_vv_1_1(cv_0, vv_0, edge_index_cv_vv_1, [num_nodes_cv.sum(), num_nodes_vv.sum()])
 
-        #vc_2_1 = self.vv_vc_2_1(vv_0, vc_0, edge_index_vv_vc_2, [num_nodes_vv.sum(), num_nodes_vc.sum()])
-        #vv_2_1 = self.vc_vv_2_1(vc_0, vv_0, edge_index_vc_vv_2, [num_nodes_vc.sum(), num_nodes_vv.sum()])
-        #cv_2_1 = self.cc_cv_2_1(cc_0, cv_0, edge_index_cc_cv_2, [num_nodes_cc.sum(), num_nodes_cv.sum()])
-        #cc_2_1 = self.cv_cc_2_1(cv_0, cc_0, edge_index_cv_cc_2, [num_nodes_cv.sum(), num_nodes_cc.sum()])
+        # vc_2_1 = self.vv_vc_2_1(vv_0, vc_0, edge_index_vv_vc_2, [num_nodes_vv.sum(), num_nodes_vc.sum()])
+        # vv_2_1 = self.vc_vv_2_1(vc_0, vv_0, edge_index_vc_vv_2, [num_nodes_vc.sum(), num_nodes_vv.sum()])
+        # cv_2_1 = self.cc_cv_2_1(cc_0, cv_0, edge_index_cc_cv_2, [num_nodes_cc.sum(), num_nodes_cv.sum()])
+        # cc_2_1 = self.cv_cc_2_1(cv_0, cc_0, edge_index_cv_cc_2, [num_nodes_cv.sum(), num_nodes_cc.sum()])
 
-        #vv_1 = self.vv_joint_1(torch.cat([vv_1_1, vv_2_1], dim=-1))
-        #cc_1 = self.vv_joint_1(torch.cat([cc_1_1, cc_2_1], dim=-1))
-        #vc_1 = self.vv_joint_1(torch.cat([vc_1_1, vc_2_1], dim=-1))
-        #cv_1 = self.vv_joint_1(torch.cat([cv_1_1, cv_2_1], dim=-1))
+        # vv_1 = self.vv_joint_1(torch.cat([vv_1_1, vv_2_1], dim=-1))
+        # cc_1 = self.vv_joint_1(torch.cat([cc_1_1, cc_2_1], dim=-1))
+        # vc_1 = self.vv_joint_1(torch.cat([vc_1_1, vc_2_1], dim=-1))
+        # cv_1 = self.vv_joint_1(torch.cat([cv_1_1, cv_2_1], dim=-1))
         vv_1 = vv_1_1
         cv_1 = cv_1_1
 
         cv_1_2 = self.vv_cv_1_2(vv_1, cv_1, edge_index_vv_cv_1, [num_nodes_vv.sum(), num_nodes_cv.sum()])
-        #cc_1_2 = self.vc_cc_1_2(vc_1, cc_1, edge_index_vc_cc_1, [num_nodes_vc.sum(), num_nodes_cc.sum()])
-        #vc_1_2 = self.cc_vc_1_2(cc_1, vc_1, edge_index_cc_vc_1, [num_nodes_cc.sum(), num_nodes_vc.sum()])
+        # cc_1_2 = self.vc_cc_1_2(vc_1, cc_1, edge_index_vc_cc_1, [num_nodes_vc.sum(), num_nodes_cc.sum()])
+        # vc_1_2 = self.cc_vc_1_2(cc_1, vc_1, edge_index_cc_vc_1, [num_nodes_cc.sum(), num_nodes_vc.sum()])
         vv_1_2 = self.cv_vv_1_2(cv_1, vv_1, edge_index_cv_vv_1, [num_nodes_cv.sum(), num_nodes_vv.sum()])
 
         # vc_2_2 = self.vv_vc_2_2(vv_1, vc_1, edge_index_vv_vc_2, [num_nodes_vv.sum(), num_nodes_vc.sum()])
@@ -192,16 +192,15 @@ class SimpleNet(torch.nn.Module):
         vv_2 = vv_1_2
         cv_2 = cv_1_2
 
-
         cv_1_3 = self.vv_cv_1_3(vv_2, cv_2, edge_index_vv_cv_1, [num_nodes_vv.sum(), num_nodes_cv.sum()])
-        #cc_1_3 = self.vc_cc_1_3(vc_2, cc_2, edge_index_vc_cc_1, [num_nodes_vc.sum(), num_nodes_cc.sum()])
-        #vc_1_3 = self.cc_vc_1_3(cc_2, vc_2, edge_index_cc_vc_1, [num_nodes_cc.sum(), num_nodes_vc.sum()])
+        # cc_1_3 = self.vc_cc_1_3(vc_2, cc_2, edge_index_vc_cc_1, [num_nodes_vc.sum(), num_nodes_cc.sum()])
+        # vc_1_3 = self.cc_vc_1_3(cc_2, vc_2, edge_index_cc_vc_1, [num_nodes_cc.sum(), num_nodes_vc.sum()])
         vv_1_3 = self.cv_vv_1_3(cv_2, vv_2, edge_index_cv_vv_1, [num_nodes_cv.sum(), num_nodes_vv.sum()])
 
-        #vc_2_3 = self.vv_vc_2_3(vv_2, vc_2, edge_index_vv_vc_2, [num_nodes_vv.sum(), num_nodes_vc.sum()])
-        #vv_2_3 = self.vc_vv_2_3(vc_2, vv_2, edge_index_vc_vv_2, [num_nodes_vc.sum(), num_nodes_vv.sum()])
-        #cv_2_3 = self.cc_cv_2_3(cc_2, cv_2, edge_index_cc_cv_2, [num_nodes_cc.sum(), num_nodes_cv.sum()])
-        #cc_2_3 = self.cv_cc_2_3(cv_2, cc_2, edge_index_cv_cc_2, [num_nodes_cv.sum(), num_nodes_cc.sum()])
+        # vc_2_3 = self.vv_vc_2_3(vv_2, vc_2, edge_index_vv_vc_2, [num_nodes_vv.sum(), num_nodes_vc.sum()])
+        # vv_2_3 = self.vc_vv_2_3(vc_2, vv_2, edge_index_vc_vv_2, [num_nodes_vc.sum(), num_nodes_vv.sum()])
+        # cv_2_3 = self.cc_cv_2_3(cc_2, cv_2, edge_index_cc_cv_2, [num_nodes_cc.sum(), num_nodes_cv.sum()])
+        # cc_2_3 = self.cv_cc_2_3(cv_2, cc_2, edge_index_cv_cc_2, [num_nodes_cv.sum(), num_nodes_cc.sum()])
 
         # vv_3 = self.vv_joint_1(torch.cat([vv_1_3, vv_2_3], dim=-1))
         # cc_3 = self.vv_joint_1(torch.cat([cc_1_3, cc_2_3], dim=-1))
@@ -209,7 +208,6 @@ class SimpleNet(torch.nn.Module):
         # cv_3 = self.vv_joint_1(torch.cat([cv_1_3, cv_2_3], dim=-1))
         vv_3 = vv_1_3
         cv_3 = cv_1_3
-
 
         # TODO
         x = torch.cat([vv_0, vv_1, vv_2, vv_3], dim=-1)
@@ -291,18 +289,21 @@ class GraphDataset(InMemoryDataset):
             for i, (u, v) in enumerate(graph.edges):
                 if graph.nodes[u]['bipartite'] == 0:
                     graph_new.add_node((u, v), type="VC", first=u, second=v, num=num_vc)
-                    features_vc.append([graph.nodes[u]['objcoeff'], graph.degree[u], graph.nodes[v]['rhs'],  graph.degree[v], graph.edges[(u,v)]["coeff"]])
+                    features_vc.append(
+                        [graph.nodes[u]['objcoeff'], graph.degree[u], graph.nodes[v]['rhs'], graph.degree[v],
+                         graph.edges[(u, v)]["coeff"]])
 
                     graph_new.add_node((v, u), type="CV", first=v, second=u, num=num_cv)
-                    features_cv.append([graph.nodes[v]['rhs'],  graph.degree[v], graph.nodes[u]['objcoeff'], graph.degree[u], graph.edges[(u,v)]["coeff"]])
+                    features_cv.append(
+                        [graph.nodes[v]['rhs'], graph.degree[v], graph.nodes[u]['objcoeff'], graph.degree[u],
+                         graph.edges[(u, v)]["coeff"]])
 
                     num_vc += 1
                     num_cv += 1
 
             for i, v in enumerate(graph.nodes):
                 if graph.nodes[v]['bipartite'] == 0:
-                    graph_new.add_node((v, v), type="VV", first=v, second=v, num=num_vv,
-                                       feauture=[graph.nodes[v]['objcoeff'], graph.degree[v]])
+                    graph_new.add_node((v, v), type="VV", first=v, second=v, num=num_vv)
                     features_vv.append(
                         [graph.nodes[v]['objcoeff'], graph.degree[v]])
                     num_vv += 1
@@ -312,8 +313,7 @@ class GraphDataset(InMemoryDataset):
                     else:
                         y.append(1)
                 elif graph.nodes[v]['bipartite'] == 1:
-                    graph_new.add_node((v, v), type="CC", first=v, second=v, num=num_cc,
-                                       feauture=[graph.nodes[v]['rhs'], graph.degree[v]])
+                    graph_new.add_node((v, v), type="CC", first=v, second=v, num=num_cc)
                     features_cc.append([graph.nodes[v]['rhs'], graph.degree[v]])
                     num_cc += 1
 
@@ -393,6 +393,7 @@ class GraphDataset(InMemoryDataset):
         data, slices = self.collate(data_list)
         torch.save((data, slices), self.processed_paths[0])
 
+
 # Preprocess indices of bipartite graphs to make batching work.
 class MyData(Data):
     def __inc__(self, key, value):
@@ -427,7 +428,7 @@ class MyTransform(object):
 pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
 dataset = GraphDataset(pathr, 0.005, transform=MyTransform())  # .shuffle()
 print("###")
-print(dataset.data.y.sum()/dataset.data.y.size(-1))
+print(dataset.data.y.sum() / dataset.data.y.size(-1))
 
 l = len(dataset)
 train_index, rest = train_test_split(list(range(0, l)), test_size=0.2)
@@ -444,13 +445,12 @@ train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
-
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = SimpleNet(hidden=64, aggr="mean").to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
-                                                           factor=0.8, patience=10,
-                                                           min_lr=0.0000001)
+                                                       factor=0.8, patience=10,
+                                                       min_lr=0.0000001)
 
 
 def train(epoch):
@@ -467,6 +467,7 @@ def train(epoch):
         loss_all += batch_size * loss.item()
         optimizer.step()
     return loss_all / len(train_dataset)
+
 
 def test(loader):
     model.eval()
@@ -486,7 +487,6 @@ def test(loader):
 
 best_val = 0.0
 test_acc = 0.0
-
 
 for epoch in range(1, 50):
     train_loss = train(epoch)
