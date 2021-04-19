@@ -364,7 +364,7 @@ results = []
 models = []
 for i in range(5):
     # TODO
-    models.append(SimpleNet(hidden=64, num_layers=2, aggr="mean"))
+    models.append(SimpleNet(hidden=64, num_layers=1, aggr="mean"))
 
 
 for i in range(5):

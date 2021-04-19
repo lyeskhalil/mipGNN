@@ -67,8 +67,8 @@ class SimpleNet(torch.nn.Module):
         super(SimpleNet, self).__init__()
 
         # Embed initial node features.
-        self.vv_node_encoder = Sequential(Linear(4, hidden), ReLU(), Linear(hidden, hidden))
-        self.cc_node_encoder = Sequential(Linear(4, hidden), ReLU(), Linear(hidden, hidden))
+        self.vv_node_encoder = Sequential(Linear(2, hidden), ReLU(), Linear(hidden, hidden))
+        self.cc_node_encoder = Sequential(Linear(2, hidden), ReLU(), Linear(hidden, hidden))
         self.vc_node_encoder = Sequential(Linear(5, hidden), ReLU(), Linear(hidden, hidden))
         self.cv_node_encoder = Sequential(Linear(5, hidden), ReLU(), Linear(hidden, hidden))
 
@@ -241,7 +241,6 @@ class GraphDataset(InMemoryDataset):
         print("Preprocessing.")
 
         data_list = []
-        num_graphs = len(os.listdir(data_path))
 
         # Iterate over instance files and create data objects.
         for num, filename in enumerate(os.listdir(data_path)):
@@ -279,14 +278,12 @@ class GraphDataset(InMemoryDataset):
 
             y = []
 
-            c = 0
             for i, (u, v) in enumerate(graph.edges):
                 if graph.nodes[u]['bipartite'] == 0:
                     graph_new.add_node((u, v), type="VC", first=u, second=v, num=num_vc, feauture = [graph.nodes[u]['objcoeff'], graph.degree[u], graph.nodes[v]['rhs'],  graph.degree[v], graph.edges[(u,v)]["coeff"]])
                     features_vc.append([graph.nodes[u]['objcoeff'], graph.degree[u], graph.nodes[v]['rhs'],  graph.degree[v], graph.edges[(u,v)]["coeff"]])
-                    c += 1
+
                     graph_new.add_node((v, u), type="CV", first=v, second=u, num=num_cv, feauture = [graph.nodes[v]['rhs'],  graph.degree[v], graph.nodes[u]['objcoeff'], graph.degree[u], graph.edges[(u,v)]["coeff"]])
-                    c += 1
                     features_cv.append([graph.nodes[v]['rhs'],  graph.degree[v], graph.nodes[u]['objcoeff'], graph.degree[u], graph.edges[(u,v)]["coeff"]])
 
                     num_vc += 1
@@ -295,11 +292,9 @@ class GraphDataset(InMemoryDataset):
             for i, v in enumerate(graph.nodes):
                 if graph.nodes[v]['bipartite'] == 0:
                     graph_new.add_node((v, v), type="VV", first=v, second=v, num=num_vv,
-                                       feauture=[graph.nodes[v]['objcoeff'], graph.degree[v],
-                                                 graph.nodes[v]['objcoeff'], graph.degree[v]])
+                                       feauture=[graph.nodes[v]['objcoeff'], graph.degree[v]])
                     features_vv.append(
-                        [graph.nodes[v]['objcoeff'], graph.degree[v], graph.nodes[v]['objcoeff'], graph.degree[v]])
-                    c += 1
+                        [graph.nodes[v]['objcoeff'], graph.degree[v]])
                     num_vv += 1
 
                     if (graph.nodes[v]['bias'] < 0.005):
@@ -311,7 +306,6 @@ class GraphDataset(InMemoryDataset):
                                        feauture=[graph.nodes[v]['rhs'], graph.degree[v], graph.nodes[v]['rhs'],
                                                  graph.degree[v]])
                     features_cc.append([graph.nodes[v]['rhs'], graph.degree[v], graph.nodes[v]['rhs'], graph.degree[v]])
-                    c += 1
                     num_cc += 1
 
             for i, (v, data) in enumerate(graph_new.nodes(data=True)):
