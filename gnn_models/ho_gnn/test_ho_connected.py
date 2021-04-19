@@ -49,7 +49,7 @@ class SimpleNet(torch.nn.Module):
         super(SimpleNet, self).__init__()
 
         # Embed initial node features.
-        self.node_encoder = Sequential(Linear(8, hidden), ReLU(), Linear(hidden, hidden))
+        self.node_encoder = Sequential(Linear(7, hidden), ReLU(), Linear(hidden, hidden))
 
         self.conv_1_1 = SimpleBipartiteLayer(hidden, aggr=aggr)
         self.conv_2_1 = SimpleBipartiteLayer(hidden, aggr=aggr)
@@ -77,8 +77,6 @@ class SimpleNet(torch.nn.Module):
         # Get data of batch.
         node_features_0 = data.node_features
 
-        print(node_features_0.size())
-        exit()
         edge_index_1 = data.edge_index_1
         edge_index_2 = data.edge_index_2
         indices = data.indices
