@@ -30,10 +30,10 @@ class SimpleBipartiteLayer(MessagePassing):
         self.eps = torch.nn.Parameter(torch.Tensor([0]))
         self.initial_eps = 0
 
-    def forward(self, source, target, edge_index, size):
-        tmp = self.propagate(edge_index, x=source, size=size)
+    def forward(self, source, edge_index):
+        tmp = self.propagate(edge_index, x=source)
 
-        out = self.mlp((1 + self.eps) * target + tmp)
+        out = self.mlp((1 + self.eps) * source + tmp)
 
         return out
 
@@ -44,169 +44,62 @@ class SimpleBipartiteLayer(MessagePassing):
         return aggr_out
 
 
-# class SimpleBipartiteLayer(MessagePassing):
-#     def __init__(self, dim, aggr):
-#         super(SimpleBipartiteLayer, self).__init__(aggr=aggr, flow="source_to_target")
-#
-#         self.nn = Sequential(Linear(2*dim, dim), ReLU(), Linear(dim, dim), ReLU(),
-#                              BN(dim))
-#
-#     def forward(self, source, target, edge_index, size):
-#         out = self.propagate(edge_index, x=source, t=target, size=size)
-#
-#         return out
-#
-#     def message(self, x_j, t_i):
-#         return self.nn(torch.cat([t_i, x_j], dim=-1))
-#
-#     def __repr__(self):
-#         return '{}(nn={})'.format(self.__class__.__name__, self.nn)
-
-
 class SimpleNet(torch.nn.Module):
     def __init__(self, hidden, aggr, ):
         super(SimpleNet, self).__init__()
 
         # Embed initial node features.
-        self.vv_node_encoder = Sequential(Linear(2, hidden), ReLU(), Linear(hidden, hidden))
-        self.cc_node_encoder = Sequential(Linear(2, hidden), ReLU(), Linear(hidden, hidden))
-        self.vc_node_encoder = Sequential(Linear(5, hidden), ReLU(), Linear(hidden, hidden))
-        self.cv_node_encoder = Sequential(Linear(5, hidden), ReLU(), Linear(hidden, hidden))
+        self.node_encoder = Sequential(Linear(8, hidden), ReLU(), Linear(hidden, hidden))
 
-        self.vv_cv_1_1 = SimpleBipartiteLayer(hidden, aggr=aggr)
-        self.cc_vc_1_1 = SimpleBipartiteLayer(hidden, aggr=aggr)
-        self.vc_cc_1_1 = SimpleBipartiteLayer(hidden, aggr=aggr)
-        self.cv_vv_1_1 = SimpleBipartiteLayer(hidden, aggr=aggr)
+        self.conv_1_1 = SimpleBipartiteLayer(hidden, aggr=aggr)
+        self.conv_2_1 = SimpleBipartiteLayer(hidden, aggr=aggr)
+        self.joint_1 = Sequential(Linear(2 * hidden, hidden), ReLU(), Linear(hidden, hidden))
 
-        self.vv_vc_2_1 = SimpleBipartiteLayer(hidden, aggr=aggr)
-        self.cc_cv_2_1 = SimpleBipartiteLayer(hidden, aggr=aggr)
-        self.vc_vv_2_1 = SimpleBipartiteLayer(hidden, aggr=aggr)
-        self.cv_cc_2_1 = SimpleBipartiteLayer(hidden, aggr=aggr)
+        self.conv_1_2 = SimpleBipartiteLayer(hidden, aggr=aggr)
+        self.conv_2_2 = SimpleBipartiteLayer(hidden, aggr=aggr)
+        self.joint_2 = Sequential(Linear(2 * hidden, hidden), ReLU(), Linear(hidden, hidden))
 
-        self.vv_joint_1 = Sequential(Linear(2 * hidden, hidden), ReLU(), Linear(hidden, hidden))
-        self.cc_joint_1 = Sequential(Linear(2 * hidden, hidden), ReLU(), Linear(hidden, hidden))
-        self.vc_joint_1 = Sequential(Linear(2 * hidden, hidden), ReLU(), Linear(hidden, hidden))
-        self.cv_joint_1 = Sequential(Linear(2 * hidden, hidden), ReLU(), Linear(hidden, hidden))
+        self.conv_1_3 = SimpleBipartiteLayer(hidden, aggr=aggr)
+        self.conv_2_3 = SimpleBipartiteLayer(hidden, aggr=aggr)
+        self.joint_3 = Sequential(Linear(2 * hidden, hidden), ReLU(), Linear(hidden, hidden))
 
-        self.vv_cv_1_2 = SimpleBipartiteLayer(hidden, aggr=aggr)
-        self.cc_vc_1_2 = SimpleBipartiteLayer(hidden, aggr=aggr)
-        self.vc_cc_1_2 = SimpleBipartiteLayer(hidden, aggr=aggr)
-        self.cv_vv_1_2 = SimpleBipartiteLayer(hidden, aggr=aggr)
-
-        self.vv_vc_2_2 = SimpleBipartiteLayer(hidden, aggr=aggr)
-        self.cc_cv_2_2 = SimpleBipartiteLayer(hidden, aggr=aggr)
-        self.vc_vv_2_2 = SimpleBipartiteLayer(hidden, aggr=aggr)
-        self.cv_cc_2_2 = SimpleBipartiteLayer(hidden, aggr=aggr)
-
-        self.vv_joint_2 = Sequential(Linear(2 * hidden, hidden), ReLU(), Linear(hidden, hidden))
-        self.cc_joint_2 = Sequential(Linear(2 * hidden, hidden), ReLU(), Linear(hidden, hidden))
-        self.vc_joint_2 = Sequential(Linear(2 * hidden, hidden), ReLU(), Linear(hidden, hidden))
-        self.cv_joint_2 = Sequential(Linear(2 * hidden, hidden), ReLU(), Linear(hidden, hidden))
-
-        self.vv_cv_1_3 = SimpleBipartiteLayer(hidden, aggr=aggr)
-        self.cc_vc_1_3 = SimpleBipartiteLayer(hidden, aggr=aggr)
-        self.vc_cc_1_3 = SimpleBipartiteLayer(hidden, aggr=aggr)
-        self.cv_vv_1_3 = SimpleBipartiteLayer(hidden, aggr=aggr)
-
-        self.vv_vc_2_3 = SimpleBipartiteLayer(hidden, aggr=aggr)
-        self.cc_cv_2_3 = SimpleBipartiteLayer(hidden, aggr=aggr)
-        self.vc_vv_2_3 = SimpleBipartiteLayer(hidden, aggr=aggr)
-        self.cv_cc_2_3 = SimpleBipartiteLayer(hidden, aggr=aggr)
-
-        self.vv_joint_3 = Sequential(Linear(2 * hidden, hidden), ReLU(), Linear(hidden, hidden))
-        self.cc_joint_3 = Sequential(Linear(2 * hidden, hidden), ReLU(), Linear(hidden, hidden))
-        self.vc_joint_3 = Sequential(Linear(2 * hidden, hidden), ReLU(), Linear(hidden, hidden))
-        self.cv_joint_3 = Sequential(Linear(2 * hidden, hidden), ReLU(), Linear(hidden, hidden))
+        self.conv_1_4 = SimpleBipartiteLayer(hidden, aggr=aggr)
+        self.conv_2_4 = SimpleBipartiteLayer(hidden, aggr=aggr)
+        self.joint_4 = Sequential(Linear(2 * hidden, hidden), ReLU(), Linear(hidden, hidden))
 
         # MLP used for classification.
-        self.lin1 = Linear(4 * hidden, hidden)
+        self.lin1 = Linear(5 * hidden, hidden)
         self.lin2 = Linear(hidden, hidden)
         self.lin3 = Linear(hidden, hidden)
         self.lin4 = Linear(hidden, 2)
 
     def forward(self, data):
         # Get data of batch.
-        vv_node_features = data.vv_node_features
-        cc_node_features = data.cc_node_features
-        vc_node_features = data.vc_node_features
-        cv_node_features = data.cv_node_features
+        node_features_0 = data.node_features
+        edge_index_1 = data.edge_index_1
+        edge_index_2 = data.edge_index_2
 
-        edge_index_vv_cv_1 = data.edge_index_vv_cv_1
-        edge_index_vv_vc_2 = data.edge_index_vv_vc_2
-
-        edge_index_cc_vc_1 = data.edge_index_cc_vc_1
-        edge_index_cc_cv_2 = data.edge_index_cc_cv_2
-
-        edge_index_vc_cc_1 = data.edge_index_vc_cc_1
-        edge_index_vc_vv_2 = data.edge_index_vc_vv_2
-
-        edge_index_cv_vv_1 = data.edge_index_cv_vv_1
-        edge_index_cv_cc_2 = data.edge_index_cv_cc_2
-
-        num_nodes_vv = data.num_nodes_vv
-        num_nodes_cc = data.num_nodes_cc
-        num_nodes_vc = data.num_nodes_vc
-        num_nodes_cv = data.num_nodes_cv
 
         # Compute initial node embeddings.
-        vv_0 = self.vv_node_encoder(vv_node_features)
-        cc_0 = self.cc_node_encoder(cc_node_features)
-        vc_0 = self.vc_node_encoder(vc_node_features)
-        cv_0 = self.cv_node_encoder(cv_node_features)
+        node_features_0 = self.node_encoder(node_features_0)
 
-        cv_1_1 = self.vv_cv_1_1(vv_0, cv_0, edge_index_vv_cv_1, [num_nodes_vv.sum(), num_nodes_cv.sum()])
-        # cc_1_1 = self.vc_cc_1_1(vc_0, cc_0, edge_index_vc_cc_1, [num_nodes_vc.sum(), num_nodes_cc.sum()])
-        # vc_1_1 = self.cc_vc_1_1(cc_0, vc_0, edge_index_cc_vc_1, [num_nodes_cc.sum(), num_nodes_vc.sum()])
-        vv_1_1 = self.cv_vv_1_1(cv_0, vv_0, edge_index_cv_vv_1, [num_nodes_cv.sum(), num_nodes_vv.sum()])
+        x_1 = self.conv_1_1(node_features_0, edge_index_1)
+        x_2 = self.conv_2_1(node_features_0, edge_index_2)
+        node_features_1 = self.joint_1(torch.cat([x_1, x_2] , dim=-1))
 
-        # vc_2_1 = self.vv_vc_2_1(vv_0, vc_0, edge_index_vv_vc_2, [num_nodes_vv.sum(), num_nodes_vc.sum()])
-        # vv_2_1 = self.vc_vv_2_1(vc_0, vv_0, edge_index_vc_vv_2, [num_nodes_vc.sum(), num_nodes_vv.sum()])
-        # cv_2_1 = self.cc_cv_2_1(cc_0, cv_0, edge_index_cc_cv_2, [num_nodes_cc.sum(), num_nodes_cv.sum()])
-        # cc_2_1 = self.cv_cc_2_1(cv_0, cc_0, edge_index_cv_cc_2, [num_nodes_cv.sum(), num_nodes_cc.sum()])
+        x_1 = self.conv_1_2(node_features_1, edge_index_1)
+        x_2 = self.conv_2_2(node_features_1, edge_index_2)
+        node_features_2 = self.joint_1(torch.cat([x_1, x_2] , dim=-1))
 
-        # vv_1 = self.vv_joint_1(torch.cat([vv_1_1, vv_2_1], dim=-1))
-        # cc_1 = self.vv_joint_1(torch.cat([cc_1_1, cc_2_1], dim=-1))
-        # vc_1 = self.vv_joint_1(torch.cat([vc_1_1, vc_2_1], dim=-1))
-        # cv_1 = self.vv_joint_1(torch.cat([cv_1_1, cv_2_1], dim=-1))
-        vv_1 = vv_1_1
-        cv_1 = cv_1_1
+        x_1 = self.conv_1_3(node_features_2, edge_index_1)
+        x_2 = self.conv_2_3(node_features_2, edge_index_2)
+        node_features_3 = self.joint_1(torch.cat([x_1, x_2] , dim=-1))
 
-        cv_1_2 = self.vv_cv_1_2(vv_1, cv_1, edge_index_vv_cv_1, [num_nodes_vv.sum(), num_nodes_cv.sum()])
-        # cc_1_2 = self.vc_cc_1_2(vc_1, cc_1, edge_index_vc_cc_1, [num_nodes_vc.sum(), num_nodes_cc.sum()])
-        # vc_1_2 = self.cc_vc_1_2(cc_1, vc_1, edge_index_cc_vc_1, [num_nodes_cc.sum(), num_nodes_vc.sum()])
-        vv_1_2 = self.cv_vv_1_2(cv_1, vv_1, edge_index_cv_vv_1, [num_nodes_cv.sum(), num_nodes_vv.sum()])
+        x_1 = self.conv_1_4(node_features_3, edge_index_1)
+        x_2 = self.conv_2_4(node_features_3, edge_index_2)
+        node_features_4 = self.joint_1(torch.cat([x_1, x_2] , dim=-1))
 
-        # vc_2_2 = self.vv_vc_2_2(vv_1, vc_1, edge_index_vv_vc_2, [num_nodes_vv.sum(), num_nodes_vc.sum()])
-        # vv_2_2 = self.vc_vv_2_2(vc_1, vv_1, edge_index_vc_vv_2, [num_nodes_vc.sum(), num_nodes_vv.sum()])
-        # cv_2_2 = self.cc_cv_2_2(cc_1, cv_1, edge_index_cc_cv_2, [num_nodes_cc.sum(), num_nodes_cv.sum()])
-        # cc_2_2 = self.cv_cc_2_2(cv_1, cc_1, edge_index_cv_cc_2, [num_nodes_cv.sum(), num_nodes_cc.sum()])
-
-        # vv_2 = self.vv_joint_2(torch.cat([vv_1_2, vv_2_2], dim=-1))
-        # cc_2 = self.vv_joint_2(torch.cat([cc_1_2, cc_2_2], dim=-1))
-        # vc_2 = self.vv_joint_2(torch.cat([vc_1_2, vc_2_2], dim=-1))
-        # cv_2 = self.vv_joint_2(torch.cat([cv_1_2, cv_2_2], dim=-1))
-        vv_2 = vv_1_2
-        cv_2 = cv_1_2
-
-        cv_1_3 = self.vv_cv_1_3(vv_2, cv_2, edge_index_vv_cv_1, [num_nodes_vv.sum(), num_nodes_cv.sum()])
-        # cc_1_3 = self.vc_cc_1_3(vc_2, cc_2, edge_index_vc_cc_1, [num_nodes_vc.sum(), num_nodes_cc.sum()])
-        # vc_1_3 = self.cc_vc_1_3(cc_2, vc_2, edge_index_cc_vc_1, [num_nodes_cc.sum(), num_nodes_vc.sum()])
-        vv_1_3 = self.cv_vv_1_3(cv_2, vv_2, edge_index_cv_vv_1, [num_nodes_cv.sum(), num_nodes_vv.sum()])
-
-        # vc_2_3 = self.vv_vc_2_3(vv_2, vc_2, edge_index_vv_vc_2, [num_nodes_vv.sum(), num_nodes_vc.sum()])
-        # vv_2_3 = self.vc_vv_2_3(vc_2, vv_2, edge_index_vc_vv_2, [num_nodes_vc.sum(), num_nodes_vv.sum()])
-        # cv_2_3 = self.cc_cv_2_3(cc_2, cv_2, edge_index_cc_cv_2, [num_nodes_cc.sum(), num_nodes_cv.sum()])
-        # cc_2_3 = self.cv_cc_2_3(cv_2, cc_2, edge_index_cv_cc_2, [num_nodes_cv.sum(), num_nodes_cc.sum()])
-
-        # vv_3 = self.vv_joint_1(torch.cat([vv_1_3, vv_2_3], dim=-1))
-        # cc_3 = self.vv_joint_1(torch.cat([cc_1_3, cc_2_3], dim=-1))
-        # vc_3 = self.vv_joint_1(torch.cat([vc_1_3, vc_2_3], dim=-1))
-        # cv_3 = self.vv_joint_1(torch.cat([cv_1_3, cv_2_3], dim=-1))
-        vv_3 = vv_1_3
-        cv_3 = cv_1_3
-
-        # TODO
-        x = torch.cat([vv_0, vv_1, vv_2, vv_3], dim=-1)
+        x = torch.cat([node_features_0, node_features_1, node_features_2, node_features_3, node_features_4], dim=-1)
 
         x = F.relu(self.lin1(x))
         x = F.relu(self.lin2(x))
