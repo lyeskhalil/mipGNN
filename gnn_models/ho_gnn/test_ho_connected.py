@@ -167,7 +167,10 @@ class GraphDataset(InMemoryDataset):
                         if graph.nodes[u]['bipartite'] == 0 and graph.nodes[v]['bipartite'] == 0:
                             graph_new.add_node((u, v), type="VV", first = u, second = v, num=num)
 
-                            features.append([graph.nodes[u]['objcoeff'], 0, graph.degree[u], graph.nodes[v]['objcoeff'], 0, graph.degree[v], graph.edges[(u, v)]["coeff"]])
+                            if i == j:
+                                features.append([graph.nodes[u]['objcoeff'], 0, graph.degree[u], graph.nodes[v]['objcoeff'], 0, graph.degree[v], 0])
+                            else:
+                                features.append([graph.nodes[u]['objcoeff'], 0, graph.degree[u], graph.nodes[v]['objcoeff'], 0, graph.degree[v], graph.edges[(u, v)]["coeff"]])
 
                             if i == j:
                                 if (graph.nodes[v]['bias'] < 0.005):
@@ -193,11 +196,11 @@ class GraphDataset(InMemoryDataset):
                 num = data["num"]
 
                 for n in graph.neighbors(first):
-                    if graph.has_edge(n, second):
+                    if graph_new.has_node((n, second)) or graph.has_edge(n, second):
                         matrices_1.append([num, graph_new.nodes[(n, second)]["num"]])
 
                 for n in graph.neighbors(second):
-                    if graph.has_edge(first, n):
+                    if graph_new.has_node((first, n)) or graph.has_edge(first, n):
                         matrices_2.append([num, graph_new.nodes[(first, n)]["num"]])
 
             matrices_1 = torch.tensor(matrices_1).t().contiguous()
