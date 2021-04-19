@@ -247,7 +247,7 @@ class GraphDataset(InMemoryDataset):
         data_list = []
 
         # Iterate over instance files and create data objects.
-        for num, filename in enumerate(os.listdir(data_path)):
+        for num, filename in enumerate(os.listdir(data_path)[0:100]):
             print(num)
             # Get graph.
             graph = nx.read_gpickle(data_path + filename)
@@ -258,33 +258,80 @@ class GraphDataset(InMemoryDataset):
 
             graph_new = nx.Graph()
 
-            matrices_vv_cv_1 = []
-            matrices_vv_vc_2 = []
-
-            matrices_cc_vc_1 = []
-            matrices_cc_cv_2 = []
-
-            matrices_vc_cc_1 = []
-            matrices_vc_vv_2 = []
-
-            matrices_cv_vv_1 = []
-            matrices_cv_cc_2 = []
-
-            features_vv = []
-            features_cc = []
-            features_vc = []
-            features_cv = []
-
-            num_vv = 0
-            num_cc = 0
-            num_vc = 0
-            num_cv = 0
-
+            matrices_1 = []
+            matrices_2 = []
+            features = []
+            indices = []
             y = []
+            num = 0
 
             for i, u in enumerate(graph.nodes):
                 for j, v in enumerate(graph.nodes):
-                    graph_new.add_node((u,v))
+                    if graph.nodes[u]['bipartite'] == 0 and graph.nodes[v]['bipartite'] == 0:
+                        graph_new.add_node((u, v), type="VV", first = u, second = v)
+
+                        if graph.has_edge(u, v):
+                            features.append([graph.nodes[u]['objcoeff'], 0, graph.degree[u], graph.nodes[v]['objcoeff'], 0, graph.degree[v], graph.edges[(u, v)]["coeff"]])
+                        else:
+                            features.append([graph.nodes[u]['objcoeff'], 0, graph.degree[u], graph.nodes[v]['objcoeff'], 0, graph.degree[v], 0])
+
+                        if u == v:
+                            if (graph.nodes[v]['bias'] < 0.005):
+                                y.append(0)
+                            else:
+                                y.append(1)
+
+                            indices.append(num)
+                    elif graph.nodes[u]['bipartite'] == 0 and graph.nodes[v]['bipartite'] == 1:
+                        graph_new.add_node((u, v), type="VC", first = u, second = v)
+
+                        if graph.has_edge(u, v):
+                            features.append([graph.nodes[u]['objcoeff'], 0, graph.degree[u], 0, graph.nodes[v]['rhs'], graph.degree[v], 0])
+                        else:
+                            features.append([graph.nodes[u]['objcoeff'], 0, graph.degree[u], 0, graph.nodes[v]['rhs'], graph.degree[v], 0])
+                    elif graph.nodes[u]['bipartite'] == 1 and graph.nodes[v]['bipartite'] == 0:
+                        graph_new.add_node((u, v), type="CV", first = u, second = v)
+
+                        if graph.has_edge(u, v):
+                            features.append([0, graph.nodes[u]['rhs'], graph.degree[u], graph.nodes[v]['objcoeff'], 0, graph.degree[v], 0])
+                        else:
+                            features.append([0, graph.nodes[u]['rhs'], graph.degree[u], graph.nodes[v]['objcoeff'], 0, graph.degree[v], 0])
+                    elif graph.nodes[u]['bipartite'] == 1 and graph.nodes[v]['bipartite'] == 1:
+                        graph_new.add_node((u, v), type="CC", first = u, second = v)
+
+                        if graph.has_edge(u, v):
+                            features.append([0, graph.nodes[u]['rhs'], graph.degree[u], 0, graph.nodes[v]['rhs'], graph.degree[v], 0])
+                        else:
+                            features.append([0, graph.nodes[u]['rhs'], graph.degree[u], 0, graph.nodes[v]['rhs'], graph.degree[v], 0])
+                    num += 1
+
+            for _, data in graph_new.nodes(data=True):
+                first = data["first"]
+                second = data["second"]
+                num = data["num"]
+
+                for n in graph.neighbors(first):
+                    matrices_1.append([num, graph_new.nodes[(n, second)]["num"]])
+
+                for n in graph.neighbors(second):
+                    matrices_2.append([num, graph_new.nodes[(first, n)]["num"]])
+
+            matrices_1 = torch.tensor(matrices_1).t().contiguous()
+            matrices_2 = torch.tensor(matrices_2).t().contiguous()
+
+            data = Data()
+            data.node_features = torch.from_numpy(np.array(features)).to(torch.float)
+
+            data.y = torch.from_numpy(np.array(y)).to(torch.long)
+
+            data.edge_index_1 = matrices_1.to(torch.long)
+            data.edge_index_2 = matrices_2.to(torch.long)
+
+            data.indices = torch.from_numpy(np.array(indices)).to(torch.long)
+
+            data.num = num
+
+            data_list.append(data)
 
 
 
@@ -292,25 +339,14 @@ class GraphDataset(InMemoryDataset):
         torch.save((data, slices), self.processed_paths[0])
 
 
-# Preprocess indices of bipartite graphs to make batching work.
 class MyData(Data):
     def __inc__(self, key, value):
-        if key in ['edge_index_vv_cv_1']:
-            return torch.tensor([self.num_nodes_vv, self.num_nodes_cv]).view(2, 1)
-        if key in ['edge_index_vv_cv_2']:
-            return torch.tensor([self.num_nodes_vv, self.num_nodes_cv]).view(2, 1)
-        if key in ['edge_index_cc_vc_1']:
-            return torch.tensor([self.num_nodes_cc, self.num_nodes_vc]).view(2, 1)
-        if key in ['edge_index_cc_cv_2']:
-            return torch.tensor([self.num_nodes_cc, self.num_nodes_cv]).view(2, 1)
-        if key in ['edge_index_vc_cc_1']:
-            return torch.tensor([self.num_nodes_vc, self.num_nodes_cc]).view(2, 1)
-        if key in ['edge_index_vc_vv_2']:
-            return torch.tensor([self.num_nodes_vc, self.num_nodes_vv]).view(2, 1)
-        if key in ['edge_index_cv_vv_1']:
-            return torch.tensor([self.num_nodes_cv, self.num_nodes_vv]).view(2, 1)
-        if key in ['edge_index_cv_cc_2']:
-            return torch.tensor([self.num_nodes_cv, self.num_nodes_cc]).view(2, 1)
+        if key in ['edge_index_1']:
+            return self.num
+        if key in ['edge_index_2']:
+            return self.num
+        if key in ['indices']:
+            return self.num
         else:
             return 0
 
@@ -327,6 +363,9 @@ pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
 dataset = GraphDataset(pathr, 0.005, transform=MyTransform())  # .shuffle()
 print("###")
 print(dataset.data.y.sum() / dataset.data.y.size(-1))
+
+
+exit()
 
 l = len(dataset)
 train_index, rest = train_test_split(list(range(0, l)), test_size=0.2)

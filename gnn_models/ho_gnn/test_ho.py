@@ -287,7 +287,8 @@ class GraphDataset(InMemoryDataset):
                     graph_new.add_node((u, v), type="VC", first=u, second=v, num=num_vc)
                     features_vc.append(
                         [graph.nodes[u]['objcoeff'], graph.degree[u], graph.nodes[v]['rhs'], graph.degree[v],
-                         graph.edges[(u, v)]["coeff"]])
+                         graph.edges[(u, v)]["coeff"]]
+                    )
 
                     graph_new.add_node((v, u), type="CV", first=v, second=u, num=num_cv)
                     features_cv.append(
