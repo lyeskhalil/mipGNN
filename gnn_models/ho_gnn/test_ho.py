@@ -118,7 +118,7 @@ class SimpleNet(torch.nn.Module):
         self.cv_joint_3 = Sequential(Linear(2 * hidden, hidden), ReLU(), Linear(hidden, hidden))
 
         # MLP used for classification.
-        self.lin1 = Linear(1 * hidden, hidden)
+        self.lin1 = Linear(2 * hidden, hidden)
         self.lin2 = Linear(hidden, hidden)
         self.lin3 = Linear(hidden, hidden)
         self.lin4 = Linear(hidden, 2)
@@ -202,7 +202,7 @@ class SimpleNet(torch.nn.Module):
         cv_3 = self.vv_joint_1(torch.cat([cv_1_3, cv_2_3], dim=-1))
 
         # TODO
-        x = torch.cat([vv_0], dim=-1)
+        x = torch.cat([vv_0, vv_1], dim=-1)
 
         x = F.relu(self.lin1(x))
         x = F.relu(self.lin2(x))
