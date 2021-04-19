@@ -169,7 +169,8 @@ class GraphDataset(InMemoryDataset):
 
                             features.append([graph.nodes[u]['objcoeff'], 0, graph.degree[u], graph.nodes[v]['objcoeff'], 0, graph.degree[v], graph.edges[(u, v)]["coeff"]])
 
-                            if u == v:
+                            if i == j:
+                                print(u,v)
                                 if (graph.nodes[v]['bias'] < 0.005):
                                     y.append(0)
                                 else:
