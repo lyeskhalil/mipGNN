@@ -76,6 +76,9 @@ class SimpleNet(torch.nn.Module):
     def forward(self, data):
         # Get data of batch.
         node_features_0 = data.node_features
+
+        print(node_features_0.size())
+        exit()
         edge_index_1 = data.edge_index_1
         edge_index_2 = data.edge_index_2
         indices = data.indices
@@ -98,8 +101,6 @@ class SimpleNet(torch.nn.Module):
         x_1 = self.conv_1_4(node_features_3, edge_index_1)
         x_2 = self.conv_2_4(node_features_3, edge_index_2)
         node_features_4 = self.joint_1(torch.cat([x_1, x_2] , dim=-1))
-
-
 
         x = torch.cat([node_features_0, node_features_1, node_features_2, node_features_3, node_features_4], dim=-1)[indices]
 
@@ -177,19 +178,13 @@ class GraphDataset(InMemoryDataset):
                                 indices.append(num)
                         elif graph.nodes[u]['bipartite'] == 0 and graph.nodes[v]['bipartite'] == 1:
                             graph_new.add_node((u, v), type="VC", first = u, second = v, num=num)
-
                             features.append([graph.nodes[u]['objcoeff'], 0, graph.degree[u], 0, graph.nodes[v]['rhs'], graph.degree[v], graph.edges[(u, v)]["coeff"]])
-
                         elif graph.nodes[u]['bipartite'] == 1 and graph.nodes[v]['bipartite'] == 0:
                             graph_new.add_node((u, v), type="CV", first = u, second = v, num=num)
-
                             features.append([0, graph.nodes[u]['rhs'], graph.degree[u], graph.nodes[v]['objcoeff'], 0, graph.degree[v], graph.edges[(u, v)]["coeff"]])
-
                         elif graph.nodes[u]['bipartite'] == 1 and graph.nodes[v]['bipartite'] == 1:
                             graph_new.add_node((u, v), type="CC", first = u, second = v, num=num)
-
                             features.append([0, graph.nodes[u]['rhs'], graph.degree[u], 0, graph.nodes[v]['rhs'], graph.degree[v], graph.edges[(u, v)]["coeff"]])
-
                         num += 1
 
             for _, data in graph_new.nodes(data=True):
