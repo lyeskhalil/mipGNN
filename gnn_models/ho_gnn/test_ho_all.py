@@ -284,7 +284,7 @@ class GraphDataset(InMemoryDataset):
 
             for i, u in enumerate(graph.nodes):
                 for j, v in enumerate(graph.nodes):
-                    graph_new.add_node()
+                    graph_new.add_node((u,v))
 
 
 
