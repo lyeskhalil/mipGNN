@@ -273,10 +273,10 @@ val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = SimpleNet(hidden=64, aggr="mean").to(device)
+model = SimpleNet(hidden=128, aggr="mean").to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
-                                                       factor=0.8, patience=10,
+                                                       factor=0.8, patience=15,
                                                        min_lr=0.0000001)
 
 
@@ -315,7 +315,7 @@ def test(loader):
 best_val = 0.0
 test_acc = 0.0
 
-for epoch in range(1, 50):
+for epoch in range(1, 500):
     train_loss = train(epoch)
     train_acc = test(train_loader)
 
