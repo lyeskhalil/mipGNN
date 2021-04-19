@@ -80,6 +80,7 @@ class SimpleNet(torch.nn.Module):
         edge_index_1 = data.edge_index_1
         edge_index_2 = data.edge_index_2
         indices = data.indices
+        batch = data.batch
 
         # Compute initial node embeddings.
         node_features_0 = self.node_encoder(node_features_0)
@@ -101,6 +102,11 @@ class SimpleNet(torch.nn.Module):
         node_features_4 = self.joint_1(torch.cat([x_1, x_2] , dim=-1))
 
         x = torch.cat([node_features_0, node_features_1, node_features_2, node_features_3, node_features_4], dim=-1)[indices]
+
+        x = global_add_pool(x, batch)
+
+        print(x.size(), data.y.size())
+        exit()
 
         x = F.relu(self.lin1(x))
         x = F.relu(self.lin2(x))
@@ -159,6 +165,11 @@ class GraphDataset(InMemoryDataset):
             y = []
             num = 0
 
+            node_id = {}
+            ids = 0
+
+            batch = []
+
             for i, u in enumerate(graph.nodes):
                 for j, v in enumerate(graph.nodes):
                     if graph.has_edge(u,v) or (i == j):
@@ -170,22 +181,34 @@ class GraphDataset(InMemoryDataset):
                             else:
                                 features.append([graph.nodes[u]['objcoeff'], 0, graph.degree[u], graph.nodes[v]['objcoeff'], 0, graph.degree[v], graph.edges[(u, v)]["coeff"]])
 
-
-                            if (graph.nodes[u]['bias'] < 0.005):
-                                y.append(0)
+                            if v in node_id:
+                                batch.append(node_id[v])
                             else:
-                                y.append(1)
+                                node_id[v] = ids
+                                batch.append(ids)
+                                ids += 1
+
+                                if (graph.nodes[u]['bias'] < 0.005):
+                                    y.append(0)
+                                else:
+                                    y.append(1)
 
                             indices.append(num)
                         elif graph.nodes[u]['bipartite'] == 0 and graph.nodes[v]['bipartite'] == 1:
                             graph_new.add_node((u, v), type="VC", first = u, second = v, num=num)
                             features.append([graph.nodes[u]['objcoeff'], 0, graph.degree[u], 0, graph.nodes[v]['rhs'], graph.degree[v], graph.edges[(u, v)]["coeff"]])
 
-
-                            if (graph.nodes[u]['bias'] < 0.005):
-                                y.append(0)
+                            if v in node_id:
+                                batch.append(node_id[v])
                             else:
-                                y.append(1)
+                                node_id[v] = ids
+                                batch.append(ids)
+                                ids += 1
+
+                                if (graph.nodes[u]['bias'] < 0.005):
+                                    y.append(0)
+                                else:
+                                    y.append(1)
 
                             indices.append(num)
                         elif graph.nodes[u]['bipartite'] == 1 and graph.nodes[v]['bipartite'] == 0:
@@ -243,6 +266,8 @@ class MyData(Data):
         if key in ['edge_index_2']:
             return self.num
         if key in ['indices']:
+            return self.num
+        if key in ['batch']:
             return self.num
         else:
             return 0
