@@ -198,11 +198,11 @@ class GraphDataset(InMemoryDataset):
                 num = data["num"]
 
                 for n in graph.neighbors(first):
-                    if graph.has_edge(first, n):
+                    if graph.has_edge(n, second):
                         matrices_1.append([num, graph_new.nodes[(n, second)]["num"]])
 
                 for n in graph.neighbors(second):
-                    if graph.has_edge(second, n):
+                    if graph.has_edge(first, n):
                         matrices_2.append([num, graph_new.nodes[(first, n)]["num"]])
 
             matrices_1 = torch.tensor(matrices_1).t().contiguous()
