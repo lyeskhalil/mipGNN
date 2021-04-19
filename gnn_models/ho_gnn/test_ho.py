@@ -131,10 +131,6 @@ class SimpleNet(torch.nn.Module):
         vc_node_features = data.vc_node_features
         cv_node_features = data.cv_node_features
 
-        print(vv_node_features.size())
-        print(cc_node_features.size())
-        exit()
-
         edge_index_vv_cv_1 = data.edge_index_vv_cv_1
         edge_index_vv_vc_2 = data.edge_index_vv_vc_2
 
