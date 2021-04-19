@@ -187,7 +187,11 @@ class GraphDataset(InMemoryDataset):
                             features.append([0, graph.nodes[u]['rhs'], graph.degree[u], graph.nodes[v]['objcoeff'], 0, graph.degree[v], graph.edges[(u, v)]["coeff"]])
                         elif graph.nodes[u]['bipartite'] == 1 and graph.nodes[v]['bipartite'] == 1:
                             graph_new.add_node((u, v), type="CC", first = u, second = v, num=num)
-                            features.append([0, graph.nodes[u]['rhs'], graph.degree[u], 0, graph.nodes[v]['rhs'], graph.degree[v], graph.edges[(u, v)]["coeff"]])
+
+                            if i == j:
+                                features.append([0, graph.nodes[u]['rhs'], graph.degree[u], 0, graph.nodes[v]['rhs'], graph.degree[v], 0])
+                            else:
+                                features.append([0, graph.nodes[u]['rhs'], graph.degree[u], 0, graph.nodes[v]['rhs'], graph.degree[v], graph.edges[(u, v)]["coeff"]])
                         num += 1
 
             for _, data in graph_new.nodes(data=True):
