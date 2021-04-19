@@ -253,9 +253,9 @@ class MyTransform(object):
 pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
 dataset = GraphDataset(pathr, 0.005, transform=MyTransform())  # .shuffle()
 print("###")
-print(dataset.data.y.size(-1))
 
-#print(dataset.data.y.sum() / dataset.data.y.size(-1))
+
+print(dataset.data.y.sum() / dataset.data.y.size(-1))
 
 
 exit()
