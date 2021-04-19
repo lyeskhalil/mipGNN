@@ -78,7 +78,7 @@ class SimpleNet(torch.nn.Module):
         node_features_0 = data.node_features
         edge_index_1 = data.edge_index_1
         edge_index_2 = data.edge_index_2
-
+        indices = data.indices
 
         # Compute initial node embeddings.
         node_features_0 = self.node_encoder(node_features_0)
@@ -99,7 +99,9 @@ class SimpleNet(torch.nn.Module):
         x_2 = self.conv_2_4(node_features_3, edge_index_2)
         node_features_4 = self.joint_1(torch.cat([x_1, x_2] , dim=-1))
 
-        x = torch.cat([node_features_0, node_features_1, node_features_2, node_features_3, node_features_4], dim=-1)
+
+
+        x = torch.cat([node_features_0, node_features_1, node_features_2, node_features_3, node_features_4], dim=-1)[indices]
 
         x = F.relu(self.lin1(x))
         x = F.relu(self.lin2(x))
