@@ -286,10 +286,10 @@ class GraphDataset(InMemoryDataset):
 
             for i, (u, v) in enumerate(graph.edges):
                 if graph.nodes[u]['bipartite'] == 0:
-                    graph_new.add_node((u, v), type="VC", first=u, second=v, num=num_vc, feauture = [graph.nodes[u]['objcoeff'], graph.degree[u], graph.nodes[v]['rhs'],  graph.degree[v], graph.edges[(u,v)]["coeff"]])
+                    graph_new.add_node((u, v), type="VC", first=u, second=v, num=num_vc)
                     features_vc.append([graph.nodes[u]['objcoeff'], graph.degree[u], graph.nodes[v]['rhs'],  graph.degree[v], graph.edges[(u,v)]["coeff"]])
 
-                    graph_new.add_node((v, u), type="CV", first=v, second=u, num=num_cv, feauture = [graph.nodes[v]['rhs'],  graph.degree[v], graph.nodes[u]['objcoeff'], graph.degree[u], graph.edges[(u,v)]["coeff"]])
+                    graph_new.add_node((v, u), type="CV", first=v, second=u, num=num_cv)
                     features_cv.append([graph.nodes[v]['rhs'],  graph.degree[v], graph.nodes[u]['objcoeff'], graph.degree[u], graph.edges[(u,v)]["coeff"]])
 
                     num_vc += 1
@@ -310,7 +310,7 @@ class GraphDataset(InMemoryDataset):
                 elif graph.nodes[v]['bipartite'] == 1:
                     graph_new.add_node((v, v), type="CC", first=v, second=v, num=num_cc,
                                        feauture=[graph.nodes[v]['rhs'], graph.degree[v]])
-                    features_cc.append([graph.nodes[v]['rhs'], graph.degree[v], graph.nodes[v]['rhs'], graph.degree[v]])
+                    features_cc.append([graph.nodes[v]['rhs'], graph.degree[v]])
                     num_cc += 1
 
             for i, (v, data) in enumerate(graph_new.nodes(data=True)):
