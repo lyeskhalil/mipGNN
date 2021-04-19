@@ -163,14 +163,13 @@ class GraphDataset(InMemoryDataset):
 
             for i, u in enumerate(graph.nodes):
                 for j, v in enumerate(graph.nodes):
-                    if graph.has_edge(u,v):
+                    if graph.has_edge(u,v) or (i == j):
                         if graph.nodes[u]['bipartite'] == 0 and graph.nodes[v]['bipartite'] == 0:
                             graph_new.add_node((u, v), type="VV", first = u, second = v, num=num)
 
                             features.append([graph.nodes[u]['objcoeff'], 0, graph.degree[u], graph.nodes[v]['objcoeff'], 0, graph.degree[v], graph.edges[(u, v)]["coeff"]])
 
                             if i == j:
-                                print(u,v)
                                 if (graph.nodes[v]['bias'] < 0.005):
                                     y.append(0)
                                 else:
