@@ -170,16 +170,24 @@ class GraphDataset(InMemoryDataset):
                             else:
                                 features.append([graph.nodes[u]['objcoeff'], 0, graph.degree[u], graph.nodes[v]['objcoeff'], 0, graph.degree[v], graph.edges[(u, v)]["coeff"]])
 
-                            if i == j:
-                                if (graph.nodes[v]['bias'] < 0.005):
-                                    y.append(0)
-                                else:
-                                    y.append(1)
 
-                                indices.append(num)
+                            if (graph.nodes[v]['bias'] < 0.005):
+                                y.append(0)
+                            else:
+                                y.append(1)
+
+                            indices.append(num)
                         elif graph.nodes[u]['bipartite'] == 0 and graph.nodes[v]['bipartite'] == 1:
                             graph_new.add_node((u, v), type="VC", first = u, second = v, num=num)
                             features.append([graph.nodes[u]['objcoeff'], 0, graph.degree[u], 0, graph.nodes[v]['rhs'], graph.degree[v], graph.edges[(u, v)]["coeff"]])
+
+
+                            if (graph.nodes[v]['bias'] < 0.005):
+                                y.append(0)
+                            else:
+                                y.append(1)
+
+                            indices.append(num)
                         elif graph.nodes[u]['bipartite'] == 1 and graph.nodes[v]['bipartite'] == 0:
                             graph_new.add_node((u, v), type="CV", first = u, second = v, num=num)
                             features.append([0, graph.nodes[u]['rhs'], graph.degree[u], graph.nodes[v]['objcoeff'], 0, graph.degree[v], graph.edges[(u, v)]["coeff"]])
