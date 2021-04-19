@@ -181,21 +181,21 @@ class GraphDataset(InMemoryDataset):
                         graph_new.add_node((u, v), type="VC", first = u, second = v, num=num)
 
                         if graph.has_edge(u, v):
-                            features.append([graph.nodes[u]['objcoeff'], 0, graph.degree[u], 0, graph.nodes[v]['rhs'], graph.degree[v], 0])
+                            features.append([graph.nodes[u]['objcoeff'], 0, graph.degree[u], 0, graph.nodes[v]['rhs'], graph.degree[v], graph.edges[(u, v)]["coeff"]])
                         else:
                             features.append([graph.nodes[u]['objcoeff'], 0, graph.degree[u], 0, graph.nodes[v]['rhs'], graph.degree[v], 0])
                     elif graph.nodes[u]['bipartite'] == 1 and graph.nodes[v]['bipartite'] == 0:
                         graph_new.add_node((u, v), type="CV", first = u, second = v, num=num)
 
                         if graph.has_edge(u, v):
-                            features.append([0, graph.nodes[u]['rhs'], graph.degree[u], graph.nodes[v]['objcoeff'], 0, graph.degree[v], 0])
+                            features.append([0, graph.nodes[u]['rhs'], graph.degree[u], graph.nodes[v]['objcoeff'], 0, graph.degree[v], graph.edges[(u, v)]["coeff"]])
                         else:
                             features.append([0, graph.nodes[u]['rhs'], graph.degree[u], graph.nodes[v]['objcoeff'], 0, graph.degree[v], 0])
                     elif graph.nodes[u]['bipartite'] == 1 and graph.nodes[v]['bipartite'] == 1:
                         graph_new.add_node((u, v), type="CC", first = u, second = v, num=num)
 
                         if graph.has_edge(u, v):
-                            features.append([0, graph.nodes[u]['rhs'], graph.degree[u], 0, graph.nodes[v]['rhs'], graph.degree[v], 0])
+                            features.append([0, graph.nodes[u]['rhs'], graph.degree[u], 0, graph.nodes[v]['rhs'], graph.degree[v], graph.edges[(u, v)]["coeff"]])
                         else:
                             features.append([0, graph.nodes[u]['rhs'], graph.degree[u], 0, graph.nodes[v]['rhs'], graph.degree[v], 0])
                     num += 1
