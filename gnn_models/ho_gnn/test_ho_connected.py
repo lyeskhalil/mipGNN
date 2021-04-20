@@ -105,9 +105,6 @@ class SimpleNet(torch.nn.Module):
 
         x = global_add_pool(x, batcher)
 
-        print(x.size(), data.y.size())
-        exit()
-
         x = F.relu(self.lin1(x))
         x = F.relu(self.lin2(x))
         x = F.relu(self.lin3(x))
