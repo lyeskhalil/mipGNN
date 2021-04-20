@@ -19,7 +19,7 @@ import torch
 import torch.nn.functional as F
 from torch.nn import BatchNorm1d as BN
 from torch.nn import Sequential, Linear, ReLU
-from torch_geometric.nn import MessagePassing, global_add_pool
+from torch_geometric.nn import MessagePassing, global_add_pool, global_mean_pool
 
 
 class SimpleBipartiteLayer(MessagePassing):
@@ -132,7 +132,8 @@ class SimpleNet(torch.nn.Module):
         x = torch.cat([node_features_0, node_features_1, node_features_2, node_features_3, node_features_4, node_features_5], dim=-1)[indices]
 
         # TODO
-        x = global_add_pool(x, batcher)
+        #x = global_add_pool(x, batcher)
+        x = global_mean_pool(x, batcher)
 
         x = F.relu(self.lin1(x))
         x = F.relu(self.lin2(x))
@@ -196,9 +197,11 @@ class GraphDataset(InMemoryDataset):
 
             batch = []
 
+            # Iterate over all tuples.
             for i, u in enumerate(graph.nodes):
                 for j, v in enumerate(graph.nodes):
                     if graph.has_edge(u,v) or (i == j):
+                        # Both nodes are variable nodes.
                         if graph.nodes[u]['bipartite'] == 0 and graph.nodes[v]['bipartite'] == 0:
                             graph_new.add_node((u, v), type="VV", first = u, second = v, num=num)
 
