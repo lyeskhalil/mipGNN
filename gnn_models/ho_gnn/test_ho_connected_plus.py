@@ -205,7 +205,7 @@ class GraphDataset(InMemoryDataset):
                         if graph.nodes[u]['bipartite'] == 0 and graph.nodes[v]['bipartite'] == 0:
                             graph_new.add_node((u, v), type="VV", first = u, second = v, num=num)
 
-                            if i == j:
+                            if i == j or (graph.nodes[u]['bipartite'] == 0 and graph.nodes[v]['bipartite'] == 0 and not graph.has_edge(u,v)):
                                 features.append([graph.nodes[u]['objcoeff'], 0, graph.degree[u], graph.nodes[v]['objcoeff'], 0, graph.degree[v], 0])
                             else:
                                 features.append([graph.nodes[u]['objcoeff'], 0, graph.degree[u], graph.nodes[v]['objcoeff'], 0, graph.degree[v], graph.edges[(u, v)]["coeff"]])
