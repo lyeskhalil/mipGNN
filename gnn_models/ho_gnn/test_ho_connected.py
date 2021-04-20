@@ -178,10 +178,10 @@ class GraphDataset(InMemoryDataset):
                             else:
                                 features.append([graph.nodes[u]['objcoeff'], 0, graph.degree[u], graph.nodes[v]['objcoeff'], 0, graph.degree[v], graph.edges[(u, v)]["coeff"]])
 
-                            if v in node_id:
-                                batch.append(node_id[v])
+                            if u in node_id:
+                                batch.append(node_id[u])
                             else:
-                                node_id[v] = ids
+                                node_id[u] = ids
                                 batch.append(ids)
                                 ids += 1
 
@@ -195,10 +195,10 @@ class GraphDataset(InMemoryDataset):
                             graph_new.add_node((u, v), type="VC", first = u, second = v, num=num)
                             features.append([graph.nodes[u]['objcoeff'], 0, graph.degree[u], 0, graph.nodes[v]['rhs'], graph.degree[v], graph.edges[(u, v)]["coeff"]])
 
-                            if v in node_id:
-                                batch.append(node_id[v])
+                            if u in node_id:
+                                batch.append(node_id[u])
                             else:
-                                node_id[v] = ids
+                                node_id[u] = ids
                                 batch.append(ids)
                                 ids += 1
 
