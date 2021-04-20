@@ -311,7 +311,7 @@ l = len(rest)
 val_index = rest[0:int(l / 2)]
 test_index = rest[int(l / 2):]
 
-train_dataset = dataset[train_index].shuffle()
+train_dataset = dataset[0:50].shuffle()
 val_dataset = dataset[val_index].shuffle()
 test_dataset = dataset[test_index].shuffle()
 
