@@ -248,6 +248,7 @@ class GraphDataset(InMemoryDataset):
             data.edge_index_2 = matrices_2.to(torch.long)
 
             data.indices = torch.from_numpy(np.array(indices)).to(torch.long)
+            data.batch = torch.from_numpy(np.array(batch)).to(torch.long)
 
             data.num = num
 
