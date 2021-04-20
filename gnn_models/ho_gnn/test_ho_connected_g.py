@@ -129,11 +129,12 @@ class SimpleNet(torch.nn.Module):
         x_2 = F.relu(self.conv_2_4(node_features_4, edge_index_2))
         node_features_5 = self.joint_1(torch.cat([x_1, x_2], dim=-1))
 
-        x = torch.cat([node_features_0, node_features_1, node_features_2, node_features_3, node_features_4, node_features_5], dim=-1)[indices]
+        x = torch.cat(
+            [node_features_0, node_features_1, node_features_2, node_features_3, node_features_4, node_features_5],
+            dim=-1)[indices]
 
-        # TODO
-        #x = global_add_pool(x, batcher)
         x = global_mean_pool(x, batcher)
+
 
         x = F.relu(self.lin1(x))
         x = F.relu(self.lin2(x))
@@ -159,11 +160,11 @@ class GraphDataset(InMemoryDataset):
 
     @property
     def raw_file_names(self):
-        return "tedsdfsdst"
+        return "teddsfsdst"
 
     @property
     def processed_file_names(self):
-        return "tdfffest"
+        return "tffdfest"
 
     def download(self):
         pass
@@ -174,7 +175,7 @@ class GraphDataset(InMemoryDataset):
         data_list = []
 
         # Iterate over instance files and create data objects.
-        for num, filename in enumerate(os.listdir(data_path)):
+        for num, filename in enumerate(os.listdir(data_path)[0:5]):
             print(num)
             # Get graph.
             graph = nx.read_gpickle(data_path + filename)
@@ -200,20 +201,23 @@ class GraphDataset(InMemoryDataset):
             # Iterate over all tuples.
             for i, u in enumerate(graph.nodes):
                 for j, v in enumerate(graph.nodes):
-                    if graph.has_edge(u,v) or (i == j) or graph.nodes[u]['bipartite'] == 0 and graph.nodes[v]['bipartite'] == 0:
+                    if graph.has_edge(u, v) or (i == j) or (graph.nodes[u]['bipartite'] == 0 and graph.nodes[v]['bipartite'] == 0):
                         # Both nodes are variable nodes.
                         if graph.nodes[u]['bipartite'] == 0 and graph.nodes[v]['bipartite'] == 0:
-                            graph_new.add_node((u, v), type="VV", first = u, second = v, num=num)
+                            graph_new.add_node((u, v), type="VV", first=u, second=v, num=num)
 
-                            if i == j or (graph.nodes[u]['bipartite'] == 0 and graph.nodes[v]['bipartite'] == 0 and not graph.has_edge(u,v)):
-                                features.append([graph.nodes[u]['objcoeff'], 0, graph.degree[u], graph.nodes[v]['objcoeff'], 0, graph.degree[v], 0])
+                            if i == j:
+                                features.append(
+                                    [graph.nodes[u]['objcoeff'], 0, graph.degree[u], graph.nodes[v]['objcoeff'], 0,
+                                     graph.degree[v], 0])
                             else:
-                                features.append([graph.nodes[u]['objcoeff'], 0, graph.degree[u], graph.nodes[v]['objcoeff'], 0, graph.degree[v], graph.edges[(u, v)]["coeff"]])
+                                features.append(
+                                    [graph.nodes[u]['objcoeff'], 0, graph.degree[u], graph.nodes[v]['objcoeff'], 0,
+                                     graph.degree[v], graph.edges[(u, v)]["coeff"]])
 
                             if u in node_id:
                                 batch.append(node_id[u])
                             else:
-                                # TODO: also v
                                 node_id[u] = ids
                                 batch.append(ids)
                                 ids += 1
@@ -225,8 +229,9 @@ class GraphDataset(InMemoryDataset):
 
                             indices.append(num)
                         elif graph.nodes[u]['bipartite'] == 0 and graph.nodes[v]['bipartite'] == 1:
-                            graph_new.add_node((u, v), type="VC", first = u, second = v, num=num)
-                            features.append([graph.nodes[u]['objcoeff'], 0, graph.degree[u], 0, graph.nodes[v]['rhs'], graph.degree[v], graph.edges[(u, v)]["coeff"]])
+                            graph_new.add_node((u, v), type="VC", first=u, second=v, num=num)
+                            features.append([graph.nodes[u]['objcoeff'], 0, graph.degree[u], 0, graph.nodes[v]['rhs'],
+                                             graph.degree[v], graph.edges[(u, v)]["coeff"]])
 
                             if u in node_id:
                                 batch.append(node_id[u])
@@ -242,16 +247,21 @@ class GraphDataset(InMemoryDataset):
 
                             indices.append(num)
                         elif graph.nodes[u]['bipartite'] == 1 and graph.nodes[v]['bipartite'] == 0:
-                            graph_new.add_node((u, v), type="CV", first = u, second = v, num=num)
-                            features.append([0, graph.nodes[u]['rhs'], graph.degree[u], graph.nodes[v]['objcoeff'], 0, graph.degree[v], graph.edges[(u, v)]["coeff"]])
+                            graph_new.add_node((u, v), type="CV", first=u, second=v, num=num)
+                            features.append([0, graph.nodes[u]['rhs'], graph.degree[u], graph.nodes[v]['objcoeff'], 0,
+                                             graph.degree[v], graph.edges[(u, v)]["coeff"]])
+
                         elif graph.nodes[u]['bipartite'] == 1 and graph.nodes[v]['bipartite'] == 1:
-                            graph_new.add_node((u, v), type="CC", first = u, second = v, num=num)
+                            graph_new.add_node((u, v), type="CC", first=u, second=v, num=num)
 
                             if i == j:
-                                features.append([0, graph.nodes[u]['rhs'], graph.degree[u], 0, graph.nodes[v]['rhs'], graph.degree[v], 0])
+                                features.append([0, graph.nodes[u]['rhs'], graph.degree[u], 0, graph.nodes[v]['rhs'],
+                                                 graph.degree[v], 0])
                             else:
-                                features.append([0, graph.nodes[u]['rhs'], graph.degree[u], 0, graph.nodes[v]['rhs'], graph.degree[v], graph.edges[(u, v)]["coeff"]])
+                                features.append([0, graph.nodes[u]['rhs'], graph.degree[u], 0, graph.nodes[v]['rhs'],
+                                                 graph.degree[v], graph.edges[(u, v)]["coeff"]])
                         num += 1
+
 
             for _, data in graph_new.nodes(data=True):
                 first = data["first"]
@@ -279,6 +289,8 @@ class GraphDataset(InMemoryDataset):
 
             data.indices = torch.from_numpy(np.array(indices)).to(torch.long)
             data.batcher = torch.from_numpy(np.array(batch)).to(torch.long)
+
+
 
             data.num = num
             data.num_vv = ids
@@ -331,7 +343,7 @@ val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = SimpleNet(hidden=32, aggr="mean").to(device)
+model = SimpleNet(hidden=64, aggr="mean").to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
                                                        factor=0.8, patience=10,
