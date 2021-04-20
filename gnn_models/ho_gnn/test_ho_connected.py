@@ -109,28 +109,29 @@ class SimpleNet(torch.nn.Module):
         # Compute initial node embeddings.
         node_features_0 = self.node_encoder(node_features_0)
 
-        x_1 = self.conv_1_1(node_features_0, edge_index_1)
-        x_2 = self.conv_2_1(node_features_0, edge_index_2)
+        x_1 = F.relu(self.conv_1_1(node_features_0, edge_index_1))
+        x_2 = F.relu(self.conv_2_1(node_features_0, edge_index_2))
         node_features_1 = self.joint_1(torch.cat([x_1, x_2] , dim=-1))
 
-        x_1 = self.conv_1_2(node_features_1, edge_index_1)
-        x_2 = self.conv_2_2(node_features_1, edge_index_2)
+        x_1 = F.relu(self.conv_1_2(node_features_1, edge_index_1))
+        x_2 = F.relu(self.conv_2_2(node_features_1, edge_index_2))
         node_features_2 = self.joint_1(torch.cat([x_1, x_2] , dim=-1))
 
-        x_1 = self.conv_1_3(node_features_2, edge_index_1)
-        x_2 = self.conv_2_3(node_features_2, edge_index_2)
+        x_1 = F.relu(self.conv_1_3(node_features_2, edge_index_1))
+        x_2 = F.relu(self.conv_2_3(node_features_2, edge_index_2))
         node_features_3 = self.joint_1(torch.cat([x_1, x_2] , dim=-1))
 
-        x_1 = self.conv_1_4(node_features_3, edge_index_1)
-        x_2 = self.conv_2_4(node_features_3, edge_index_2)
+        x_1 = F.relu(self.conv_1_4(node_features_3, edge_index_1))
+        x_2 = F.relu(self.conv_2_4(node_features_3, edge_index_2))
         node_features_4 = self.joint_1(torch.cat([x_1, x_2], dim=-1))
 
-        x_1 = self.conv_1_4(node_features_4, edge_index_1)
-        x_2 = self.conv_2_4(node_features_4, edge_index_2)
+        x_1 = F.relu(self.conv_1_4(node_features_4, edge_index_1))
+        x_2 = F.relu(self.conv_2_4(node_features_4, edge_index_2))
         node_features_5 = self.joint_1(torch.cat([x_1, x_2], dim=-1))
 
         x = torch.cat([node_features_0, node_features_1, node_features_2, node_features_3, node_features_4, node_features_5], dim=-1)[indices]
 
+        # TODO
         x = global_add_pool(x, batcher)
 
         x = F.relu(self.lin1(x))
