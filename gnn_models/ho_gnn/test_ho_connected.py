@@ -143,12 +143,10 @@ class SimpleNet(torch.nn.Module):
         x = global_mean_pool(x, batcher)
         x_2 = global_mean_pool(x_2, batcher_2)
 
-        print(x.size(), x_2.size())
 
         x = torch.cat([x, x_2], dim=-1)
 
-        print(x.size(), data.y.size())
-        exit()
+
 
         x = F.relu(self.lin1(x))
         x = F.relu(self.lin2(x))
@@ -272,7 +270,7 @@ class GraphDataset(InMemoryDataset):
                                 node_id_2[v] = ids_2
                                 batch_2.append(ids_2)
                                 ids_2 += 1
-                                
+
                                 # if (graph.nodes[v]['bias'] < 0.005):
                                 #     y.append(0)
                                 # else:
