@@ -29,9 +29,9 @@ class SimpleBipartiteLayer(MessagePassing):
         self.nn = Sequential(Linear(2 * dim, dim), ReLU(), Linear(dim, dim), ReLU(),
                              BN(dim))
 
-    def forward(self, source, target, edge_index, edge_attr, size):
+    def forward(self, source, edge_index):
 
-        out = self.propagate(edge_index, x=source, t=target, size=size)
+        out = self.propagate(edge_index, x=source, t=source)
 
         return out
 
