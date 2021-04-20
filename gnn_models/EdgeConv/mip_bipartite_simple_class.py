@@ -362,9 +362,9 @@ best_hp = []
 
 results = []
 models = []
-for i in range(5):
+for i in range(1):
     # TODO
-    models.append(SimpleNet(hidden=128, num_layers=5, aggr="mean"))
+    models.append(SimpleNet(hidden=256, num_layers=5, aggr="mean"))
 
 
 for i in range(1):
@@ -380,7 +380,7 @@ for i in range(1):
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
-                                                           factor=0.8, patience=10,
+                                                           factor=0.8, patience=25,
                                                            min_lr=0.0000001)
 
     for epoch in range(1, 5000):
