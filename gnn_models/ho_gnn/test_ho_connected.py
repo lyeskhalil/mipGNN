@@ -147,7 +147,7 @@ class GraphDataset(InMemoryDataset):
         data_list = []
 
         # Iterate over instance files and create data objects.
-        for num, filename in enumerate(os.listdir(data_path)):
+        for num, filename in enumerate(os.listdir(data_path)[0:3]):
             print(num)
             # Get graph.
             graph = nx.read_gpickle(data_path + filename)
@@ -251,6 +251,7 @@ class GraphDataset(InMemoryDataset):
             data.batch = torch.from_numpy(np.array(batch)).to(torch.long)
 
             data.num = num
+            data.num_vv = ids
 
             data_list.append(data)
 
@@ -269,7 +270,7 @@ class MyData(Data):
         if key in ['indices']:
             return self.num
         if key in ['batch']:
-            return self.num
+            return self.num_vv
         else:
             return 0
 
@@ -301,7 +302,7 @@ train_dataset = dataset[train_index].shuffle()
 val_dataset = dataset[val_index].shuffle()
 test_dataset = dataset[test_index].shuffle()
 
-batch_size = 15
+batch_size = 3
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
