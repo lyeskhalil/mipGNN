@@ -272,11 +272,11 @@ class GraphDataset(InMemoryDataset):
                                 node_id_2[v] = ids_2
                                 batch_2.append(ids_2)
                                 ids_2 += 1
-
-                                if (graph.nodes[v]['bias'] < 0.005):
-                                    y.append(0)
-                                else:
-                                    y.append(1)
+                                
+                                # if (graph.nodes[v]['bias'] < 0.005):
+                                #     y.append(0)
+                                # else:
+                                #     y.append(1)
 
                             indices_2.append(num)
                         elif graph.nodes[u]['bipartite'] == 1 and graph.nodes[v]['bipartite'] == 1:
