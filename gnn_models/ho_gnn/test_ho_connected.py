@@ -133,6 +133,10 @@ class SimpleNet(torch.nn.Module):
 
         # TODO
         #x = global_add_pool(x, batcher)
+
+        print(indices.size(), batcher.size())
+        exit()
+
         x = global_mean_pool(x, batcher)
 
         x = F.relu(self.lin1(x))
