@@ -147,7 +147,7 @@ class SimpleNet(torch.nn.Module):
 
         x = torch.cat([x, x_2], dim=-1)
 
-        print(x.size())
+        print(x.size(), data.y.size())
         exit()
 
         x = F.relu(self.lin1(x))
