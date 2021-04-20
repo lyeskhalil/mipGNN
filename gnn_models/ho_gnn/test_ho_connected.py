@@ -252,8 +252,6 @@ class GraphDataset(InMemoryDataset):
 
             data_list.append(data)
 
-
-
         data, slices = self.collate(data_list)
         torch.save((data, slices), self.processed_paths[0])
 
@@ -284,11 +282,6 @@ pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
 dataset = GraphDataset(pathr, 0.005, transform=MyTransform())  # .shuffle()
 print("###")
 
-
-
-
-
-
 l = len(dataset)
 train_index, rest = train_test_split(list(range(0, l)), test_size=0.2)
 l = len(rest)
@@ -299,7 +292,7 @@ train_dataset = dataset[train_index].shuffle()
 val_dataset = dataset[val_index].shuffle()
 test_dataset = dataset[test_index].shuffle()
 
-batch_size = 3
+batch_size = 15
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
