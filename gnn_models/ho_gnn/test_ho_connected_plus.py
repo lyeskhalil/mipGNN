@@ -159,11 +159,11 @@ class GraphDataset(InMemoryDataset):
 
     @property
     def raw_file_names(self):
-        return "tedsfsdst"
+        return "tedsdfsdst"
 
     @property
     def processed_file_names(self):
-        return "tfffest"
+        return "tdfffest"
 
     def download(self):
         pass
@@ -200,7 +200,7 @@ class GraphDataset(InMemoryDataset):
             # Iterate over all tuples.
             for i, u in enumerate(graph.nodes):
                 for j, v in enumerate(graph.nodes):
-                    if graph.has_edge(u,v) or (i == j):
+                    if graph.has_edge(u,v) or (i == j) or graph.nodes[u]['bipartite'] == 0 and graph.nodes[v]['bipartite'] == 0:
                         # Both nodes are variable nodes.
                         if graph.nodes[u]['bipartite'] == 0 and graph.nodes[v]['bipartite'] == 0:
                             graph_new.add_node((u, v), type="VV", first = u, second = v, num=num)
