@@ -311,7 +311,7 @@ l = len(rest)
 val_index = rest[0:int(l / 2)]
 test_index = rest[int(l / 2):]
 
-train_dataset = dataset[0:50].shuffle()
+train_dataset = dataset[0:10].shuffle()
 val_dataset = dataset[val_index].shuffle()
 test_dataset = dataset[test_index].shuffle()
 
@@ -364,10 +364,10 @@ results = []
 models = []
 for i in range(5):
     # TODO
-    models.append(SimpleNet(hidden=32, num_layers=5, aggr="mean"))
+    models.append(SimpleNet(hidden=128, num_layers=5, aggr="mean"))
 
 
-for i in range(5):
+for i in range(1):
     best_val = 0.0
     test_acc = 0.0
     r = []
@@ -383,7 +383,7 @@ for i in range(5):
                                                            factor=0.8, patience=10,
                                                            min_lr=0.0000001)
 
-    for epoch in range(1, 50):
+    for epoch in range(1, 5000):
 
         train_loss = train(epoch)
         train_acc = test(train_loader)
