@@ -80,7 +80,7 @@ class SimpleNet(torch.nn.Module):
         edge_index_1 = data.edge_index_1
         edge_index_2 = data.edge_index_2
         indices = data.indices
-        batch = data.batcher
+        batcher = data.batcher
 
         # Compute initial node embeddings.
         node_features_0 = self.node_encoder(node_features_0)
