@@ -19,7 +19,7 @@ import torch
 import torch.nn.functional as F
 from torch.nn import BatchNorm1d as BN
 from torch.nn import Sequential, Linear, ReLU
-from torch_geometric.nn import MessagePassing
+from torch_geometric.nn import MessagePassing, global_add_pool
 
 
 class SimpleBipartiteLayer(MessagePassing):
