@@ -80,7 +80,7 @@ class SimpleNet(torch.nn.Module):
         edge_index_1 = data.edge_index_1
         edge_index_2 = data.edge_index_2
         indices = data.indices
-        batch = data.batch
+        batch = data.batcher
 
         # Compute initial node embeddings.
         node_features_0 = self.node_encoder(node_features_0)
@@ -103,7 +103,7 @@ class SimpleNet(torch.nn.Module):
 
         x = torch.cat([node_features_0, node_features_1, node_features_2, node_features_3, node_features_4], dim=-1)[indices]
 
-        x = global_add_pool(x, batch)
+        x = global_add_pool(x, batcher)
 
         print(x.size(), data.y.size())
         exit()
@@ -248,7 +248,7 @@ class GraphDataset(InMemoryDataset):
             data.edge_index_2 = matrices_2.to(torch.long)
 
             data.indices = torch.from_numpy(np.array(indices)).to(torch.long)
-            data.batch = torch.from_numpy(np.array(batch)).to(torch.long)
+            data.batcher = torch.from_numpy(np.array(batch)).to(torch.long)
 
             data.num = num
             data.num_vv = ids
@@ -269,7 +269,7 @@ class MyData(Data):
             return self.num
         if key in ['indices']:
             return self.num
-        if key in ['batch']:
+        if key in ['batcher']:
             return self.num_vv
         else:
             return 0
