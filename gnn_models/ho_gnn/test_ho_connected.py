@@ -181,6 +181,7 @@ class GraphDataset(InMemoryDataset):
                             if u in node_id:
                                 batch.append(node_id[u])
                             else:
+                                # TODO: also v
                                 node_id[u] = ids
                                 batch.append(ids)
                                 ids += 1
@@ -301,7 +302,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = SimpleNet(hidden=128, aggr="mean").to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
-                                                       factor=0.8, patience=15,
+                                                       factor=0.8, patience=10,
                                                        min_lr=0.0000001)
 
 
