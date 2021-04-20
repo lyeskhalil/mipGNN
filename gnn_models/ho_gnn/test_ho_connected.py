@@ -92,7 +92,7 @@ class SimpleNet(torch.nn.Module):
         self.joint_5 = Sequential(Linear(2 * hidden, hidden), ReLU(), Linear(hidden, hidden))
 
         # MLP used for classification.
-        self.lin1 = Linear(6 * hidden, hidden)
+        self.lin1 = Linear(2 * 6 * hidden, hidden)
         self.lin2 = Linear(hidden, hidden)
         self.lin3 = Linear(hidden, hidden)
         self.lin4 = Linear(hidden, 2)
@@ -104,7 +104,9 @@ class SimpleNet(torch.nn.Module):
         edge_index_1 = data.edge_index_1
         edge_index_2 = data.edge_index_2
         indices = data.indices
+        indices_2 = data.indices_2
         batcher = data.batcher
+        batcher_2 = data.batcher_2
 
         # Compute initial node embeddings.
         node_features_0 = self.node_encoder(node_features_0)
@@ -129,11 +131,19 @@ class SimpleNet(torch.nn.Module):
         x_2 = F.relu(self.conv_2_4(node_features_4, edge_index_2))
         node_features_5 = self.joint_1(torch.cat([x_1, x_2], dim=-1))
 
-        x = torch.cat([node_features_0, node_features_1, node_features_2, node_features_3, node_features_4, node_features_5], dim=-1)[indices]
+        x = torch.cat(
+            [node_features_0, node_features_1, node_features_2, node_features_3, node_features_4, node_features_5],
+            dim=-1)[indices]
+        x_2 = torch.cat(
+            [node_features_0, node_features_1, node_features_2, node_features_3, node_features_4, node_features_5],
+            dim=-1)[indices_2]
 
         # TODO
         #x = global_add_pool(x, batcher)
         x = global_mean_pool(x, batcher)
+        x_2 = global_mean_pool(x_2, batcher_2)
+
+        x = torch.cat([x, x_2], dim=-1)
 
         x = F.relu(self.lin1(x))
         x = F.relu(self.lin2(x))
@@ -189,13 +199,17 @@ class GraphDataset(InMemoryDataset):
             matrices_2 = []
             features = []
             indices = []
+            indices_2 = []
             y = []
             num = 0
 
             node_id = {}
+            node_id_2 = {}
             ids = 0
+            ids_2 = 0
 
             batch = []
+            batch_2 = []
 
             # Iterate over all tuples.
             for i, u in enumerate(graph.nodes):
@@ -204,6 +218,7 @@ class GraphDataset(InMemoryDataset):
                         # Both nodes are variable nodes.
                         if graph.nodes[u]['bipartite'] == 0 and graph.nodes[v]['bipartite'] == 0:
                             graph_new.add_node((u, v), type="VV", first = u, second = v, num=num)
+
 
                             if i == j:
                                 features.append([graph.nodes[u]['objcoeff'], 0, graph.degree[u], graph.nodes[v]['objcoeff'], 0, graph.degree[v], 0])
@@ -244,6 +259,21 @@ class GraphDataset(InMemoryDataset):
                         elif graph.nodes[u]['bipartite'] == 1 and graph.nodes[v]['bipartite'] == 0:
                             graph_new.add_node((u, v), type="CV", first = u, second = v, num=num)
                             features.append([0, graph.nodes[u]['rhs'], graph.degree[u], graph.nodes[v]['objcoeff'], 0, graph.degree[v], graph.edges[(u, v)]["coeff"]])
+
+                            if v in node_id_2:
+                                batch_2.append(node_id_2[v])
+                            else:
+                                # TODO: also v
+                                node_id_2[v] = ids_2
+                                batch_2.append(ids_2)
+                                ids_2 += 1
+
+                                if (graph.nodes[v]['bias'] < 0.005):
+                                    y.append(0)
+                                else:
+                                    y.append(1)
+
+                            indices_2.append(num)
                         elif graph.nodes[u]['bipartite'] == 1 and graph.nodes[v]['bipartite'] == 1:
                             graph_new.add_node((u, v), type="CC", first = u, second = v, num=num)
 
@@ -278,10 +308,13 @@ class GraphDataset(InMemoryDataset):
             data.edge_index_2 = matrices_2.to(torch.long)
 
             data.indices = torch.from_numpy(np.array(indices)).to(torch.long)
+            data.indices_2 = torch.from_numpy(np.array(indices_2)).to(torch.long)
             data.batcher = torch.from_numpy(np.array(batch)).to(torch.long)
+            data.batcher_2 = torch.from_numpy(np.array(batch_2)).to(torch.long)
 
             data.num = num
             data.num_vv = ids
+            data.num_uv = ids_2
 
             data_list.append(data)
 
@@ -297,8 +330,12 @@ class MyData(Data):
             return self.num
         if key in ['indices']:
             return self.num
+        if key in ['indices_2']:
+            return self.num
         if key in ['batcher']:
             return self.num_vv
+        if key in ['batcher_2']:
+            return self.num_uv
         else:
             return 0
 
