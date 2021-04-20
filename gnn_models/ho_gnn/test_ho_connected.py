@@ -184,7 +184,7 @@ class GraphDataset(InMemoryDataset):
         data_list = []
 
         # Iterate over instance files and create data objects.
-        for num, filename in enumerate(os.listdir(data_path)):
+        for num, filename in enumerate(os.listdir(data_path)[0:40]):
             print(num)
             # Get graph.
             graph = nx.read_gpickle(data_path + filename)
