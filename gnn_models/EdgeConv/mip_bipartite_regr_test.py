@@ -461,7 +461,7 @@ def test(loader):
     model.eval()
     error = 0
 
-    lf = torch.nn.MSELoss
+    lf = torch.nn.MSELoss()
 
 
     for data in loader:
