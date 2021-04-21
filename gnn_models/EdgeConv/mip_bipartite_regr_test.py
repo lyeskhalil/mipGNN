@@ -452,7 +452,7 @@ def train(epoch):
         total_loss += loss.item() * batch_size
         optimizer.step()
 
-        total_loss_mae += lf(out, data.y).item() * batch_size
+        total_loss_mae += torch.nn.L1Loss(out, data.y).item() * batch_size
 
     return total_loss_mae / len(train_loader.dataset), total_loss / len(train_loader.dataset)
 
