@@ -445,9 +445,7 @@ def train(epoch):
         data = data.to(device)
         out = model(data)
 
-        print(out.size(), data.y.size())
-        exit()
-
+        
         loss = lf(out, data.y)
 
         loss.backward()
