@@ -92,7 +92,7 @@ class SimpleNet(torch.nn.Module):
         self.joint_5 = Sequential(Linear(2 * hidden, hidden), ReLU(), Linear(hidden, hidden))
 
         # MLP used for classification.
-        self.lin1 = Linear(6 * hidden, hidden)
+        self.lin1 = Linear(4 * hidden, hidden)
         self.lin2 = Linear(hidden, hidden)
         self.lin3 = Linear(hidden, hidden)
         self.lin4 = Linear(hidden, 2)
@@ -121,16 +121,16 @@ class SimpleNet(torch.nn.Module):
         x_2 = F.relu(self.conv_2_3(node_features_2, edge_index_2))
         node_features_3 = self.joint_1(torch.cat([x_1, x_2] , dim=-1))
 
-        x_1 = F.relu(self.conv_1_4(node_features_3, edge_index_1))
-        x_2 = F.relu(self.conv_2_4(node_features_3, edge_index_2))
-        node_features_4 = self.joint_1(torch.cat([x_1, x_2], dim=-1))
-
-        x_1 = F.relu(self.conv_1_4(node_features_4, edge_index_1))
-        x_2 = F.relu(self.conv_2_4(node_features_4, edge_index_2))
-        node_features_5 = self.joint_1(torch.cat([x_1, x_2], dim=-1))
+        # x_1 = F.relu(self.conv_1_4(node_features_3, edge_index_1))
+        # x_2 = F.relu(self.conv_2_4(node_features_3, edge_index_2))
+        # node_features_4 = self.joint_1(torch.cat([x_1, x_2], dim=-1))
+        #
+        # x_1 = F.relu(self.conv_1_4(node_features_4, edge_index_1))
+        # x_2 = F.relu(self.conv_2_4(node_features_4, edge_index_2))
+        # node_features_5 = self.joint_1(torch.cat([x_1, x_2], dim=-1))
 
         x = torch.cat(
-            [node_features_0, node_features_1, node_features_2, node_features_3, node_features_4, node_features_5],
+            [node_features_0, node_features_1, node_features_2, node_features_3],
             dim=-1)[indices]
 
         x = global_mean_pool(x, batcher)
