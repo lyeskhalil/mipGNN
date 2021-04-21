@@ -438,15 +438,14 @@ def train(epoch):
     total_loss = 0
     total_loss_mae = 0
 
-    lf = torch.nn.MSELoss
+    lf = torch.nn.MSELoss()
 
     for data in train_loader:
         optimizer.zero_grad()
         data = data.to(device)
         out = model(data)
-        print(torch.isnan(out).any())
-        print(data.y)
-        loss = torch.nn.MSELoss(out, data.y)
+
+        loss = lf(out, data.y)
 
         loss.backward()
 
