@@ -444,7 +444,7 @@ def train(epoch):
         optimizer.zero_grad()
         data = data.to(device)
         out = model(data)
-
+        print(out)
 
         loss = torch.nn.MSELoss(out, data.y)
 
