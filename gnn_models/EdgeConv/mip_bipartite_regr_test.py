@@ -455,7 +455,7 @@ def train(epoch):
         optimizer.step()
 
         total_loss_mae += lf_sum(out, data.y).item()
-        c += data.y.size().item()
+        c += data.y.size()
 
     return total_loss_mae / c #, total_loss / len(train_loader.dataset)
 
@@ -474,7 +474,7 @@ def test(loader):
 
         loss = lf_sum(out, data.y)
         error += loss.item()
-        c += data.y.size().item()
+        c += data.y.size()
 
     return error / c
 
