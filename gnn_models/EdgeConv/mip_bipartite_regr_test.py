@@ -479,22 +479,18 @@ def test(loader):
     return error / c
 
 
-best_val = 0.0
-test_acc = None
-best_hp = []
-models = []
-for i in range(5):
-    models.append(SimpleNet(hidden=64, num_layers=5, aggr="mean"))
 
 results = []
 
 for i in range(5):
     r = []
+    best_val = 0.0
+    test_acc = None
 
     print(i)
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model = models[i].to(device)
+    model = SimpleNet(hidden=64, num_layers=5, aggr="mean")
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
