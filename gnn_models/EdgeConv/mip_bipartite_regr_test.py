@@ -441,6 +441,7 @@ def train(epoch):
     lf = torch.nn.MSELoss()
     lf_sum = torch.nn.MSELoss(reduction="sum")
 
+    c = 0
     for data in train_loader:
         optimizer.zero_grad()
         data = data.to(device)
@@ -454,8 +455,9 @@ def train(epoch):
         optimizer.step()
 
         total_loss_mae += lf_sum(out, data.y).item()
+        c += data.y.size().item()
 
-    return total_loss_mae / len(train_loader.dataset) #, total_loss / len(train_loader.dataset)
+    return total_loss_mae / c #, total_loss / len(train_loader.dataset)
 
 
 def test(loader):
@@ -465,14 +467,16 @@ def test(loader):
     lf = torch.nn.MSELoss()
     lf_sum = torch.nn.MSELoss(reduction="sum")
 
+    c = 0
     for data in loader:
         data = data.to(device)
         out = model(data)
 
         loss = lf_sum(out, data.y)
         error += loss.item()
+        c += data.y.size().item()
 
-    return error / len(loader.dataset)
+    return error / c
 
 
 best_val = 0.0
