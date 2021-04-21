@@ -439,7 +439,7 @@ def train(epoch):
     total_loss_mae = 0
 
     lf = torch.nn.MSELoss()
-    lf_sum = torch.nn.MSELoss(reduction="sum")
+    lf_sum = torch.nn.L1Loss(reduction="sum")
 
     c = 0
     for data in train_loader:
@@ -465,7 +465,7 @@ def test(loader):
     error = 0
 
     lf = torch.nn.MSELoss()
-    lf_sum = torch.nn.MSELoss(reduction="sum")
+    lf_sum = torch.nn.L1Loss(reduction="sum")
 
     c = 0
     for data in loader:
