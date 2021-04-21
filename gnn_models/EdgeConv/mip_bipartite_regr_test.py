@@ -444,8 +444,8 @@ def train(epoch):
         optimizer.zero_grad()
         data = data.to(device)
         out = model(data)
+        print(out.size(), data.y.size())
 
-        
         loss = lf(out, data.y)
 
         loss.backward()
