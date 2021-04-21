@@ -445,7 +445,7 @@ def train(epoch):
         data = data.to(device)
         out = model(data)
         print(out)
-
+        print(data.y)
         loss = torch.nn.MSELoss(out, data.y)
 
         loss.backward()
