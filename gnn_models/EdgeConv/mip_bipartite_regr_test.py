@@ -154,7 +154,7 @@ class SimpleNet(torch.nn.Module):
         self.lin1 = Linear((self.num_layers + 1) * hidden, hidden)
         self.lin2 = Linear(hidden, hidden)
         self.lin3 = Linear(hidden, hidden)
-        self.lin4 = Linear(hidden, 2)
+        self.lin4 = Linear(hidden, 1)
 
     def forward(self, data):
         # Get data of batch.
@@ -196,7 +196,7 @@ class SimpleNet(torch.nn.Module):
         x = F.relu(self.lin2(x))
         x = F.relu(self.lin3(x))
         x = self.lin4(x)
-        return x
+        return torch.logit(x)
 
     def __repr__(self):
         return self.__class__.__name__
@@ -438,7 +438,7 @@ def train(epoch):
     total_loss = 0
     total_loss_mae = 0
 
-    lf = torch.nn.CrossEntropyLoss
+    lf = torch.nn.MSELoss
 
     for data in train_loader:
         optimizer.zero_grad()
@@ -452,21 +452,23 @@ def train(epoch):
         total_loss += loss.item() * batch_size
         optimizer.step()
 
-        total_loss_mae += torch.nn.L1Loss(out, data.y).item() * batch_size
+        #total_loss_mae += torch.nn.L1Loss(out, data.y).item() * batch_size
 
-    return total_loss_mae / len(train_loader.dataset), total_loss / len(train_loader.dataset)
+    return total_loss_mae / len(train_loader.dataset) #, total_loss / len(train_loader.dataset)
 
 
 def test(loader):
     model.eval()
     error = 0
-    mae = torch.nn.L1Loss()
+
+    lf = torch.nn.MSELoss
+
 
     for data in loader:
         data = data.to(device)
         out = model(data)
 
-        loss = mae(out, data.y)
+        loss = lf(out, data.y)
         error += loss.item() * batch_size
 
     return error / len(loader.dataset)
@@ -496,7 +498,7 @@ for i in range(5):
 
     for epoch in range(1, 50):
 
-        loss , train_loss = train(epoch)
+        loss  = train(epoch)
         train_acc = test(train_loader)
 
         val_acc = test(val_loader)
