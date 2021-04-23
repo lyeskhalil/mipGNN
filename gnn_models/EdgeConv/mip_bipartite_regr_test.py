@@ -196,8 +196,8 @@ class SimpleNet(torch.nn.Module):
         x = F.relu(self.lin2(x))
         x = F.relu(self.lin3(x))
         x = self.lin4(x)
-        return x.view(-1)
-        #return torch.logit(x, eps=1e-6).view(-1)
+        #return x.view(-1)
+        return torch.logit(x, eps=1e-6).view(-1)
 
     def __repr__(self):
         return self.__class__.__name__
@@ -473,7 +473,7 @@ def test(loader):
         data = data.to(device)
         out = model(data)
 
-        loss = lf_sum(out, data.y)
+        loss = lf_sum(torch.sigmoid(out), data.y)
         error += loss.item()
         c += data.y.size(-1)
 
