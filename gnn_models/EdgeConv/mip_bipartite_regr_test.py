@@ -196,7 +196,8 @@ class SimpleNet(torch.nn.Module):
         x = F.relu(self.lin2(x))
         x = F.relu(self.lin3(x))
         x = self.lin4(x)
-        return torch.logit(x, eps=1e-6).view(-1)
+        return x.view(-1)
+        #return torch.logit(x, eps=1e-6).view(-1)
 
     def __repr__(self):
         return self.__class__.__name__
