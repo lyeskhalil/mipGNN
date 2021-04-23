@@ -448,14 +448,14 @@ def train(epoch):
         data = data.to(device)
         out = model(data)
 
-        loss = lf(out, data.y)
+        loss = lf(out, torch.logit(data.y, eps=1e-6))
 
         loss.backward()
 
         total_loss += loss.item() * batch_size
         optimizer.step()
 
-        total_loss_mae += lf_sum(out, torch.logit(data.y)).item()
+        total_loss_mae += lf_sum(out, torch.logit(data.y, eps=1e-6)).item()
         c += data.y.size(-1)
 
     return total_loss_mae / c #, total_loss / len(train_loader.dataset)
