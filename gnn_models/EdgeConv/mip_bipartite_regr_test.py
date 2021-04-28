@@ -437,8 +437,9 @@ def loss_new(out, y, a = -0.5):
     d = torch.abs(out - y)
 
     print("444")
-
-    return d**2 * (torch.sign(d) + a)**2
+    x = d ** 2 * (torch.sign(d) + a) ** 2
+    print("555")
+    return x
 
 
 def train(epoch):
