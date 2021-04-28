@@ -436,9 +436,8 @@ test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 def loss_new(out, y, a = -0.5):
     d = torch.abs(out - y)
 
-    print("444")
     x = d ** 2 * (torch.sign(d) + a) ** 2
-    print("555")
+
     return x
 
 
@@ -458,6 +457,9 @@ def train(epoch):
 
         # loss = lf(out, torch.logit(data.y, eps=1e-6))
         loss = loss_new(out, data.y, a=-0.5)
+
+        print(loss)
+        
 
         loss.backward()
 
