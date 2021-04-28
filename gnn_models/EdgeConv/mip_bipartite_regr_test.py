@@ -436,6 +436,8 @@ test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 def loss_new(out, y, a = -0.5):
     d = torch.abs(out - y)
 
+    print("444")
+
     return d**2 * (torch.sign(d) + a)**2
 
 
