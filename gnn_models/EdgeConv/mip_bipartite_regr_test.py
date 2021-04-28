@@ -196,8 +196,8 @@ class SimpleNet(torch.nn.Module):
         x = F.relu(self.lin2(x))
         x = F.relu(self.lin3(x))
         x = self.lin4(x)
-        #return x.view(-1)
-        return torch.logit(x, eps=1e-6).view(-1)
+        return x.view(-1)
+        #return torch.logit(x, eps=1e-6).view(-1)
 
     def __repr__(self):
         return self.__class__.__name__
@@ -448,14 +448,15 @@ def train(epoch):
         data = data.to(device)
         out = model(data)
 
-        loss = lf(out, torch.logit(data.y, eps=1e-6))
+        # loss = lf(out, torch.logit(data.y, eps=1e-6))
+        loss = lf(out, data.y)
 
         loss.backward()
 
         total_loss += loss.item() * batch_size
         optimizer.step()
 
-        total_loss_mae += lf_sum(out, torch.logit(data.y, eps=1e-6)).item()
+        total_loss_mae += lf_sum(out, data.y).item()
         c += data.y.size(-1)
 
     return total_loss_mae / c #, total_loss / len(train_loader.dataset)
@@ -473,7 +474,7 @@ def test(loader):
         data = data.to(device)
         out = model(data)
 
-        loss = lf_sum(torch.sigmoid(out), data.y)
+        loss = lf_sum(out, data.y)
         error += loss.item()
         c += data.y.size(-1)
 
