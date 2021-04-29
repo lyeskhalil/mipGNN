@@ -458,8 +458,6 @@ def train(epoch):
         # loss = lf(out, torch.logit(data.y, eps=1e-6))
         loss = loss_new(out, data.y, a=-0.98)
 
-
-
         loss.backward()
 
         total_loss += loss.item() * batch_size
@@ -508,7 +506,7 @@ for i in range(5):
                                                            factor=0.8, patience=10,
                                                            min_lr=0.0000001)
 
-    for epoch in range(1, 150):
+    for epoch in range(1, 50):
 
         loss  = train(epoch)
         train_acc = test(train_loader)
