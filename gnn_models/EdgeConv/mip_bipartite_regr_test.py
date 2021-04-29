@@ -456,7 +456,7 @@ def train(epoch):
         out = model(data)
 
         # loss = lf(out, torch.logit(data.y, eps=1e-6))
-        loss = loss_new(out, data.y, a=-0.9)
+        loss = loss_new(out, data.y, a=-0.95)
 
 
 
