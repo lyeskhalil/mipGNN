@@ -488,7 +488,7 @@ def train(epoch):
 def test(loader):
     model.eval()
     error = 0
-    mae = torch.nn.L1Loss()
+    mae = torch.nn.MSELoss()
 
     for data in loader:
         data = data.to(device)
