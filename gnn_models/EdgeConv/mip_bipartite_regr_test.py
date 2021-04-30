@@ -456,7 +456,7 @@ def train(epoch):
         out = model(data)
 
         # loss = lf(out, torch.logit(data.y, eps=1e-6))
-        loss = loss_new(out, data.y, a=+0.5)
+        loss = loss_new(torch.logit(out, eps=10**-6), torch.logit(data.y, eps=10**-6), a=+0.5)
 
         loss.backward()
 
@@ -481,7 +481,7 @@ def test(loader):
         data = data.to(device)
         out = model(data)
 
-        loss = lf_sum(out, data.y)
+        loss = lf_sum(torch.sigmoid(out), torch.sigmoid(data.y))
         error += loss.item()
         c += data.y.size(-1)
 
