@@ -481,7 +481,7 @@ def test(loader):
         data = data.to(device)
         out = model(data)
 
-        loss = lf_sum(torch.sigmoid(out), torch.sigmoid(data.y))
+        loss = lf_sum(torch.sigmoid(out), data.y)
         error += loss.item()
         c += data.y.size(-1)
 

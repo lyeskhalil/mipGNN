@@ -497,7 +497,7 @@ def test(loader):
         if log:
             loss = mae(torch.exp(out) - eps, torch.exp(data.y) - eps)
         else:
-            loss = mae(torch.sigmoid(out), torch.sigmoid(data.y))
+            loss = mae(torch.sigmoid(out), data.y)
         error += loss.item() * batch_size
 
     return error / len(loader.dataset)
