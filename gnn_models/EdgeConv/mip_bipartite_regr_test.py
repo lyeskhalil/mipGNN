@@ -463,7 +463,7 @@ def train(epoch):
         total_loss += loss.item() * batch_size
         optimizer.step()
 
-        total_loss_mae += lf_sum(torch.sigmoid(out), torch.sigmoid(data.y)).item()
+        total_loss_mae += lf_sum(torch.sigmoid(out), data.y).item()
         c += data.y.size(-1)
 
     return total_loss_mae / c #, total_loss / len(train_loader.dataset)

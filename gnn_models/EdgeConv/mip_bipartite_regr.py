@@ -480,7 +480,7 @@ def train(epoch):
         if log:
             total_loss_mae += mae(torch.exp(out) - eps, torch.exp(data.y) - eps).item() * batch_size
         else:
-            total_loss_mae += mae(torch.sigmoid(out), torch.sigmoid(data.y)).item() * batch_size
+            total_loss_mae += mae(torch.sigmoid(out), data.y).item() * batch_size
 
     return total_loss_mae / len(train_loader.dataset), total_loss / len(train_loader.dataset)
 
