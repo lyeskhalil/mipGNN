@@ -418,7 +418,7 @@ dataset = GraphDataset(pathr, data_path, bias_threshold, transform=MyTransform()
 #print("###")
 #print(dataset.data.y.sum()/dataset.data.y.size(-1))
 
-log = True
+log = False
 if log:
     eps = 1.
     dataset.data.y = torch.log(dataset.data.y + eps)
@@ -470,7 +470,7 @@ def train(epoch):
         data = data.to(device)
         out = model(data)
 
-        loss = lf(out, data.y)
+        loss = lf(torch.logit(out, eps=1e-6), torch.logit(data.y, eps=1e-6),)
 
         loss.backward()
 
@@ -480,7 +480,7 @@ def train(epoch):
         if log:
             total_loss_mae += mae(torch.exp(out) - eps, torch.exp(data.y) - eps).item() * batch_size
         else:
-            total_loss_mae += mae(out, data.y).item() * batch_size
+            total_loss_mae += mae(torch.sigmoid(out), torch.sigmoid(data.y)).item() * batch_size
 
     return total_loss_mae / len(train_loader.dataset), total_loss / len(train_loader.dataset)
 
@@ -497,7 +497,7 @@ def test(loader):
         if log:
             loss = mae(torch.exp(out) - eps, torch.exp(data.y) - eps)
         else:
-            loss = mae(out, data.y)
+            loss = mae(torch.sigmoid(out), torch.sigmoid(data.y))
         error += loss.item() * batch_size
 
     return error / len(loader.dataset)
