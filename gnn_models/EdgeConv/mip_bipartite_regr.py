@@ -521,7 +521,7 @@ for i in range(5):
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = models[i].to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
 
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
                                                            factor=0.8, patience=10,
