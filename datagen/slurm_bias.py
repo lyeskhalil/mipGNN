@@ -3,43 +3,61 @@ import submitit
 import glob
 import os
 
-timeout_min=130
-mem_gb=4
+
+def combine_jobs(mps_paths_subset, timelimit, threads, memlimit):
+    for mps_path in mps_paths_subset:
+        bias_search.search(mps_path, timelimit[0], threads[0], memlimit[0])
+
+
+def chunks(lst, n):
+    """Yield successive n-sized chunks from lst."""
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
+
 
 problem_class = "gisp"
-num_cpus = 4
-
-executor = submitit.AutoExecutor(folder="slurm_logs_bias")
-print(executor.which())
-
-executor.update_parameters(
-        array_parallelism=1000,
-        additional_parameters={"account": "rrg-khalile2"}, 
-        timeout_min=timeout_min,
-        mem_gb=mem_gb,
-        cpus_per_task=num_cpus)
 
 graphs_path = '/home/khalile2/projects/def-khalile2/software/DiscreteNet/discretenet/problems/gisp/graphs'
 graphs_filenames = [os.path.basename(graph_fullpath) for graph_fullpath in glob.glob(graphs_path + "/*.clq")] 
 print(graphs_filenames)
 
+print("Fetching mps_paths...")
 mps_paths = []
 for graph in graphs_filenames:
-    for data_type in ['train', 'test']:
+    for data_type in ['train']:
         #random_seed = int(data_type == 'test')
         path_prefix = "data/%s/%s/%s/" % (problem_class, graph, data_type)
         print(path_prefix)
         for instance in glob.glob(path_prefix + "/*.mps"):
-            # generate(random_seed, path_prefix, graph_instance, n_instances, n_jobs)
-            #job = executor.submit(gen.generate, random_seed, path_prefix, graph, n_instances, n_jobs)
             mps_paths += [instance]
-        break
-    break
-timelimit = [7200]*len(mps_paths)
+
+timelimit = [3600]*len(mps_paths)
 threads = [4]*len(mps_paths)
 memlimit = [mem_gb*1000]*len(mps_paths)
 
-jobs = executor.map_array(bias_search.search, mps_paths, timelimit, threads, memlimit)
+#jobs = executor.map_array(bias_search.search, mps_paths, timelimit, threads, memlimit)
+
+print("Chunks being mapped...")
+chunk_size = 10
+mps_paths_subsets, timelimit_subsets, threads_subsets, memlimit_subsets = list(chunks(mps_paths, chunk_size)), list(chunks(timelimit, chunk_size)), list(chunks(threads, chunk_size)), list(chunks(memlimit, chunk_size))
+
+timeout_min=150*10
+mem_gb=4
+num_cpus = 4
+
+print("Submitit initialization...")
+executor = submitit.AutoExecutor(folder="slurm_logs_bias_chunks")
+print(executor.which())
+
+executor.update_parameters(
+        array_parallelism=1000,
+        additional_parameters={"account": "rrg-khalile2"},
+        timeout_min=timeout_min,
+        mem_gb=mem_gb,
+        cpus_per_task=num_cpus)
+
+print("Submitit submitting job array...")
+jobs = executor.map_array(combine_jobs, mps_paths_subsets, timelimit_subsets, threads_subsets, memlimit_subsets)
 exit()
 
 #dict_allvals = {'-nn_depth': ['1','2','3'], '-nn_width': ['10','20','40', '80'], '-nn_lr_decay': ['0', '1'], '-nn_lr_init': ['1e-3', '5e-3'], '-nn_reg': ['0', '1'], '-nn_batchsize': ['5', '10', '20', '50', '100'], '-nn_sgd_nesterov': ['0', '1'], '-nn_sgd_momentum': ['0', '0.2', '0.4', '0.8']}

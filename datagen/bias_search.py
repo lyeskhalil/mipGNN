@@ -44,8 +44,10 @@ def solveIP(ip, timelimit, mipgap, relgap_pool, maxsols, threads, memlimit, tree
     # ip.parameters.mip.limits.treememory.set(treememlimit)
     ip.parameters.mip.strategy.file.set(2)
     ip.parameters.workdir.set(cpx_tmp)
-    
+   
+    phase1_time = ip.get_time()
     ip.solve()
+    phase1_time = ip.get_time() - phase1_time
 
     phase1_gap = 1e9
     if ip.solution.is_primal_feasible():
@@ -68,6 +70,7 @@ def solveIP(ip, timelimit, mipgap, relgap_pool, maxsols, threads, memlimit, tree
     # Relative gap for the solution pool
     ip.parameters.mip.pool.relgap.set(relgap_pool) #er_200_SET2_1k was with 0.2
 
+    phase2_time = ip.get_time()
     try:
         ip.populate_solution_pool()
         if ip.solution.is_primal_feasible():
@@ -77,10 +80,12 @@ def solveIP(ip, timelimit, mipgap, relgap_pool, maxsols, threads, memlimit, tree
         print("Finished Phase II.")
 
     except CplexError as exc:
+        phase2_time = 0.0
         print(exc)
         return
+    phase2_time = ip.get_time() - phase2_time
 
-    return phase1_status, phase1_gap, phase2_status, phase2_gap, phase2_bestobj
+    return phase1_status, phase1_gap, phase1_time, phase2_status, phase2_gap, phase2_bestobj, phase2_time
 
 #if __name__ == "__main__":
 def search(
@@ -129,7 +134,7 @@ def search(
     phase2_bestobj = None
 
     start_time = ip.get_time()
-    phase1_status, phase1_gap, phase2_status, phase2_gap, phase2_bestobj = solveIP(
+    phase1_status, phase1_gap, phase1_time, phase2_status, phase2_gap, phase2_bestobj, phase2_time = solveIP(
         ip,
         timelimit, 
         mipgap, 
@@ -143,7 +148,7 @@ def search(
     total_time = end_time - start_time
 
     num_solutions = ip.solution.pool.get_num()
-    results_str = ("%s,%s,%g,%s,%g,%g,%d,%g\n" % (
+    results_str = ("%s,%s,%g,%s,%g,%g,%d,%g,%g,%g\n" % (
             mps_path, 
             phase1_status, 
             phase1_gap, 
@@ -151,7 +156,9 @@ def search(
             phase2_gap, 
             phase2_bestobj, 
             num_solutions, 
-            total_time))
+            total_time,
+            phase1_time,
+            phase2_time))
     print(results_str)
 
     with open(results_path, "w+") as results_file:
