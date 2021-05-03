@@ -31,9 +31,10 @@ for graph in graphs_filenames:
         for instance in glob.glob(path_prefix + "/*.mps"):
             mps_paths += [instance]
 
-timelimit = [3600]*len(mps_paths)
+mem_gb=8
+timelimit = [1800]*len(mps_paths)
 threads = [4]*len(mps_paths)
-memlimit = [mem_gb*1000]*len(mps_paths)
+memlimit = [int(mem_gb/2.0)*1024]*len(mps_paths)
 
 #jobs = executor.map_array(bias_search.search, mps_paths, timelimit, threads, memlimit)
 
@@ -41,12 +42,11 @@ print("Chunks being mapped...")
 chunk_size = 10
 mps_paths_subsets, timelimit_subsets, threads_subsets, memlimit_subsets = list(chunks(mps_paths, chunk_size)), list(chunks(timelimit, chunk_size)), list(chunks(threads, chunk_size)), list(chunks(memlimit, chunk_size))
 
-timeout_min=150*10
-mem_gb=4
-num_cpus = 4
+timeout_min=70*chunk_size
+num_cpus = threads[0]
 
 print("Submitit initialization...")
-executor = submitit.AutoExecutor(folder="slurm_logs_bias_chunks")
+executor = submitit.AutoExecutor(folder="slurm_logs_bias_chunks2")
 print(executor.which())
 
 executor.update_parameters(

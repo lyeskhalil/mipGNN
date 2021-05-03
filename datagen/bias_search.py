@@ -58,7 +58,7 @@ def solveIP(ip, timelimit, mipgap, relgap_pool, maxsols, threads, memlimit, tree
     phase2_status, phase2_gap = -1, -1
     print("Finished Phase I.")
 
-    ip.parameters.mip.tolerances.mipgap.set(max([phase1_gap, mipgap])) #er_200_SET2_1k was with 0.1
+    ip.parameters.mip.tolerances.mipgap.set(max([phase1_gap, mipgap, 1.0])) #er_200_SET2_1k was with 0.1
 
     """ https://www.ibm.com/support/knowledgecenter/SSSA5P_12.9.0/ilog.odms.cplex.help/refpythoncplex/html/cplex._internal._subinterfaces.SolnPoolInterface-class.html#get_values """
     # 2 = Moderate: generate a larger number of solutions
@@ -67,6 +67,8 @@ def solveIP(ip, timelimit, mipgap, relgap_pool, maxsols, threads, memlimit, tree
     ip.parameters.mip.pool.replace.set(1)
     # Maximum number of solutions generated for the solution pool by populate
     ip.parameters.mip.limits.populate.set(maxsols)
+    # Maximum pool size
+    ip.parameters.mip.pool.capacity.set(maxsols)
     # Relative gap for the solution pool
     ip.parameters.mip.pool.relgap.set(relgap_pool) #er_200_SET2_1k was with 0.2
 
@@ -111,15 +113,19 @@ def search(
     assert(Path(mps_path).is_file())
     assert(Path(parameters_path).is_file())
 
+    print(mps_path)
+
     # Create IP, write it to file, and solve it with CPLEX
     ip = cplex.Cplex(mps_path)
     # ip, variable_names = createIP(g, E2, lp_dir + "/" + lpname)
     print("Read in MIP instance.")
+    print(ip.variables.get_num(), ip.linear_constraints.get_num(), ip.linear_constraints.get_num_nonzeros())
 
     # disable all cplex output
     if not cpx_output:
         disable_output_cpx(ip)
 
+    print("Creating VCG...")
     # Get VCG or create it 
     if Path(vcg_path).is_file():
         vcg = nx.read_gpickle(vcg_path)
@@ -198,7 +204,7 @@ if __name__ == "__main__":
     parser.add_argument("-relgap_pool", type=float, default=0.1)
     parser.add_argument("-maxsols", type=int, default=1000)
     parser.add_argument("-cpx_output", type=int, default=1)
-    parser.add_argument("-cpx_tmp", type=str, default="./tmp/")
+    parser.add_argument("-cpx_tmp", type=str, default="./cpx_tmp/")
 
     args = parser.parse_args()
     print(args)
