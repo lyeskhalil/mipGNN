@@ -1,20 +1,46 @@
-import spo_train
-import spo_utils
+import bias_search
 import submitit
-import random
-from random import sample 
+import glob
+import os
 
-output_dir = 'spo_torch_polydeg2_warmstart_hypersearch'
-num_cpus = 25
+timeout_min=130
+mem_gb=4
 
-executor = submitit.AutoExecutor(folder="log_%s" % output_dir)
+problem_class = "gisp"
+num_cpus = 4
+
+executor = submitit.AutoExecutor(folder="slurm_logs_bias")
 print(executor.which())
 
 executor.update_parameters(
+        array_parallelism=1000,
         additional_parameters={"account": "rrg-khalile2"}, 
-        timeout_min=719,
-        mem_gb=16,
+        timeout_min=timeout_min,
+        mem_gb=mem_gb,
         cpus_per_task=num_cpus)
+
+graphs_path = '/home/khalile2/projects/def-khalile2/software/DiscreteNet/discretenet/problems/gisp/graphs'
+graphs_filenames = [os.path.basename(graph_fullpath) for graph_fullpath in glob.glob(graphs_path + "/*.clq")] 
+print(graphs_filenames)
+
+mps_paths = []
+for graph in graphs_filenames:
+    for data_type in ['train', 'test']:
+        #random_seed = int(data_type == 'test')
+        path_prefix = "data/%s/%s/%s/" % (problem_class, graph, data_type)
+        print(path_prefix)
+        for instance in glob.glob(path_prefix + "/*.mps"):
+            # generate(random_seed, path_prefix, graph_instance, n_instances, n_jobs)
+            #job = executor.submit(gen.generate, random_seed, path_prefix, graph, n_instances, n_jobs)
+            mps_paths += [instance]
+        break
+    break
+timelimit = [7200]*len(mps_paths)
+threads = [4]*len(mps_paths)
+memlimit = [mem_gb*1000]*len(mps_paths)
+
+jobs = executor.map_array(bias_search.search, mps_paths, timelimit, threads, memlimit)
+exit()
 
 #dict_allvals = {'-nn_depth': ['1','2','3'], '-nn_width': ['10','20','40', '80'], '-nn_lr_decay': ['0', '1'], '-nn_lr_init': ['1e-3', '5e-3'], '-nn_reg': ['0', '1'], '-nn_batchsize': ['5', '10', '20', '50', '100'], '-nn_sgd_nesterov': ['0', '1'], '-nn_sgd_momentum': ['0', '0.2', '0.4', '0.8']}
 

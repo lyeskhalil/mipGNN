@@ -1,0 +1,9 @@
+/home/khalile2/projects/def-khalile2/software/discretenet-requirements2/importlib_resources-5.1.2-py3-none-any.whl
+joblib==1.0.1
+networkx==2.5
+numpy==1.19.5
+/home/khalile2/projects/def-khalile2/software/discretenet-requirements2/PyUtilib-6.0.0-py2.py3-none-any.whl
+/home/khalile2/projects/def-khalile2/software/discretenet-requirements2/Pyomo-5.7.3.tar.gz
+scipy==1.5.4
+Shapely==1.7.1
+geos==0.2.1
