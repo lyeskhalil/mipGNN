@@ -100,7 +100,7 @@ def search(
     relgap_pool=0.1,
     maxsols=1000,
     cpx_output=0,
-    cpx_tmp="./tmp/"
+    cpx_tmp="./cpx_tmp/"
 ):
     
     instance_name_noext = os.path.splitext(mps_path)[0]
