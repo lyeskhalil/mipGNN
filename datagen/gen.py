@@ -5,15 +5,34 @@ from discretenet.problems.fcmnf import FCMNFGenerator
 import argparse
 import networkx as nx
 
-def generate(random_seed, path_prefix, graph_instance, n_instances, n_jobs):
-    generator = GISPGenerator(
-            random_seed=random_seed,
-            path_prefix=path_prefix,
-            which_set="SET2",
-            graph_instance=graph_instance,
-            set_param=100.0,
-            alpha=0.75
-            )
+def generate(problem_class, random_seed, path_prefix, graph_instance, n_instances, n_jobs):
+    if problem_class == 'gisp':
+        generator = GISPGenerator(
+                random_seed=random_seed,
+                path_prefix=path_prefix,
+                which_set="SET2",
+                graph_instance=graph_instance,
+                set_param=100.0,
+                alpha=0.75
+                )
+
+    elif problem_class == 'fcmnf':
+        generator = FCMNFGenerator(
+            random_seed=1,
+            min_n=500,
+            max_n=500,
+            er_prob=0.02,
+            variable_costs_range_lower=11,
+            variable_costs_range_upper=50,
+            commodities_quantities_range_lower=10,
+            commodities_quantities_range_upper=100,
+            fixed_to_variable_ratio=1000,
+            edge_upper=100, #Loose=100, Tight=5
+            num_commodities=100,
+#     )
+
+    else:
+        print("PROBLEM UNDEFINED, ABORT")
 
     instances = generator(
             n_instances=n_instances, 
@@ -24,8 +43,8 @@ def generate(random_seed, path_prefix, graph_instance, n_instances, n_jobs):
             return_instances=True
             )
 
-    for instance in instances:
-        print(instance.get_name())
-        vcg = instance.get_variable_constraint_graph()
-        print(vcg.number_of_nodes())
-        nx.write_gpickle(vcg, "%s/%s_graph.pkl" % (path_prefix, instance.get_name()))
+    # for instance in instances:
+    #     print(instance.get_name())
+    #     vcg = instance.get_variable_constraint_graph()
+    #     print(vcg.number_of_nodes())
+    #     nx.write_gpickle(vcg, "%s/%s_graph.pkl" % (path_prefix, instance.get_name()))

@@ -2,11 +2,21 @@ import bias_search
 import submitit
 import glob
 import os
+from cplex.exceptions import CplexError
 
 
 def combine_jobs(mps_paths_subset, timelimit, threads, memlimit):
-    for mps_path in mps_paths_subset:
-        bias_search.search(mps_path, timelimit[0], threads[0], memlimit[0])
+    for counter, mps_path in enumerate(mps_paths_subset):
+        print("job %d/%d" % (counter, len(mps_paths_subset)))
+        try:
+            bias_search.search(mps_path, timelimit[0], threads[0], memlimit[0])
+        except CplexError as exc:
+            print("errjob %d/%d" % (counter, len(mps_paths_subset)))
+            print(exc)
+            continue
+        except Exception as e:
+            print("unexpected error")
+            continue
 
 
 def chunks(lst, n):
