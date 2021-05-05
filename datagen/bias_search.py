@@ -91,7 +91,7 @@ def solveIP(ip, timelimit, mipgap, relgap_pool, maxsols, threads, memlimit, tree
 
     return phase1_status, phase1_gap, phase1_time, phase2_status, phase2_gap, phase2_bestobj, phase2_time
 
-#if __name__ == "__main__":
+
 def search(
     mps_path,
     timelimit=120.0,
@@ -102,7 +102,8 @@ def search(
     relgap_pool=0.1,
     maxsols=1000,
     cpx_output=0,
-    cpx_tmp="./cpx_tmp/"
+    cpx_tmp="./cpx_tmp/",
+    overwrite=False
 ):
     
     instance_name_noext = os.path.splitext(mps_path)[0]
@@ -140,56 +141,66 @@ def search(
             loaded_problem = FCMNFProblem(**params)
         vcg = loaded_problem.get_variable_constraint_graph()
 
-    num_solutions = 0
-    phase1_gap = None
-    phase2_bestobj = None
+    if overwrite or not Path(npz_path).is_file():
+        num_solutions = 0
+        phase1_gap = None
+        phase2_bestobj = None
 
-    start_time = ip.get_time()
-    phase1_status, phase1_gap, phase1_time, phase2_status, phase2_gap, phase2_bestobj, phase2_time = solveIP(
-        ip,
-        timelimit, 
-        mipgap, 
-        relgap_pool, 
-        maxsols, 
-        threads, 
-        memlimit, 
-        treememlimit,
-        cpx_tmp)
-    end_time = ip.get_time()
-    total_time = end_time - start_time
+        start_time = ip.get_time()
+        phase1_status, phase1_gap, phase1_time, phase2_status, phase2_gap, phase2_bestobj, phase2_time = solveIP(
+            ip,
+            timelimit, 
+            mipgap, 
+            relgap_pool, 
+            maxsols, 
+            threads, 
+            memlimit, 
+            treememlimit,
+            cpx_tmp)
+        end_time = ip.get_time()
+        total_time = end_time - start_time
 
-    num_solutions = ip.solution.pool.get_num()
-    results_str = ("%s,%s,%g,%s,%g,%g,%d,%g,%g,%g\n" % (
-            mps_path, 
-            phase1_status, 
-            phase1_gap, 
-            phase2_status, 
-            phase2_gap, 
-            phase2_bestobj, 
-            num_solutions, 
-            total_time,
-            phase1_time,
-            phase2_time))
-    print(results_str)
+        if not ip.solution.is_primal_feasible():
+            print("MIP Infeasible, aborting")
+            return
 
-    with open(results_path, "w+") as results_file:
-        results_file.write(results_str)
+        num_solutions = ip.solution.pool.get_num()
+        results_str = ("%s,%s,%g,%s,%g,%g,%d,%g,%g,%g\n" % (
+                mps_path, 
+                phase1_status, 
+                phase1_gap, 
+                phase2_status, 
+                phase2_gap, 
+                phase2_bestobj, 
+                num_solutions, 
+                total_time,
+                phase1_time,
+                phase2_time))
+        print(results_str)
 
-    if num_solutions >= 1:
-        # Collect solutions from pool
-        solutions_matrix = np.zeros((num_solutions, len(ip.solution.pool.get_values(0))))
-        objval_arr = np.zeros(num_solutions)
-        for sol_idx in range(num_solutions):
-            sol_objval = ip.solution.pool.get_objective_value(sol_idx)
-            objval_arr[sol_idx] = sol_objval 
-            solutions_matrix[sol_idx] = ip.solution.pool.get_values(sol_idx)
-        solutions_obj_matrix = np.concatenate((np.expand_dims(objval_arr, axis=0).T, solutions_matrix), axis=1)
+        with open(results_path, "w+") as results_file:
+            results_file.write(results_str)
 
-        with open(npz_path, 'wb') as f:
-            np.savez_compressed(f, solutions=solutions_obj_matrix)
-        print("Wrote npz file.")
+        if num_solutions >= 1:
+            # Collect solutions from pool
+            solutions_matrix = np.zeros((num_solutions, len(ip.solution.pool.get_values(0))))
+            objval_arr = np.zeros(num_solutions)
+            for sol_idx in range(num_solutions):
+                sol_objval = ip.solution.pool.get_objective_value(sol_idx)
+                objval_arr[sol_idx] = sol_objval 
+                solutions_matrix[sol_idx] = ip.solution.pool.get_values(sol_idx)
+            solutions_obj_matrix = np.concatenate((np.expand_dims(objval_arr, axis=0).T, solutions_matrix), axis=1)
 
-        bias_vector = np.mean(solutions_matrix, axis=0)
+            with open(npz_path, 'wb') as f:
+                np.savez_compressed(f, solutions=solutions_obj_matrix)
+            print("Wrote npz file.")
+
+            bias_vector = np.mean(solutions_matrix, axis=0)
+    else:
+        solutions_matrix = np.load(npz_path)['solutions'][:,1:]
+        print("Read existing npz file.")
+
+    bias_vector = np.mean(solutions_matrix, axis=0)
 
     # Create variable-constraint graph
     labelVCG(vcg, bias_vector, ip)
