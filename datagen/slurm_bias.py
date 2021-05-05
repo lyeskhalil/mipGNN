@@ -3,7 +3,7 @@ import submitit
 import glob
 import os
 from cplex.exceptions import CplexError
-
+from pathlib import Path
 
 def combine_jobs(mps_paths_subset, timelimit, threads, memlimit):
     for counter, mps_path in enumerate(mps_paths_subset):
@@ -25,21 +25,9 @@ def chunks(lst, n):
         yield lst[i:i + n]
 
 
-problem_class = "gisp"
-
-graphs_path = '/home/khalile2/projects/def-khalile2/software/DiscreteNet/discretenet/problems/gisp/graphs'
-graphs_filenames = [os.path.basename(graph_fullpath) for graph_fullpath in glob.glob(graphs_path + "/*.clq")] 
-print(graphs_filenames)
-
-print("Fetching mps_paths...")
-mps_paths = []
-for graph in graphs_filenames:
-    for data_type in ['test']:
-        #random_seed = int(data_type == 'test')
-        path_prefix = "data/%s/%s/%s/" % (problem_class, graph, data_type)
-        print(path_prefix)
-        for instance in glob.glob(path_prefix + "/*.mps"):
-            mps_paths += [instance]
+problem_class = "fcmnf"
+path_prefix = "data/%s/" % (problem_class)
+mps_paths = [str(path) for path in Path(path_prefix).rglob('*.mps')]
 
 mem_gb=8
 timelimit = [1800]*len(mps_paths)
@@ -49,14 +37,14 @@ memlimit = [int(mem_gb/2.0)*1024]*len(mps_paths)
 #jobs = executor.map_array(bias_search.search, mps_paths, timelimit, threads, memlimit)
 
 print("Chunks being mapped...")
-chunk_size = 13
+chunk_size = 2
 mps_paths_subsets, timelimit_subsets, threads_subsets, memlimit_subsets = list(chunks(mps_paths, chunk_size)), list(chunks(timelimit, chunk_size)), list(chunks(threads, chunk_size)), list(chunks(memlimit, chunk_size))
 
 timeout_min=70*chunk_size
 num_cpus = threads[0]
 
 print("Submitit initialization...")
-executor = submitit.AutoExecutor(folder="slurm_logs_bias_chunks2_test")
+executor = submitit.AutoExecutor(folder="slurm_logs_bias_%s" % (problem_class))
 print(executor.which())
 
 executor.update_parameters(

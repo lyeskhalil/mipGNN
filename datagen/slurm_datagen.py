@@ -4,7 +4,7 @@ import glob
 import os
 
 timeout_min=300
-mem_gb=64
+mem_gb=32
 
 problem_class = "fcmnf"
 num_cpus = 32
@@ -36,7 +36,7 @@ if problem_class == 'gisp':
 elif problem_class == 'fcmnf':
     for data_type in ['train', 'test']:
         random_seed = int(data_type == 'test')
-        path_prefix = "data/%s/%s/%s/" % (problem_class, "L_n500_p0.02_c100", data_type)
+        path_prefix = "data/%s/%s/%s/" % (problem_class, "L_n200_p0.02_c100", data_type)
         print(path_prefix)
-        job = executor.submit(gen.generate, problem_class, random_seed, path_prefix, graph, n_instances, n_jobs)
+        job = executor.submit(gen.generate, problem_class, random_seed, path_prefix, "", n_instances, n_jobs)
         print(job.job_id)

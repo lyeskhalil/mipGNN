@@ -14,6 +14,7 @@ import glob
 import sys
 sys.path.extend(["/home/khalile2/projects/def-khalile2/software/DiscreteNet"])
 from discretenet.problems.gisp import GISPProblem
+from discretenet.problems.fcmnf import FCMNFProblem
 import pickle
 
 def disable_output_cpx(instance_cpx):
@@ -32,6 +33,7 @@ def labelVCG(vcg, bias_vector, ip):
     for index, name in enumerate(ip.variables.get_names()):
         name = name.replace('(','[')
         name = name.replace(')',']')
+        name = name.replace('_',',')
         attribute_dict[name] = {'bipartite':0, 'bias':bias_vector[index]}
     nx.set_node_attributes(vcg, attribute_dict)
 
@@ -132,7 +134,10 @@ def search(
     else:
         with open(parameters_path, "rb") as fd:
             params  = pickle.load(fd)
-        loaded_problem = GISPProblem(**params)
+        if "gisp" in mps_path:
+            loaded_problem = GISPProblem(**params)
+        elif "fcmnf" in mps_path:
+            loaded_problem = FCMNFProblem(**params)
         vcg = loaded_problem.get_variable_constraint_graph()
 
     num_solutions = 0
