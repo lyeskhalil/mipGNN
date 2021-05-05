@@ -25,7 +25,7 @@ def chunks(lst, n):
         yield lst[i:i + n]
 
 
-problem_class = "fcmnf"
+problem_class = "fcmnf/L_n200_p0.02_c500" #"gisp"
 path_prefix = "data/%s/" % (problem_class)
 mps_paths = [str(path) for path in Path(path_prefix).rglob('*.mps')]
 
@@ -37,7 +37,7 @@ memlimit = [int(mem_gb/2.0)*1024]*len(mps_paths)
 #jobs = executor.map_array(bias_search.search, mps_paths, timelimit, threads, memlimit)
 
 print("Chunks being mapped...")
-chunk_size = 2
+chunk_size = 3
 mps_paths_subsets, timelimit_subsets, threads_subsets, memlimit_subsets = list(chunks(mps_paths, chunk_size)), list(chunks(timelimit, chunk_size)), list(chunks(threads, chunk_size)), list(chunks(memlimit, chunk_size))
 
 timeout_min=70*chunk_size

@@ -28,7 +28,7 @@ def generate(problem_class, random_seed, path_prefix, graph_instance, n_instance
             commodities_quantities_range_lower=10,
             commodities_quantities_range_upper=100,
             fixed_to_variable_ratio=1000,
-            edge_upper=100, #Loose=100, Tight=5
+            edge_upper=500, #Loose=500, Tight=5
             num_commodities=100
             )
 
