@@ -46,7 +46,8 @@ def solveIP(ip, timelimit, mipgap, relgap_pool, maxsols, threads, memlimit, tree
     # ip.parameters.mip.limits.treememory.set(treememlimit)
     ip.parameters.mip.strategy.file.set(2)
     ip.parameters.workdir.set(cpx_tmp)
-   
+
+    print("Starting Phase I.")
     phase1_time = ip.get_time()
     ip.solve()
     phase1_time = ip.get_time() - phase1_time
@@ -76,6 +77,7 @@ def solveIP(ip, timelimit, mipgap, relgap_pool, maxsols, threads, memlimit, tree
 
     phase2_time = ip.get_time()
     try:
+        print("Starting Phase II.")
         ip.populate_solution_pool()
         if ip.solution.is_primal_feasible():
             phase2_gap = ip.solution.MIP.get_mip_relative_gap()
