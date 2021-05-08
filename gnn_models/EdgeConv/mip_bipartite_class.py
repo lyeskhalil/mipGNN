@@ -279,8 +279,13 @@ class GraphDataset(InMemoryDataset):
                     else:
                         y.append(1)
 
-                    feat_var.append([node_data['objcoeff'], graph.degree[i]])
-                    obj.append([node_data['objcoeff']])
+                    if 'objcoeff' in node_data:
+                        feat_var.append([node_data['objcoeff'], graph.degree[i]])
+                        obj.append([node_data['objcoeff']])
+                    else:
+                        feat_var.append([node_data['obj_coeff'], graph.degree[i]])
+                        obj.append([node_data['obj_coeff']])
+
                     index_var.append(0)
 
                 # Node is constraint node.
