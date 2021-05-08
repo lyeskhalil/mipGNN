@@ -193,8 +193,6 @@ class SimpleNet(torch.nn.Module):
             x_var.append(F.relu(self.layers_con[i](x_con[-1], x_var[-1], edge_index_con, edge_features_con, x_err[-1],
                                                    (num_nodes_con.sum(), num_nodes_var.sum()))))
 
-
-
         x = torch.cat(x_var[:], dim=-1)
 
         x = F.relu(self.lin1(x))
@@ -370,9 +368,9 @@ class MyTransform(object):
             new_data[key] = item
         return new_data
 
-
-print(sys.argv[1])
-i = int(sys.argv[1])
+#
+# print(sys.argv[1])
+# i = int(sys.argv[1])
 
 
 
@@ -402,7 +400,8 @@ name_list = [
 
 
 
-print(name_list[i])
+#print(name_list[i])
+
 
 path = "../../data_new/data_graphsonly/gisp/brock200_2.clq/train"
 name = "data_new_data_graphsonly_gisp_brock200_2.clq_train"
