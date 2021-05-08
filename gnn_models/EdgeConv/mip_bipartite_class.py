@@ -205,23 +205,32 @@ class SimpleNet(torch.nn.Module):
         return self.__class__.__name__
 
 
+global_name = ""
+global_data_path = ""
+
 # Preprocessing to create Torch dataset.
 class GraphDataset(InMemoryDataset):
+
+
     def __init__(self, name, root, data_path, bias_threshold, transform=None, pre_transform=None,
                  pre_filter=None):
         super(GraphDataset, self).__init__(root, transform, pre_transform, pre_filter)
         self.data, self.slices = torch.load(self.processed_paths[0])
-        self.data_path = data_path
+
         self.bias_threshold = bias_threshold
-        self.name = name
+        global global_name
+        global global_data_path
+
+        global_name = name
+        global_data_path = data_path
 
     @property
     def raw_file_names(self):
-        return self.name
+        return global_name
 
     @property
     def processed_file_names(self):
-        return self.name
+        return global_name
 
     def download(self):
         pass
@@ -230,16 +239,15 @@ class GraphDataset(InMemoryDataset):
         print("Preprocessing.")
 
         data_list = []
-        num_graphs = len(os.listdir(self.data_path))
+        num_graphs = len(os.listdir(global_data_path))
 
         # Iterate over instance files and create data objects.
-        for num, filename in enumerate(os.listdir(self.data_path)):
+        for num, filename in enumerate(os.listdir(global_data_path)):
             print(filename, num, num_graphs)
-            if num == 608:
-                continue
+
 
             # Get graph.
-            graph = nx.read_gpickle(self.data_path + filename)
+            graph = nx.read_gpickle(global_data_path + filename)
 
             # Make graph directed.
             graph = nx.convert_node_labels_to_integers(graph)
@@ -419,12 +427,10 @@ bias_threshold = 0.005
 
 path_train = "../../data_new/data_graphsonly/fcmnf/L_n200_p0.02_c500/train/"
 name_train = "data_new_data_graphsonly_fcmnf___n200_p0.02_c500_train"
-sname = name_train
 train_dataset = GraphDataset(name_train, pathr, path_train, bias_threshold, transform=MyTransform()).shuffle()
 
 path_test = "../../data_new/data_graphsonly/fcmnf/L_n200_p0.02_c500/test/"
 name_test = "data_new_data_graphsonly_fcmnf___n200_p0.02_c500_test"
-sname = name_test
 test_dataset = GraphDataset(name_test, pathr, path_test, bias_threshold, transform=MyTransform()).shuffle()
 
 results = []
