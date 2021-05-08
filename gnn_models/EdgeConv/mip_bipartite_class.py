@@ -407,8 +407,8 @@ name_list = [
 #print(name_list[i])
 
 
-path = "../../data_new/data_graphsonly/gisp/hamming8-4.clq/train/"
-name = "data_new_data_graphsonly_gisp_hamming8-4.clq_train"
+path = "../../data_new/data_graphsonly/gisp/brock200_2.clq/train/"
+name = "data_new_data_graphsonly_gisp_hbrock200_2.clq_train"
 
 results = []
 
