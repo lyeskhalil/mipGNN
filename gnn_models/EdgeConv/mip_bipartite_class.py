@@ -207,20 +207,21 @@ class SimpleNet(torch.nn.Module):
 
 # Preprocessing to create Torch dataset.
 class GraphDataset(InMemoryDataset):
-    def __init__(self, root, data_path, bias_threshold, transform=None, pre_transform=None,
+    def __init__(self, name, root, data_path, bias_threshold, transform=None, pre_transform=None,
                  pre_filter=None):
         super(GraphDataset, self).__init__(root, transform, pre_transform, pre_filter)
         self.data, self.slices = torch.load(self.processed_paths[0])
         self.data_path = data_path
         self.bias_threshold = bias_threshold
+        self.name = name
 
     @property
     def raw_file_names(self):
-        return sname
+        return self.name
 
     @property
     def processed_file_names(self):
-        return sname
+        return self.name
 
     def download(self):
         pass
@@ -229,16 +230,16 @@ class GraphDataset(InMemoryDataset):
         print("Preprocessing.")
 
         data_list = []
-        num_graphs = len(os.listdir(data_path))
+        num_graphs = len(os.listdir(self.data_path))
 
         # Iterate over instance files and create data objects.
-        for num, filename in enumerate(os.listdir(data_path)):
+        for num, filename in enumerate(os.listdir(self.data_path)):
             print(filename, num, num_graphs)
             if num == 608:
                 continue
 
             # Get graph.
-            graph = nx.read_gpickle(data_path + filename)
+            graph = nx.read_gpickle(self.data_path + filename)
 
             # Make graph directed.
             graph = nx.convert_node_labels_to_integers(graph)
@@ -410,29 +411,26 @@ name_list = [
 
 
 #print(name_list[i])
-
-
-path_train = "../../data_new/data_graphsonly/fcmnf/L_n200_p0.02_c500/train/"
-name_train = "data_new_data_graphsonly_fcmnf___n200_p0.02_c500_train"
-
-path_test = "../../data_new/data_graphsonly/fcmnf/L_n200_p0.02_c500/test/"
-name_test = "data_new_data_graphsonly_fcmnf___n200_p0.02_c500_test"
-
-
-
-results = []
-
 # Prepare data.
 pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
-# Path to raw graph data.
-
 # Threshold for computing class labels.
 # TODO
 bias_threshold = 0.005
 
-# Create dataset.
-train_dataset = GraphDataset(pathr, path_train, bias_threshold, transform=MyTransform()).shuffle()
-test_dataset = GraphDataset(pathr, path_test, bias_threshold, transform=MyTransform()).shuffle()
+path_train = "../../data_new/data_graphsonly/fcmnf/L_n200_p0.02_c500/train/"
+name_train = "data_new_data_graphsonly_fcmnf___n200_p0.02_c500_train"
+sname = name_train
+train_dataset = GraphDataset(name_train, pathr, path_train, bias_threshold, transform=MyTransform()).shuffle()
+
+path_test = "../../data_new/data_graphsonly/fcmnf/L_n200_p0.02_c500/test/"
+name_test = "data_new_data_graphsonly_fcmnf___n200_p0.02_c500_test"
+sname = name_test
+test_dataset = GraphDataset(name_test, pathr, path_test, bias_threshold, transform=MyTransform()).shuffle()
+
+results = []
+
+
+
 
 print("###")
 print(test_dataset.data.y.sum()/test_dataset.data.y.size(-1))
@@ -521,37 +519,8 @@ for i in range(5):
                                                            factor=0.8, patience=10,
                                                            min_lr=0.0000001)
 
-    all_softmax = []
-    all_softmax_first = []
-    all_softmax_five = []
-    all_softmax_ten = []
-    all_softmax_30 = []
-
-    all_softmax_t = []
-    all_softmax_first_t = []
-    all_softmax_five_t = []
-    all_softmax_ten_t = []
-    all_softmax_30_t = []
-
-
-
     for epoch in range(1, 50):
         print(i)
-        if epoch == 1:
-            _, all_softmax_first = test(test_loader)
-            _, all_softmax_first_t = test(train_loader)
-
-        if epoch == 5:
-            _, all_softmax_five = test(test_loader)
-            _, all_softmax_five_t = test(train_loader)
-
-        if epoch == 10:
-            _, all_softmax_ten = test(test_loader)
-            _, all_softmax_ten_t = test(train_loader)
-
-        if epoch == 30:
-            _, all_softmax_30 = test(test_loader)
-            _, all_softmax_30_t = test(train_loader)
 
         train_loss, _ = train(epoch)
         train_acc, _ = test(train_loader)
@@ -562,8 +531,7 @@ for i in range(5):
 
         if val_acc > best_val:
             best_val = val_acc
-            test_acc, all_softmax = test(test_loader)
-            _, all_softmax_t = test(train_loader)
+            test_acc, _ = test(test_loader)
 
         r.append(test_acc)
 
@@ -580,104 +548,6 @@ for i in range(5):
 
 
 
-
-    #print(len(all_softmax))
-    #print(all_softmax)
-
-    plt.hist(np.array(all_softmax), color = 'orange', edgecolor = 'black',
-             bins = 40)
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 10000.0])
-    plt.savefig('plot.png')
-    plt.clf()
-
-    plt.hist(np.array(all_softmax_first), color = 'red', edgecolor = 'black',
-             bins = 40)
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 10000.0])
-    plt.savefig('plot_first.png')
-    plt.clf()
-
-    plt.hist(np.array(all_softmax_ten), color = 'red', edgecolor = 'black',
-             bins = 40)
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 10000.0])
-    plt.savefig('plot_ten.png')
-    plt.clf()
-
-    plt.hist(np.array(all_softmax_30), color = 'red', edgecolor = 'black',
-             bins = 40)
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 10000.0])
-    plt.savefig('plot_30.png')
-    plt.clf()
-
-
-    plt.hist(np.array(all_softmax_five_t), color = 'red', edgecolor = 'black',
-             bins = 40)
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 80000.0])
-
-    plt.savefig('plot_five_t.png')
-    plt.clf()
-
-    plt.hist(np.array(all_softmax_t), color = 'orange', edgecolor = 'black',
-             bins = 40)
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 80000.0])
-    plt.savefig('plot_t.png')
-    plt.clf()
-
-    plt.hist(np.array(all_softmax_first_t), color = 'red', edgecolor = 'black',
-             bins = 40)
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 80000.0])
-    plt.savefig('plot_first_t.png')
-    plt.clf()
-
-    plt.hist(np.array(all_softmax_ten_t), color = 'red', edgecolor = 'black',
-             bins = 40)
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 80000.0])
-    plt.savefig('plot_ten_t.png')
-    plt.clf()
-
-    plt.hist(np.array(all_softmax_30_t), color = 'red', edgecolor = 'black',
-             bins = 40)
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 80000.0])
-    plt.savefig('plot_30_t.png')
-    plt.clf()
-
-    plt.hist(np.array(all_softmax_five_t), color = 'red', edgecolor = 'black',
-             bins = 40)
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 80000.0])
-
-    plt.savefig('plot_five_t.png')
-
-
-print(results)
-
-plt.clf()
-data = np.array(results).transpose()
-data = pd.DataFrame(data=data,
-                    columns=["Err0", "Err0", "Err0", "Err0", "Err0"])
-
-
-sns.despine()
-sns.set_style("white")
-sns.set_style("ticks")
-sns.set_palette("muted")
-sns.set_context("paper")
-
-sns.set_context(font_scale=1.5, rc={"lines.linewidth": 2.5})
-
-p = sns.color_palette("husl")
-
-l = sns.lineplot(data=data.iloc[:, :], dashes=False)
-
-plt.savefig('acc.png')
 # hp_all = []
 # for i in range(len(file_list)):
 #
