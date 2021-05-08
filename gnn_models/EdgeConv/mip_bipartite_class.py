@@ -235,6 +235,8 @@ class GraphDataset(InMemoryDataset):
         data_list = []
         num_graphs = len(os.listdir(pd))
 
+        print(d)
+
         # Iterate over instance files and create data objects.
         for num, filename in enumerate(os.listdir(pd)):
             print(filename, num, num_graphs)
