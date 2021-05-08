@@ -403,7 +403,7 @@ name_list = [
 #print(name_list[i])
 
 
-path = "../../data_new/data_graphsonly/gisp/brock200_2.clq/train"
+path = "../../data_new/data_graphsonly/gisp/brock200_2.clq/train/"
 name = "data_new_data_graphsonly_gisp_brock200_2.clq_train"
 
 results = []
