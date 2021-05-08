@@ -288,7 +288,11 @@ class GraphDataset(InMemoryDataset):
                     node_to_connode[i] = num_nodes_con
                     num_nodes_con += 1
 
-                    rhs = node_data['rhs']
+                    if 'rhs' in node_data:
+                        rhs = node_data['rhs']
+                    else:
+                        rhs = node_data['bound']
+
                     feat_rhs.append([rhs])
                     feat_con.append([rhs, graph.degree[i]])
                     index.append(0)
