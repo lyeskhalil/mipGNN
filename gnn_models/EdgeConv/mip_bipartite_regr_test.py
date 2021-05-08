@@ -515,8 +515,6 @@ for i in range(5):
         scheduler.step(val_acc)
         lr = scheduler.optimizer.param_groups[0]['lr']
 
-
-
         if val_acc < best_val or test_acc is None:
             best_val = val_acc
             test_acc = test(test_loader)
