@@ -412,37 +412,41 @@ name_list = [
 #print(name_list[i])
 
 
-path = "../../data_new/data_graphsonly/gisp/brock200_2.clq/train/"
-name = "data_new_data_graphsonly_gisp_hbrock200_2.clq_train"
+path_train = "../../data_new/data_graphsonly/fcmnf/L_n200_p0.02_c500/train/"
+name_train = "data_new_data_graphsonly_fcmnf___n200_p0.02_c500_train"
+
+path_test = "../../data_new/data_graphsonly/fcmnf/L_n200_p0.02_c500/test/"
+name_test = "data_new_data_graphsonly_fcmnf___n200_p0.02_c500_test"
+
+
 
 results = []
 
 # Prepare data.
 pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
 # Path to raw graph data.
-data_path = path
-sname = name
+
 # Threshold for computing class labels.
 # TODO
 bias_threshold = 0.005
 
 # Create dataset.
-dataset = GraphDataset(pathr, data_path, bias_threshold, transform=MyTransform())  # .shuffle()
+train_dataset = GraphDataset(pathr, path_train, bias_threshold, transform=MyTransform()).shuffle()
+test_dataset = GraphDataset(pathr, path_test, bias_threshold, transform=MyTransform()).shuffle()
 
 print("###")
-print(dataset.data.y.sum()/dataset.data.y.size(-1))
+print(test_dataset.data.y.sum()/test_dataset.data.y.size(-1))
 
 
 # Split data.
-l = len(dataset)
-train_index, rest = train_test_split(list(range(0, l)), test_size=0.2)
-l = len(rest)
-val_index = rest[0:int(l / 2)]
-test_index = rest[int(l / 2):]
+l = len(train_dataset)
+train_index, val_index = train_test_split(list(range(0, l)), test_size=0.2)
+l = len(val_index)
 
-train_dataset = dataset[train_index].shuffle()
-val_dataset = dataset[val_index].shuffle()
-test_dataset = dataset[test_index].shuffle()
+
+train_dataset = train_dataset[train_index].shuffle()
+val_dataset = train_dataset[val_index].shuffle()
+test_dataset = test_dataset.shuffle()
 
 
 batch_size = 5

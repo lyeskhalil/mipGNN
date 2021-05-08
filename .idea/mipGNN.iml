@@ -11,5 +11,6 @@
     <orderEntry type="module" module-name="learn2maxcut" />
     <orderEntry type="module" module-name="wl_gen" />
     <orderEntry type="module" module-name="localwl_dev" />
+    <orderEntry type="module" module-name="wl-attention-gnns" />
   </component>
 </module>
