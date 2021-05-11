@@ -413,7 +413,7 @@ results = []
 
 
 print("###")
-print(test_dataset.data.y.sum()/test_dataset.data.y.size(-1))
+print(test_dataset.data.y_real.sum()/test_dataset.data.y_real.size(-1))
 
 
 # Split data.
