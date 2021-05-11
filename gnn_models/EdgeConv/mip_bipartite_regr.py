@@ -471,7 +471,7 @@ def train(epoch):
 
     return total_loss_mae / len(train_loader.dataset), total_loss / len(train_loader.dataset)
 
-
+@torch.no_grad()
 def test(loader):
     model.eval()
     error = 0
