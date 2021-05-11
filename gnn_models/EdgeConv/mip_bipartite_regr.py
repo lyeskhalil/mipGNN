@@ -402,6 +402,7 @@ train_dataset = GraphDataset(name_train, pathr, path_train, bias_threshold, tran
 pd = path_test = "../../data_new/data_graphsonly/gisp/hamming8-4.clq/test/"
 name = name_test = "hamming8-4clq_test"
 test_dataset = GraphDataset(name_test, pathr, path_test, bias_threshold, transform=MyTransform()).shuffle()
+test_dataset = test_dataset[0:200]
 
 results = []
 
@@ -476,7 +477,6 @@ def test(loader):
     for data in loader:
         data = data.to(device)
         out = model(data)
-
 
         loss = mae(out, data.y_real)
         error += loss.item() * batch_size
