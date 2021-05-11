@@ -394,20 +394,20 @@ pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
 bias_threshold = 0.005
 
 #pd = path_train = "../../data_new/data_graphsonly/gisp/brock200_2.clq/train/"
-#pd = path_train = "../../data_new/data_graphsonly/fcmnf/L_n200_p0.02_c500/train/"
-pd = path_train = "../../data_new/data_graphsonly/gisp/C125.9.clq/train/"
+pd = path_train = "../../data_new/data_graphsonly/fcmnf/L_n200_p0.02_c500/train/"
+#pd = path_train = "../../data_new/data_graphsonly/gisp/C125.9.clq/train/"
 #name = name_train = "hamming8-4clq_train"
-#name = name_train = "fcmnft"
-name = name_train = "C125.9.clq_train"
+name = name_train = "fcmnft"
+#name = name_train = "C125.9.clq_train"
 
 train_dataset = GraphDataset(name_train, pathr, path_train, bias_threshold, transform=MyTransform()).shuffle()
 
 #pd = path_test = "../../data_new/data_graphsonly/gisp/brock200_2.clq/test/"
-#pd = path_test = "../../data_new/data_graphsonly/fcmnf/L_n200_p0.02_c500/test/"
-pd = path_test = "../../data_new/data_graphsonly/gisp/C125.9.clq/train/"
+pd = path_test = "../../data_new/data_graphsonly/fcmnf/L_n200_p0.02_c500/test/"
+#pd = path_test = "../../data_new/data_graphsonly/gisp/C125.9.clq/train/"
 #name = name_test = "hamming8-4clq_test"
-#name = name_test = "fcmnft"
-name = name_test = "C125.9.clq_tesst"
+name = name_test = "fcmnft"
+#name = name_test = "C125.9.clq_tesst"
 
 test_dataset = GraphDataset(name_test, pathr, path_test, bias_threshold, transform=MyTransform()).shuffle()
 test_dataset = test_dataset #[0:200]
