@@ -405,7 +405,7 @@ pd = path_test = "../../data_new/data_graphsonly/gisp/brock200_2.clq/test/"
 name = name_test = "hamming8-4clq_test"
 #name = name_test = "fcmnft"
 test_dataset = GraphDataset(name_test, pathr, path_test, bias_threshold, transform=MyTransform()).shuffle()
-test_dataset = test_dataset[0:200]
+test_dataset = test_dataset #[0:200]
 
 results = []
 
