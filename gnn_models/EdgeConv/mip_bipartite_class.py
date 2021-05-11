@@ -424,12 +424,14 @@ pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
 # TODO
 bias_threshold = 0.005
 
-pd = path_train = "../../data_new/data_graphsonly/gisp/brock200_2.clq/train/"
-name = name_train = "brock200_2_train"
+#pd = path_train = "../../data_new/data_graphsonly/gisp/brock200_2.clq/train/"
+pd = path_train = "../../data_new/data_graphsonly/gisp/hamming8-4.clq/train/"
+name = name_train = "hamming8-4clq_train"
 train_dataset = GraphDataset(name_train, pathr, path_train, bias_threshold, transform=MyTransform()).shuffle()
 
-pd = path_test = "../../data_new/data_graphsonly/gisp/brock200_2.clq/test/"
-name = name_test = "brock200_2_test"
+#pd = path_test = "../../data_new/data_graphsonly/gisp/brock200_2.clq/test/"
+pd = path_test = "../../data_new/data_graphsonly/gisp/hamming8-4.clq/test/"
+name = name_test = "hamming8-4clq_test"
 test_dataset = GraphDataset(name_test, pathr, path_test, bias_threshold, transform=MyTransform()).shuffle()
 
 results = []
