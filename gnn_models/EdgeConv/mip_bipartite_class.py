@@ -421,12 +421,12 @@ pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
 # TODO
 bias_threshold = 0.005
 
-pd = path_train = "../../data_new/data_graphsonly/fcmnf/L_n200_p0.02_c500/train/"
-name = name_train = "data_new_data_graphsonly_fcmnf__n200_p0.02_c500_train"
+pd = path_train = "../../data_new/data_graphsonly/gisp/brock200_2.clq/train/"
+name = name_train = "brock200_2_train"
 train_dataset = GraphDataset(name_train, pathr, path_train, bias_threshold, transform=MyTransform()).shuffle()
 
-pd = path_test = "../../data_new/data_graphsonly/fcmnf/L_n200_p0.02_c500/test/"
-name = name_test = "data_new_data_graphsonly_fcmnf__n200_p0.02_c500_test"
+pd = path_test = "../../data_new/data_graphsonly/gisp/brock200_2.clq/test/"
+name = name_test = "brock200_2_test"
 test_dataset = GraphDataset(name_test, pathr, path_test, bias_threshold, transform=MyTransform()).shuffle()
 
 results = []
@@ -442,8 +442,6 @@ print(test_dataset.data.y.sum()/test_dataset.data.y.size(-1))
 l = len(train_dataset)
 train_index, val_index = train_test_split(list(range(0, l)), test_size=0.2)
 l = len(val_index)
-
-
 
 val_dataset = train_dataset[val_index].shuffle()
 train_dataset = train_dataset[train_index].shuffle()
