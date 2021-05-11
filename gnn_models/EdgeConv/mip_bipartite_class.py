@@ -261,6 +261,7 @@ class GraphDataset(InMemoryDataset):
             num_nodes_con = 0
             # Targets (classes).
             y = []
+            y_real = []
             # Features for variable nodes.
             feat_var = []
             # Feature for constraints nodes.
@@ -279,6 +280,7 @@ class GraphDataset(InMemoryDataset):
                     node_to_varnode[i] = num_nodes_var
                     num_nodes_var += 1
 
+                    y_real.append(node_data['bias'])
                     if (node_data['bias'] < bias_threshold):
                         y.append(0)
                     else:
@@ -343,6 +345,7 @@ class GraphDataset(InMemoryDataset):
             data.edge_index_con = edge_index_con
 
             data.y = torch.from_numpy(np.array(y)).to(torch.long)
+            data.y_real = torch.from_numpy(np.array(y_real)).to(torch.float)
             data.var_node_features = torch.from_numpy(np.array(feat_var)).to(torch.float)
             data.con_node_features = torch.from_numpy(np.array(feat_con)).to(torch.float)
             data.rhs = torch.from_numpy(np.array(feat_rhs)).to(torch.float)
