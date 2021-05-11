@@ -444,8 +444,9 @@ train_index, val_index = train_test_split(list(range(0, l)), test_size=0.2)
 l = len(val_index)
 
 
-train_dataset = train_dataset[train_index].shuffle()
+
 val_dataset = train_dataset[val_index].shuffle()
+train_dataset = train_dataset[train_index].shuffle()
 test_dataset = test_dataset.shuffle()
 
 
