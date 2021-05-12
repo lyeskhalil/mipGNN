@@ -481,7 +481,7 @@ test_dataset = test_dataset[0:200].shuffle()
 
 log = True
 if log:
-    eps = 10.
+    eps = 5.
     train_dataset.data.y_real = torch.log(train_dataset.data.y_real + eps)
     print(train_dataset.data.y_real.mean())
 
