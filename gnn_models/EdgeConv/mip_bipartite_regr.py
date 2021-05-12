@@ -464,9 +464,6 @@ name = name_test = name_list[i]
 test_dataset = GraphDataset(name_test, pathr, path_test, bias_threshold, transform=MyTransform()).shuffle()
 
 
-
-
-
 print("###")
 print(test_dataset.data.y_real.sum()/test_dataset.data.y_real.size(-1))
 
@@ -546,49 +543,49 @@ best_hp = []
 
 results = []
 
-for i in range(5):
-    r = []
-    best_val = 0.0
-    test_acc = None
+#for i in range(5):
+r = []
+best_val = 0.0
+test_acc = None
 
-    print(i)
+print(i)
 
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model = SimpleNet(hidden=64, num_layers=3, aggr="mean").to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+model = SimpleNet(hidden=128, num_layers=3, aggr="mean").to(device)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
-                                                           factor=0.8, patience=10,
-                                                           min_lr=0.0000001)
+scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
+                                                       factor=0.8, patience=10,
+                                                       min_lr=0.0000001)
 
-    for epoch in range(1, 50):
+for epoch in range(1, 20):
 
-        loss  = train(epoch)
+    loss  = train(epoch)
 
-        #train_acc = test(train_loader)
+    #train_acc = test(train_loader)
 
-        val_acc = test(val_loader)
-        scheduler.step(val_acc)
-        lr = scheduler.optimizer.param_groups[0]['lr']
+    val_acc = test(val_loader)
+    scheduler.step(val_acc)
+    lr = scheduler.optimizer.param_groups[0]['lr']
 
-        if val_acc < best_val or test_acc is None:
-            best_val = val_acc
-            test_acc = test(test_loader)
+    if val_acc < best_val or test_acc is None:
+        best_val = val_acc
+        test_acc = test(test_loader)
 
-        r.append(test_acc)
+    r.append(test_acc)
 
-        # Break if learning rate is smaller 10**-6.
-        if lr < 0.000001:
-            results.append(test_acc)
-            break
+    # Break if learning rate is smaller 10**-6.
+    if lr < 0.000001:
+        results.append(test_acc)
+        break
 
-        print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
-              'Train MAE: {:.7f}, Val MAE: {:.7f}, Test MAE: {:.7f}'.format(epoch, lr, loss,
-                                                                           loss, val_acc, test_acc))
-    results.append(r)
+    print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
+          'Train MAE: {:.7f}, Val MAE: {:.7f}, Test MAE: {:.7f}'.format(epoch, lr, loss,
+                                                                       loss, val_acc, test_acc))
+    #results.append(r)
 
-print(results)
-
+#print(results)
+print(r)
 
 #
 #
