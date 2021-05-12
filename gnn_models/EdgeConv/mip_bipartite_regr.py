@@ -465,7 +465,7 @@ test_dataset = GraphDataset(name_test, pathr, path_test, bias_threshold, transfo
 
 
 print("###")
-print(test_dataset.data.y_real.sum()/test_dataset.data.y_real.size(-1))
+print(test_dataset.data.y_real.mean())
 
 
 # Split data.
@@ -476,7 +476,7 @@ l = len(val_index)
 
 log = True
 if log:
-    eps = 1.
+    eps = 10.
     train_dataset.data.y_real = torch.log(train_dataset.data.y_real + eps)
     print(train_dataset.data.y_real.mean())
 val_dataset = train_dataset[val_index].shuffle()
