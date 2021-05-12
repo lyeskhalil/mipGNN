@@ -481,7 +481,7 @@ test_dataset = test_dataset[0:200].shuffle()
 
 print(val_dataset.data.y_real.mean())
 
-log = False
+log = True
 if log:
     eps = 5.
     train_dataset.data.y_real = torch.log(train_dataset.data.y_real + eps)
@@ -528,7 +528,7 @@ def train(epoch):
         data = data.to(device)
         out = model(data)
 
-        loss = rmse(out, data.y_real)
+        loss = mae(out, data.y_real)
 
         loss.backward()
 
