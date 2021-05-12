@@ -474,14 +474,16 @@ train_index, val_index = train_test_split(list(range(0, l)), test_size=0.2)
 l = len(val_index)
 
 
+
+val_dataset = train_dataset[val_index].shuffle()
+train_dataset = train_dataset[train_index].shuffle()
+test_dataset = test_dataset[0:200].shuffle()
+
 log = True
 if log:
     eps = 10.
     train_dataset.data.y_real = torch.log(train_dataset.data.y_real + eps)
     print(train_dataset.data.y_real.mean())
-val_dataset = train_dataset[val_index].shuffle()
-train_dataset = train_dataset[train_index].shuffle()
-test_dataset = test_dataset[0:200].shuffle()
 
 
 batch_size = 15
