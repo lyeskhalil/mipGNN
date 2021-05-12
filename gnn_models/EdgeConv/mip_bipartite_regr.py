@@ -466,260 +466,260 @@ for i, _ in enumerate(dataset_list):
 
 exit()
 
-results = []
-
-# train_dataset = GraphDataset(name_train, pathr, path_train, bias_threshold, transform=MyTransform()).shuffle()
+# results = []
 #
-# pd = path_test = "../../data_new/data_graphsonly/fcmnf/L_n200_p0.02_c500/test/"
-# name = name_test = "fcmnft"
+# # train_dataset = GraphDataset(name_train, pathr, path_train, bias_threshold, transform=MyTransform()).shuffle()
+# #
+# # pd = path_test = "../../data_new/data_graphsonly/fcmnf/L_n200_p0.02_c500/test/"
+# # name = name_test = "fcmnft"
+# #
+# # test_dataset = GraphDataset(name_test, pathr, path_test, bias_threshold, transform=MyTransform()).shuffle()
 #
-# test_dataset = GraphDataset(name_test, pathr, path_test, bias_threshold, transform=MyTransform()).shuffle()
-
-
-print("###")
-print(test_dataset.data.y_real.sum()/test_dataset.data.y_real.size(-1))
-
-
-# Split data.
-l = len(train_dataset)
-train_index, val_index = train_test_split(list(range(0, l)), test_size=0.2)
-l = len(val_index)
-
-val_dataset = train_dataset[val_index].shuffle()
-train_dataset = train_dataset[train_index].shuffle()
-test_dataset = test_dataset.shuffle()
-
-
-batch_size = 1
-train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
-
-
-class RMSELoss(torch.nn.Module):
-    def __init__(self, eps=1e-6):
-        super().__init__()
-        self.mse = torch.nn.MSELoss()
-        self.eps = eps
-
-    def forward(self, yhat, y):
-        loss = torch.sqrt(self.mse(yhat, y) + self.eps)
-        return loss
-
-def train(epoch):
-    model.train()
-    total_loss = 0
-    total_loss_mae = 0
-    loss = torch.nn.MSELoss()
-    rmse = RMSELoss()
-    mse = torch.nn.MSELoss()
-    mae = torch.nn.L1Loss()
-    sm = torch.nn.SmoothL1Loss()
-
-    lf = rmse
-
-    for data in train_loader:
-        optimizer.zero_grad()
-        data = data.to(device)
-        out = model(data)
-
-        loss = lf(out, data.y_real)
-
-        loss.backward()
-
-        total_loss += loss.item() * batch_size
-        optimizer.step()
-
-
-        total_loss_mae += mae(torch.sigmoid(out), data.y).item() * batch_size
-
-    return total_loss_mae / len(train_loader.dataset), total_loss / len(train_loader.dataset)
-
-@torch.no_grad()
-def test(loader):
-    model.eval()
-    error = 0
-    mae = torch.nn.L1Loss()
-
-    for data in loader:
-        data = data.to(device)
-        out = model(data)
-
-        loss = mae(out, data.y_real)
-        error += loss.item() * batch_size
-
-    return error / len(loader.dataset)
-
-
-best_val = 0.0
-test_acc = None
-best_hp = []
-models = []
-for i in range(5):
-    models.append(SimpleNet(hidden=64, num_layers=3, aggr="mean"))
-
-results = []
-
-for i in range(5):
-    r = []
-    best_val = 0.0
-    test_acc = None
-
-    print(i)
-
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model = models[i].to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
-                                                           factor=0.8, patience=10,
-                                                           min_lr=0.0000001)
-
-    for epoch in range(1, 50):
-
-        loss , train_loss = train(epoch)
-        train_acc = test(train_loader)
-
-        val_acc = test(val_loader)
-        scheduler.step(val_acc)
-        lr = scheduler.optimizer.param_groups[0]['lr']
-
-
-
-        if val_acc < best_val or test_acc is None:
-            best_val = val_acc
-            test_acc = test(test_loader)
-
-        r.append(test_acc)
-
-        # Break if learning rate is smaller 10**-6.
-        if lr < 0.000001:
-            results.append(test_acc)
-            break
-
-        print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
-              'Train MAE: {:.7f}, Val MAE: {:.7f}, Test MAE: {:.7f}'.format(epoch, lr, loss,
-                                                                           train_acc, val_acc, test_acc))
-    results.append(r)
-
-print(results)
-
-
-
-
-# hp_all = []
-# for i in range(len(file_list)):
-#
-#     print(name_list[i])
-#
-#     path = file_list[i]
-#     name = name_list[i]
-#
-#     results = []
-#
-#     # Prepare data.
-#     path = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
-#     # Path to raw graph data.
-#     data_path = path
-#     sname = name
-#     # Threshold for computing class labels.
-#     bias_threshold = 0.050
-#     # Create dataset.
-#     dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform())  # .shuffle()
-#
-#     # Split data.
-#     l = len(dataset)
-#     train_index, rest = train_test_split(list(range(0, l)), test_size=0.2)
-#     l = len(rest)
-#     val_index = rest[0:int(l / 2)]
-#     test_index = rest[int(l / 2):]
-#
-#     train_dataset = dataset[train_index].shuffle()
-#     val_dataset = dataset[val_index].shuffle()
-#     test_dataset = dataset[test_index].shuffle()
-#
-#     batch_size = 15
-#     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-#     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
-#     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
-#
-#
-#     def train(epoch):
-#         model.train()
-#
-#         loss_all = 0
-#         for data in train_loader:
-#             data = data.to(device)
-#             optimizer.zero_grad()
-#             output = model(data)
-#
-#             loss = F.nll_loss(output, data.y)
-#             loss.backward()
-#             loss_all += batch_size * loss.item()
-#             optimizer.step()
-#         return loss_all / len(train_dataset)
-#
-#
-#     def test(loader):
-#         model.eval()
-#
-#         correct = 0
-#         l = 0
-#
-#         for data in loader:
-#             data = data.to(device)
-#             pred = model(data)
-#             pred = pred.max(dim=1)[1]
-#             correct += pred.eq(data.y).float().mean().item()
-#             l += 1
-#
-#         return correct / l
-#
-#
-#     best_val = 0.0
-#     test_acc = 0.0
-#     best_hp = []
-#
-#
-#     for dim in [32, 64, 128]:
-#         for l in [2,3,4,5]:
-#             for aggr in ["mean", "max", "add"]:
-#                 print(dim, l, aggr)
-#
-#                 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-#                 model = SimpleNet(hidden=dim, num_layers=l, aggr = aggr).to(device)
-#                 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-#
-#                 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
-#                                                                        factor=0.8, patience=10,
-#                                                                        min_lr=0.0000001)
-#
-#                 for epoch in range(1, 100):
-#
-#                     train_loss = train(epoch)
-#                     train_acc = test(train_loader)
-#
-#                     val_acc = test(val_loader)
-#                     scheduler.step(val_acc)
-#                     lr = scheduler.optimizer.param_groups[0]['lr']
-#
-#                     if val_acc > best_val:
-#                         best_val = val_acc
-#                         test_acc = test(test_loader)
-#                         best_hp = [dim, l, aggr, test_acc]
-#
-#                     # Break if learning rate is smaller 10**-6.
-#                     if lr < 0.000001:
-#                         results.append(test_acc)
-#                         break
-#
-#                     #print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
-#                     #      'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
-#                     #                                                                    train_acc, val_acc, test_acc))
-#
-#     print(best_hp)
-#     hp_all.append(best_hp)
 #
 # print("###")
-# print(hp_all)
-
+# print(test_dataset.data.y_real.sum()/test_dataset.data.y_real.size(-1))
+#
+#
+# # Split data.
+# l = len(train_dataset)
+# train_index, val_index = train_test_split(list(range(0, l)), test_size=0.2)
+# l = len(val_index)
+#
+# val_dataset = train_dataset[val_index].shuffle()
+# train_dataset = train_dataset[train_index].shuffle()
+# test_dataset = test_dataset.shuffle()
+#
+#
+# batch_size = 1
+# train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+# val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
+# test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
+#
+#
+# class RMSELoss(torch.nn.Module):
+#     def __init__(self, eps=1e-6):
+#         super().__init__()
+#         self.mse = torch.nn.MSELoss()
+#         self.eps = eps
+#
+#     def forward(self, yhat, y):
+#         loss = torch.sqrt(self.mse(yhat, y) + self.eps)
+#         return loss
+#
+# def train(epoch):
+#     model.train()
+#     total_loss = 0
+#     total_loss_mae = 0
+#     loss = torch.nn.MSELoss()
+#     rmse = RMSELoss()
+#     mse = torch.nn.MSELoss()
+#     mae = torch.nn.L1Loss()
+#     sm = torch.nn.SmoothL1Loss()
+#
+#     lf = rmse
+#
+#     for data in train_loader:
+#         optimizer.zero_grad()
+#         data = data.to(device)
+#         out = model(data)
+#
+#         loss = lf(out, data.y_real)
+#
+#         loss.backward()
+#
+#         total_loss += loss.item() * batch_size
+#         optimizer.step()
+#
+#
+#         total_loss_mae += mae(torch.sigmoid(out), data.y).item() * batch_size
+#
+#     return total_loss_mae / len(train_loader.dataset), total_loss / len(train_loader.dataset)
+#
+# @torch.no_grad()
+# def test(loader):
+#     model.eval()
+#     error = 0
+#     mae = torch.nn.L1Loss()
+#
+#     for data in loader:
+#         data = data.to(device)
+#         out = model(data)
+#
+#         loss = mae(out, data.y_real)
+#         error += loss.item() * batch_size
+#
+#     return error / len(loader.dataset)
+#
+#
+# best_val = 0.0
+# test_acc = None
+# best_hp = []
+# models = []
+# for i in range(5):
+#     models.append(SimpleNet(hidden=64, num_layers=3, aggr="mean"))
+#
+# results = []
+#
+# for i in range(5):
+#     r = []
+#     best_val = 0.0
+#     test_acc = None
+#
+#     print(i)
+#
+#     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+#     model = models[i].to(device)
+#     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+#
+#     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
+#                                                            factor=0.8, patience=10,
+#                                                            min_lr=0.0000001)
+#
+#     for epoch in range(1, 50):
+#
+#         loss , train_loss = train(epoch)
+#         train_acc = test(train_loader)
+#
+#         val_acc = test(val_loader)
+#         scheduler.step(val_acc)
+#         lr = scheduler.optimizer.param_groups[0]['lr']
+#
+#
+#
+#         if val_acc < best_val or test_acc is None:
+#             best_val = val_acc
+#             test_acc = test(test_loader)
+#
+#         r.append(test_acc)
+#
+#         # Break if learning rate is smaller 10**-6.
+#         if lr < 0.000001:
+#             results.append(test_acc)
+#             break
+#
+#         print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
+#               'Train MAE: {:.7f}, Val MAE: {:.7f}, Test MAE: {:.7f}'.format(epoch, lr, loss,
+#                                                                            train_acc, val_acc, test_acc))
+#     results.append(r)
+#
+# print(results)
+#
+#
+#
+#
+# # hp_all = []
+# # for i in range(len(file_list)):
+# #
+# #     print(name_list[i])
+# #
+# #     path = file_list[i]
+# #     name = name_list[i]
+# #
+# #     results = []
+# #
+# #     # Prepare data.
+# #     path = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
+# #     # Path to raw graph data.
+# #     data_path = path
+# #     sname = name
+# #     # Threshold for computing class labels.
+# #     bias_threshold = 0.050
+# #     # Create dataset.
+# #     dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform())  # .shuffle()
+# #
+# #     # Split data.
+# #     l = len(dataset)
+# #     train_index, rest = train_test_split(list(range(0, l)), test_size=0.2)
+# #     l = len(rest)
+# #     val_index = rest[0:int(l / 2)]
+# #     test_index = rest[int(l / 2):]
+# #
+# #     train_dataset = dataset[train_index].shuffle()
+# #     val_dataset = dataset[val_index].shuffle()
+# #     test_dataset = dataset[test_index].shuffle()
+# #
+# #     batch_size = 15
+# #     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+# #     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
+# #     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
+# #
+# #
+# #     def train(epoch):
+# #         model.train()
+# #
+# #         loss_all = 0
+# #         for data in train_loader:
+# #             data = data.to(device)
+# #             optimizer.zero_grad()
+# #             output = model(data)
+# #
+# #             loss = F.nll_loss(output, data.y)
+# #             loss.backward()
+# #             loss_all += batch_size * loss.item()
+# #             optimizer.step()
+# #         return loss_all / len(train_dataset)
+# #
+# #
+# #     def test(loader):
+# #         model.eval()
+# #
+# #         correct = 0
+# #         l = 0
+# #
+# #         for data in loader:
+# #             data = data.to(device)
+# #             pred = model(data)
+# #             pred = pred.max(dim=1)[1]
+# #             correct += pred.eq(data.y).float().mean().item()
+# #             l += 1
+# #
+# #         return correct / l
+# #
+# #
+# #     best_val = 0.0
+# #     test_acc = 0.0
+# #     best_hp = []
+# #
+# #
+# #     for dim in [32, 64, 128]:
+# #         for l in [2,3,4,5]:
+# #             for aggr in ["mean", "max", "add"]:
+# #                 print(dim, l, aggr)
+# #
+# #                 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+# #                 model = SimpleNet(hidden=dim, num_layers=l, aggr = aggr).to(device)
+# #                 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+# #
+# #                 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
+# #                                                                        factor=0.8, patience=10,
+# #                                                                        min_lr=0.0000001)
+# #
+# #                 for epoch in range(1, 100):
+# #
+# #                     train_loss = train(epoch)
+# #                     train_acc = test(train_loader)
+# #
+# #                     val_acc = test(val_loader)
+# #                     scheduler.step(val_acc)
+# #                     lr = scheduler.optimizer.param_groups[0]['lr']
+# #
+# #                     if val_acc > best_val:
+# #                         best_val = val_acc
+# #                         test_acc = test(test_loader)
+# #                         best_hp = [dim, l, aggr, test_acc]
+# #
+# #                     # Break if learning rate is smaller 10**-6.
+# #                     if lr < 0.000001:
+# #                         results.append(test_acc)
+# #                         break
+# #
+# #                     #print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
+# #                     #      'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
+# #                     #                                                                    train_acc, val_acc, test_acc))
+# #
+# #     print(best_hp)
+# #     hp_all.append(best_hp)
+# #
+# # print("###")
+# # print(hp_all)
+#
