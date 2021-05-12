@@ -473,6 +473,12 @@ l = len(train_dataset)
 train_index, val_index = train_test_split(list(range(0, l)), test_size=0.2)
 l = len(val_index)
 
+
+log = True
+if log:
+    eps = 1.
+    train_dataset.data.y_real = torch.log(train_dataset.data.y_real + eps)
+    print(train_dataset.data.y_real.mean())
 val_dataset = train_dataset[val_index].shuffle()
 train_dataset = train_dataset[train_index].shuffle()
 test_dataset = test_dataset[0:200].shuffle()
@@ -494,12 +500,12 @@ class RMSELoss(torch.nn.Module):
         loss = torch.sqrt(self.mse(yhat, y) + self.eps)
         return loss
 
-def loss_new(out, y, a = -0.5):
-    d = torch.abs(out - y)
-
-    x = d ** 2 * (torch.sign(d) + a) ** 2
-
-    return x.mean(dim=-1)
+# def loss_new(out, y, a = -0.5):
+#     d = torch.abs(out - y)
+#
+#     x = d ** 2 * (torch.sign(d) + a) ** 2
+#
+#     return x.mean(dim=-1)
 
 def train(epoch):
     model.train()
@@ -517,7 +523,7 @@ def train(epoch):
         data = data.to(device)
         out = model(data)
 
-        loss = loss_new(out, data.y_real)
+        loss = mae(out, data.y_real)
 
         loss.backward()
 
