@@ -457,7 +457,7 @@ def train(epoch):
     mae = torch.nn.L1Loss()
     sm = torch.nn.SmoothL1Loss()
 
-    lf = mse
+    lf = rmse
 
     for data in train_loader:
         optimizer.zero_grad()
