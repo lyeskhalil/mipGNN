@@ -481,13 +481,12 @@ test_dataset = test_dataset[0:200].shuffle()
 
 print(val_dataset.data.y_real.mean())
 
-log = True
+log = False
 if log:
     eps = 5.
     train_dataset.data.y_real = torch.log(train_dataset.data.y_real + eps)
     print(train_dataset.data.y_real.mean())
-
-val_dataset.data.y_real = torch.exp(val_dataset.data.y_real) - eps
+    val_dataset.data.y_real = torch.exp(val_dataset.data.y_real) - eps
 print(val_dataset.data.y_real.mean())
 
 batch_size = 15
