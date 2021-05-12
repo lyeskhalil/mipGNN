@@ -391,30 +391,89 @@ class MyTransform(object):
 pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
 # Threshold for computing class labels.
 # TODO
-bias_threshold = 0.005
+bias_threshold = 0.0001
 
-#pd = path_train = "../../data_new/data_graphsonly/gisp/brock200_2.clq/train/"
-pd = path_train = "../../data_new/data_graphsonly/fcmnf/L_n200_p0.02_c500/train/"
-#pd = path_train = "../../data_new/data_graphsonly/gisp/C125.9.clq/train/"
-#name = name_train = "hamming8-4clq_train"
-name = name_train = "fcmnft"
-#name = name_train = "C125.9.clq_train"
+dataset_list = [
+"../../data_new/data_graphsonly/gisp/p_hat300-2.clq/train.tar.gz",
+"../../data_new/data_graphsonly/gisp/p_hat300-2.clq/test.tar.gz",
+"../../data_new/data_graphsonly/gisp/C250.9.clq/train.tar.gz",
+"../../data_new/data_graphsonly/gisp/C250.9.clq/test.tar.gz",
+"../../data_new/data_graphsonly/gisp/keller4.clq/train.tar.gz",
+"../../data_new/data_graphsonly/gisp/keller4.clq/test.tar.gz",
+"../../data_new/data_graphsonly/gisp/hamming8-4.clq/train.tar.gz",
+"../../data_new/data_graphsonly/gisp/hamming8-4.clq/test.tar.gz",
+"../../data_new/data_graphsonly/gisp/gen200_p0.9_55.clq/train.tar.gz",
+"../../data_new/data_graphsonly/gisp/gen200_p0.9_55.clq/test.tar.gz",
+"../../data_new/data_graphsonly/gisp/gen200_p0.9_44.clq/train.tar.gz",
+"../../data_new/data_graphsonly/gisp/gen200_p0.9_44.clq/test.tar.gz",
+"../../data_new/data_graphsonly/gisp/C125.9.clq/train.tar.gz",
+"../../data_new/data_graphsonly/gisp/C125.9.clq/test.tar.gz",
+"../../data_new/data_graphsonly/gisp/p_hat300-1.clq/train.tar.gz",
+"../../data_new/data_graphsonly/gisp/p_hat300-1.clq/test.tar.gz",
+"../../data_new/data_graphsonly/gisp/brock200_4.clq/train.tar.gz",
+"../../data_new/data_graphsonly/gisp/brock200_4.clq/test.tar.gz",
+"../../data_new/data_graphsonly/gisp/brock200_2.clq/train.tar.gz",
+"../../data_new/data_graphsonly/gisp/brock200_2.clq/test.tar.gz",
+"../../data_new/data_graphsonly/fcmnf/L_n200_p0.02_c500/train.tar.gz",
+"../../data_new/data_graphsonly/fcmnf/L_n200_p0.02_c500/test.tar.gz"
+]
 
-train_dataset = GraphDataset(name_train, pathr, path_train, bias_threshold, transform=MyTransform()).shuffle()
+name_list = [
+"1_test",
+"1_train",
 
-#pd = path_test = "../../data_new/data_graphsonly/gisp/brock200_2.clq/test/"
-pd = path_test = "../../data_new/data_graphsonly/fcmnf/L_n200_p0.02_c500/test/"
-#pd = path_test = "../../data_new/data_graphsonly/gisp/C125.9.clq/train/"
-#name = name_test = "hamming8-4clq_test"
-name = name_test = "fcmnft"
-#name = name_test = "C125.9.clq_tesst"
+"2_test",
+"2_train",
 
-test_dataset = GraphDataset(name_test, pathr, path_test, bias_threshold, transform=MyTransform()).shuffle()
-test_dataset = test_dataset #[0:200]
+"3_test",
+"3_train",
+
+"4_test",
+"4_train",
+
+"5_test",
+"5_train",
+
+"6_test",
+"6_train",
+
+"7_test",
+"7_train",
+
+"8_test",
+"8_train",
+
+"9_test",
+"9_train",
+
+"10_test",
+"10_train",
+
+"11_test",
+"11_train",
+]
+
+
+for i, _ in enumerate(dataset_list):
+    print(i)
+    print(dataset_list[i])
+
+    pd = path_train = dataset_list[i]
+    name = name_train = name_list[i]
+
+    dataset = GraphDataset(name_train, pathr, path_train, bias_threshold, transform=MyTransform()).shuffle()
+
+
+exit()
 
 results = []
 
-
+# train_dataset = GraphDataset(name_train, pathr, path_train, bias_threshold, transform=MyTransform()).shuffle()
+#
+# pd = path_test = "../../data_new/data_graphsonly/fcmnf/L_n200_p0.02_c500/test/"
+# name = name_test = "fcmnft"
+#
+# test_dataset = GraphDataset(name_test, pathr, path_test, bias_threshold, transform=MyTransform()).shuffle()
 
 
 print("###")
