@@ -525,7 +525,7 @@ def train(epoch):
         data = data.to(device)
         out = model(data)
 
-        loss = mae(out, data.y_real)
+        loss = rmse(out, data.y_real)
 
         loss.backward()
 
