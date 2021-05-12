@@ -479,12 +479,15 @@ val_dataset = train_dataset[val_index].shuffle()
 train_dataset = train_dataset[train_index].shuffle()
 test_dataset = test_dataset[0:200].shuffle()
 
+print(val_dataset.data.y_real.mean())
+
 log = True
 if log:
     eps = 5.
     train_dataset.data.y_real = torch.log(train_dataset.data.y_real + eps)
     print(train_dataset.data.y_real.mean())
 
+print(val_dataset.data.y_real.mean())
 
 batch_size = 15
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
