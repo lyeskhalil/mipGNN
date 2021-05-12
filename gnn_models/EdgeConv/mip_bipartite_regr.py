@@ -522,9 +522,8 @@ def train(epoch):
         optimizer.step()
 
 
-        total_loss_mae += mae(torch.sigmoid(out), data.y).item() * batch_size
 
-    return total_loss_mae / len(train_loader.dataset), total_loss / len(train_loader.dataset)
+    return total_loss / len(train_loader.dataset)
 
 @torch.no_grad()
 def test(loader):
@@ -566,8 +565,9 @@ for i in range(5):
 
     for epoch in range(1, 50):
 
-        loss , train_loss = train(epoch)
-        train_acc = test(train_loader)
+        loss  = train(epoch)
+
+        #train_acc = test(train_loader)
 
         val_acc = test(val_loader)
         scheduler.step(val_acc)
@@ -586,7 +586,7 @@ for i in range(5):
 
         print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
               'Train MAE: {:.7f}, Val MAE: {:.7f}, Test MAE: {:.7f}'.format(epoch, lr, loss,
-                                                                           train_acc, val_acc, test_acc))
+                                                                           loss, val_acc, test_acc))
     results.append(r)
 
 print(results)
