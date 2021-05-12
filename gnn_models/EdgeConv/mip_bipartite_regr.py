@@ -494,6 +494,13 @@ class RMSELoss(torch.nn.Module):
         loss = torch.sqrt(self.mse(yhat, y) + self.eps)
         return loss
 
+def loss_new(out, y, a = -0.5):
+    d = torch.abs(out - y)
+
+    x = d ** 2 * (torch.sign(d) + a) ** 2
+
+    return x.mean(dim=-1)
+
 def train(epoch):
     model.train()
     total_loss = 0
@@ -504,14 +511,13 @@ def train(epoch):
     mae = torch.nn.L1Loss()
     sm = torch.nn.SmoothL1Loss()
 
-    lf = mae
 
     for data in train_loader:
         optimizer.zero_grad()
         data = data.to(device)
         out = model(data)
 
-        loss = lf(out, data.y_real)
+        loss = loss_new(out, data.y_real)
 
         loss.backward()
 
