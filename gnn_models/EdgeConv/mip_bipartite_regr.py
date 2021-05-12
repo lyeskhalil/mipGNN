@@ -481,7 +481,7 @@ train_dataset = train_dataset[train_index].shuffle()
 test_dataset = test_dataset[0:200].shuffle()
 
 
-batch_size = 1
+batch_size = 15
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
@@ -520,8 +520,6 @@ def train(epoch):
 
         total_loss += loss.item() * batch_size
         optimizer.step()
-
-
 
     return total_loss / len(train_loader.dataset)
 
