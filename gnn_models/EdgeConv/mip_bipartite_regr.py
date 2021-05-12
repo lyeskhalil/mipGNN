@@ -476,7 +476,7 @@ l = len(val_index)
 
 
 val_dataset = train_dataset[val_index].shuffle()
-train_dataset = train_dataset[train_index].shuffle()
+train_dataset = torch.clone(train_dataset[train_index].shuffle())
 test_dataset = test_dataset[0:200].shuffle()
 
 print(val_dataset.data.y_real.mean())
