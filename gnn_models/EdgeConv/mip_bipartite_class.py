@@ -466,8 +466,6 @@ for _ in range(4):
     name = name_test = name_list[i]
     test_dataset = GraphDataset(name_test, pathr, path_test, bias_threshold, transform=MyTransform()).shuffle()
 
-    results = []
-
     print("###")
     print(test_dataset.data.y.sum() / test_dataset.data.y.size(-1))
 
