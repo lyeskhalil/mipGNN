@@ -566,10 +566,10 @@ for _ in range(4):
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
-                                                           factor=0.8, patience=6,
+                                                           factor=0.8, patience=5,
                                                            min_lr=0.0000001)
 
-    for epoch in range(1, 20):
+    for epoch in range(1, 50):
         print(i)
 
         train_loss = train(epoch)
