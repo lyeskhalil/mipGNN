@@ -9,6 +9,7 @@ import os.path as osp
 import numpy as np
 import networkx as nx
 from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
 
 from torch_geometric.data import (InMemoryDataset, Data)
 from torch_geometric.data import DataLoader
@@ -488,6 +489,14 @@ if log:
     test_dataset.data.y_real = torch.log(test_dataset.data.y_real + eps)
     print(train_dataset.data.y_real.mean())
     #val_dataset.data.y_real = torch.exp(val_dataset.data.y_real) - eps
+
+print(train_dataset.data.y.mean())
+plt.hist(train_dataset.data.y.cpu().numpy(), np.arange(10,0.1))
+plt.show()
+plt.savefig('plot_trans.png')
+
+exit()
+
 print(val_dataset.data.y_real.mean())
 
 batch_size = 15
