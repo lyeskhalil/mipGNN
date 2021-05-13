@@ -531,9 +531,10 @@ for _ in range(4):
         zero = torch.tensor([0]).to(device)
         one = torch.tensor([1]).to(device)
         f1 = F1(num_classes=2).to(device)
-        f1_all = 0.0
+        f1_all = 0
 
         weights = torch.tensor([0.1, 0.9]).to(device)
+
 
         for data in loader:
             data = data.to(device)
@@ -545,13 +546,19 @@ for _ in range(4):
             y = torch.where(y == 0, zero, one).to(device)
             pred = pred.max(dim=1)[1]
 
-            f1_all += f1(pred, y)
+
+            if l == 1:
+                pred_all = torch.cat([pred_all, pred])
+                y_all = torch.cat([y_all, y])
+            else:
+                pred_all = pred
+                y_all = y
 
 
             correct += pred.eq(y).float().mean().item()
             l += 1
 
-        return correct / l, f1_all/l
+        return correct / l, f1(pred_all, y_all)
 
     best_val = 0.0
     test_acc = 0.0
