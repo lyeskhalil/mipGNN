@@ -510,8 +510,8 @@ for _ in range(4):
             output, softmax = model(data)
 
 
-
-            loss = F.nll_loss(output, y, weight=weights)
+            # TODO
+            loss = F.nll_loss(output, y)
             loss.backward()
             loss_all += batch_size * loss.item()
             optimizer.step()
@@ -526,15 +526,9 @@ for _ in range(4):
         correct = 0
         l = 0
 
-
-
         zero = torch.tensor([0]).to(device)
         one = torch.tensor([1]).to(device)
         f1 = F1(num_classes=2).to(device)
-
-
-        weights = torch.tensor([0.1, 0.9]).to(device)
-
 
         for data in loader:
             data = data.to(device)
