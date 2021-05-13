@@ -496,7 +496,7 @@ for _ in range(4):
         loss_all = 0
         zero = torch.tensor([0]).to(device)
         one = torch.tensor([1]).to(device)
-        f1 = F1(num_classes=2)
+        f1 = F1(num_classes=2).to(device)
 
         f1_all = 0
 
