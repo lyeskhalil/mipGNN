@@ -447,7 +447,7 @@ for _ in range(4):
     print("###")
     zero = torch.tensor([0])
     one = torch.tensor([1])
-    print(torch.where(test_dataset.data.y_real <= bias_threshold, zero, one) / test_dataset.data.y.size(-1))
+    print(torch.where(test_dataset.data.y_real <= bias_threshold, zero, one).mean())
 
     # Split data.
     l = len(train_dataset)
