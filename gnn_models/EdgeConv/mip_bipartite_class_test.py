@@ -445,8 +445,8 @@ for _ in range(4):
     test_dataset = GraphDataset(name_test, pathr, path_test, bias_threshold, transform=MyTransform()).shuffle()
 
     print("###")
-    zero = torch.tensor([0]).to(device)
-    one = torch.tensor([1]).to(device)
+    zero = torch.tensor([0])
+    one = torch.tensor([1])
     print(torch.where(test_dataset.data.y_real <= bias_threshold, zero, one) / test_dataset.data.y.size(-1))
 
     # Split data.
