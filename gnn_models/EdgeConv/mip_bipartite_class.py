@@ -456,14 +456,11 @@ bias_threshold = 0.0001
 results = []
 
 
-i = 7
+i = 0
 for _ in range(4):
     pd = path_train = path_trainpath_train = dataset_list[i]
     name = name_train = name_list[i]
     train_dataset = GraphDataset(name_train, pathr, path_train, bias_threshold, transform=MyTransform()).shuffle()
-
-    print("ddsfsfd")
-    exit()
 
     pd = path_test = path_testpath_test = dataset_list[i + 1]
     name = name_test = name_list[i]
