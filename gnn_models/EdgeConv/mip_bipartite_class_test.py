@@ -378,11 +378,6 @@ class MyTransform(object):
         return new_data
 
 
-#
-# print(sys.argv[1])
-# i = int(sys.argv[1])
-
-
 dataset_list = [
     "../../data_new/data_graphsonly/gisp/p_hat300-2.clq/train/",
     "../../data_new/data_graphsonly/gisp/p_hat300-2.clq/test/",
@@ -433,14 +428,8 @@ name_list = [
     "11_train",
 ]
 
-# i = 6
 
-# print(name_list[i])
-# Prepare data.
 pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
-# Threshold for computing class labels.
-# TODOwww
-# bias_threshold = 0.005
 bias_threshold = 0.001
 
 results = []
@@ -456,7 +445,9 @@ for _ in range(4):
     test_dataset = GraphDataset(name_test, pathr, path_test, bias_threshold, transform=MyTransform()).shuffle()
 
     print("###")
-    print(test_dataset.data.y.sum() / test_dataset.data.y.size(-1))
+    zero = torch.tensor([0]).to(device)
+    one = torch.tensor([1]).to(device)
+    print(torch.where(test_dataset.data.y_real <= bias_threshold, zero, one) / test_dataset.data.y.size(-1))
 
     # Split data.
     l = len(train_dataset)
