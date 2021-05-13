@@ -6,32 +6,24 @@ sys.path.insert(0, '.')
 
 import os
 import os.path as osp
-import numpy as np
 import networkx as nx
 from sklearn.model_selection import train_test_split
 
-import torchmetrics as tm
-from torchmetrics import F1, Precision, Recall
-
+from torchmetrics import F1, Precision, Recall, Accuracy
 
 from torch_geometric.data import (InMemoryDataset, Data)
 from torch_geometric.data import DataLoader
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import seaborn as sns
-
 
 import torch_geometric.utils.softmax
-import matplotlib.pyplot as plt
 import torch
 
 import torch.nn.functional as F
 from torch.nn import BatchNorm1d as BN
 from torch.nn import Sequential, Linear, ReLU, Sigmoid
 from torch_geometric.nn import MessagePassing
-from torch_geometric.nn.inits import reset
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -98,7 +90,6 @@ class ErrorLayer(MessagePassing):
         msg = x_j * edge_attr
 
         return msg
-
 
     def update(self, aggr_out):
         return aggr_out
@@ -192,7 +183,7 @@ class SimpleNet(torch.nn.Module):
                                             (var_node_features_0.size(0), con_node_features.size(0))))
 
             x_con.append(F.relu(self.layers_var[i](x_var[-1], x_con[-1], edge_index_var, edge_features_var, rhs,
-                                                    (num_nodes_var.sum(), num_nodes_con.sum()))))
+                                                   (num_nodes_var.sum(), num_nodes_con.sum()))))
 
             x_var.append(F.relu(self.layers_con[i](x_con[-1], x_var[-1], edge_index_con, edge_features_con, x_err[-1],
                                                    (num_nodes_con.sum(), num_nodes_var.sum()))))
@@ -208,6 +199,7 @@ class SimpleNet(torch.nn.Module):
     def __repr__(self):
         return self.__class__.__name__
 
+
 # Preprocessing to create Torch dataset.
 class GraphDataset(InMemoryDataset):
 
@@ -219,8 +211,6 @@ class GraphDataset(InMemoryDataset):
         self.bias_threshold = bias_threshold
         global global_name
         global global_data_path
-
-
 
     @property
     def raw_file_names(self):
@@ -244,7 +234,6 @@ class GraphDataset(InMemoryDataset):
         # Iterate over instance files and create data objects.
         for num, filename in enumerate(os.listdir(pd)):
             print(filename, num, num_graphs)
-
 
             # Get graph.
             graph = nx.read_gpickle(pd + filename)
@@ -340,7 +329,6 @@ class GraphDataset(InMemoryDataset):
                     edge_list_var.append([node_to_varnode[s], node_to_connode[t]])
                     edge_features_var.append([edge_data['coeff']])
 
-
             edge_index_var = torch.tensor(edge_list_var).t().contiguous()
             edge_index_con = torch.tensor(edge_list_con).t().contiguous()
 
@@ -389,76 +377,73 @@ class MyTransform(object):
             new_data[key] = item
         return new_data
 
+
 #
 # print(sys.argv[1])
 # i = int(sys.argv[1])
 
 
 dataset_list = [
-"../../data_new/data_graphsonly/gisp/p_hat300-2.clq/train/",
-"../../data_new/data_graphsonly/gisp/p_hat300-2.clq/test/",
-"../../data_new/data_graphsonly/gisp/C250.9.clq/train/",
-"../../data_new/data_graphsonly/gisp/C250.9.clq/test/",
-"../../data_new/data_graphsonly/gisp/keller4.clq/train/",
-"../../data_new/data_graphsonly/gisp/keller4.clq/test/",
-"../../data_new/data_graphsonly/gisp/hamming8-4.clq/train/",
-"../../data_new/data_graphsonly/gisp/hamming8-4.clq/test/",
-"../../data_new/data_graphsonly/gisp/gen200_p0.9_55.clq/train/",
-"../../data_new/data_graphsonly/gisp/gen200_p0.9_55.clq/test/",
-"../../data_new/data_graphsonly/gisp/gen200_p0.9_44.clq/train/",
-"../../data_new/data_graphsonly/gisp/gen200_p0.9_44.clq/test/",
-"../../data_new/data_graphsonly/gisp/C125.9.clq/train/",
-"../../data_new/data_graphsonly/gisp/C125.9.clq/test/",
-"../../data_new/data_graphsonly/gisp/p_hat300-1.clq/train/",
-"../../data_new/data_graphsonly/gisp/p_hat300-1.clq/test/",
-"../../data_new/data_graphsonly/gisp/brock200_4.clq/train/",
-"../../data_new/data_graphsonly/gisp/brock200_4.clq/test/",
-"../../data_new/data_graphsonly/gisp/brock200_2.clq/train/",
-"../../data_new/data_graphsonly/gisp/brock200_2.clq/test/",
-"../../data_new/data_graphsonly/fcmnf/L_n200_p0.02_c500/train/",
-"../../data_new/data_graphsonly/fcmnf/L_n200_p0.02_c500/test/"
+    "../../data_new/data_graphsonly/gisp/p_hat300-2.clq/train/",
+    "../../data_new/data_graphsonly/gisp/p_hat300-2.clq/test/",
+    "../../data_new/data_graphsonly/gisp/C250.9.clq/train/",
+    "../../data_new/data_graphsonly/gisp/C250.9.clq/test/",
+    "../../data_new/data_graphsonly/gisp/keller4.clq/train/",
+    "../../data_new/data_graphsonly/gisp/keller4.clq/test/",
+    "../../data_new/data_graphsonly/gisp/hamming8-4.clq/train/",
+    "../../data_new/data_graphsonly/gisp/hamming8-4.clq/test/",
+    "../../data_new/data_graphsonly/gisp/gen200_p0.9_55.clq/train/",
+    "../../data_new/data_graphsonly/gisp/gen200_p0.9_55.clq/test/",
+    "../../data_new/data_graphsonly/gisp/gen200_p0.9_44.clq/train/",
+    "../../data_new/data_graphsonly/gisp/gen200_p0.9_44.clq/test/",
+    "../../data_new/data_graphsonly/gisp/C125.9.clq/train/",
+    "../../data_new/data_graphsonly/gisp/C125.9.clq/test/",
+    "../../data_new/data_graphsonly/gisp/p_hat300-1.clq/train/",
+    "../../data_new/data_graphsonly/gisp/p_hat300-1.clq/test/",
+    "../../data_new/data_graphsonly/gisp/brock200_4.clq/train/",
+    "../../data_new/data_graphsonly/gisp/brock200_4.clq/test/",
+    "../../data_new/data_graphsonly/gisp/brock200_2.clq/train/",
+    "../../data_new/data_graphsonly/gisp/brock200_2.clq/test/",
+    "../../data_new/data_graphsonly/fcmnf/L_n200_p0.02_c500/train/",
+    "../../data_new/data_graphsonly/fcmnf/L_n200_p0.02_c500/test/"
 ]
 
 name_list = [
-"1_test",
-"1_train",
-"2_test",
-"2_train",
-"3_test",
-"3_train",
-"4_test",
-"4_train",
-"5_test",
-"5_train",
-"6_test",
-"6_train",
-"7_test",
-"7_train",
-"8_test",
-"8_train",
-"9_test",
-"9_train",
-"10_test",
-"10_train",
-"11_test",
-"11_train",
+    "1_test",
+    "1_train",
+    "2_test",
+    "2_train",
+    "3_test",
+    "3_train",
+    "4_test",
+    "4_train",
+    "5_test",
+    "5_train",
+    "6_test",
+    "6_train",
+    "7_test",
+    "7_train",
+    "8_test",
+    "8_train",
+    "9_test",
+    "9_train",
+    "10_test",
+    "10_train",
+    "11_test",
+    "11_train",
 ]
 
-#i = 6
+# i = 6
 
-#print(name_list[i])
+# print(name_list[i])
 # Prepare data.
 pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
 # Threshold for computing class labels.
 # TODOwww
-#bias_threshold = 0.005
+# bias_threshold = 0.005
 bias_threshold = 0.001
 
-
-
-
 results = []
-
 
 i = 0
 for _ in range(4):
@@ -496,18 +481,15 @@ for _ in range(4):
         one = torch.tensor([1]).to(device)
 
         # TODO
-        #weights = torch.tensor([0.05, 0.95]).to(device)
-
+        # weights = torch.tensor([0.05, 0.95]).to(device)
         for data in train_loader:
             data = data.to(device)
 
             y = data.y_real
             y = torch.where(y <= bias_threshold, zero, one).to(device)
 
-
             optimizer.zero_grad()
             output, softmax = model(data)
-
 
             # TODO
             loss = F.nll_loss(output, y)
@@ -530,16 +512,15 @@ for _ in range(4):
         f1 = F1(num_classes=2, average="macro").to(device)
         pr = Precision(num_classes=2, average="macro").to(device)
         re = Recall(num_classes=2, average="macro").to(device)
+        acc = Accuracy(num_classes=2).to(device)
 
         for data in loader:
             data = data.to(device)
             pred, softmax = model(data)
 
-
             y = data.y_real
             y = torch.where(y <= bias_threshold, zero, one).to(device)
             pred = pred.max(dim=1)[1]
-
 
             if l == 1:
                 pred_all = torch.cat([pred_all, pred])
@@ -548,11 +529,11 @@ for _ in range(4):
                 pred_all = pred
                 y_all = y
 
-
             correct += pred.eq(y).float().mean().item()
             l += 1
 
-        return correct / l, f1(pred_all, y_all), pr(pred_all, y_all), re(pred_all, y_all)
+        return acc(pred_all, y_all), f1(pred_all, y_all), pr(pred_all, y_all), re(pred_all, y_all)
+
 
     best_val = 0.0
     test_acc = 0.0
@@ -587,20 +568,17 @@ for _ in range(4):
 
         # Break if learning rate is smaller 10**-6.
         if lr < 0.000001:
-
             break
 
         print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
               'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
-                                                                           train_acc, val_acc, test_acc))
+                                                                            train_acc, val_acc, test_acc))
 
         print("F1", train_f1, val_f1, test_f1)
         print("Pr", train_pr, val_pr, test_pr)
         print("Re", train_re, val_re, test_re)
 
-
     results.append(r)
     i += 2
-
 
 print(results)
