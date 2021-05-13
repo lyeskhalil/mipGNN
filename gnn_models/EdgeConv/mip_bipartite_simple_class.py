@@ -19,6 +19,8 @@ from torch.nn import BatchNorm1d as BN
 from torch.nn import Sequential, Linear, ReLU
 from torch_geometric.nn import MessagePassing
 
+from torchmetrics import F1, Precision, Recall, Accuracy
+
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
