@@ -594,9 +594,10 @@ for _ in range(4):
               'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
                                                                            train_acc, val_acc, test_acc))
 
-        print(train_f1, val_f1, test_f1)
-        print(train_pr, val_pr, test_pr)
-        print(train_re, val_re, test_re)
+        print("F1", train_f1, val_f1, test_f1)
+        print("Pr", train_pr, val_pr, test_pr)
+        print("Re", train_re, val_re, test_re)
+
 
     results.append(r)
     i += 2
