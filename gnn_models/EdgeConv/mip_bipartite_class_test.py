@@ -11,7 +11,7 @@ import networkx as nx
 from sklearn.model_selection import train_test_split
 
 import torchmetrics as tm
-from torchmetrics import F1, Precision
+from torchmetrics import F1, Precision, Recall
 
 
 from torch_geometric.data import (InMemoryDataset, Data)
@@ -528,7 +528,8 @@ for _ in range(4):
         zero = torch.tensor([0]).to(device)
         one = torch.tensor([1]).to(device)
         f1 = F1(num_classes=2, average="macro").to(device)
-        pr = Precision(num_classes=2,  average="macro").to(device)
+        pr = Precision(num_classes=2, average="macro").to(device)
+        re = Recall(num_classes=2, average="macro").to(device)
 
         for data in loader:
             data = data.to(device)
@@ -551,11 +552,13 @@ for _ in range(4):
             correct += pred.eq(y).float().mean().item()
             l += 1
 
-        return correct / l, f1(pred_all, y_all), pr(pred_all, y_all)
+        return correct / l, f1(pred_all, y_all), pr(pred_all, y_all), re(pred_all, y_all)
 
     best_val = 0.0
     test_acc = 0.0
     test_f1 = 0.0
+    test_re = 0.0
+    test_pr = 0.0
     r = []
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -570,15 +573,15 @@ for _ in range(4):
         print(i)
 
         train_loss = train(epoch)
-        train_acc, train_f1, train_pr = test(train_loader)
+        train_acc, train_f1, train_pr, train_re = test(train_loader)
 
-        val_acc, val_f1, val_pr = test(val_loader)
+        val_acc, val_f1, val_pr, val_re = test(val_loader)
         scheduler.step(val_acc)
         lr = scheduler.optimizer.param_groups[0]['lr']
 
         if val_acc > best_val:
             best_val = val_acc
-            test_acc, test_f1, test_pr = test(test_loader)
+            test_acc, test_f1, test_pr, test_re = test(test_loader)
 
         r.append(test_acc)
 
@@ -593,6 +596,7 @@ for _ in range(4):
 
         print(train_f1, val_f1, test_f1)
         print(train_pr, val_pr, test_pr)
+        print(train_re, val_re, test_re)
 
     results.append(r)
     i += 2
