@@ -107,7 +107,7 @@ class SimpleNet(torch.nn.Module):
         x = F.relu(self.lin2(x))
         x = F.relu(self.lin3(x))
         x = self.lin4(x)
-        return F.log_softmax(x, dim=-1)
+        return F.log_softmax(x, dim=-1), F.softmax(x, dim=-1)
 
     def __repr__(self):
         return self.__class__.__name__
@@ -115,20 +115,23 @@ class SimpleNet(torch.nn.Module):
 
 # Preprocessing to create Torch dataset.
 class GraphDataset(InMemoryDataset):
-    def __init__(self, root, data_path, bias_threshold, transform=None, pre_transform=None,
+
+    def __init__(self, name, root, data_path, bias_threshold, transform=None, pre_transform=None,
                  pre_filter=None):
         super(GraphDataset, self).__init__(root, transform, pre_transform, pre_filter)
         self.data, self.slices = torch.load(self.processed_paths[0])
-        self.data_path = data_path
+
         self.bias_threshold = bias_threshold
+        global global_name
+        global global_data_path
 
     @property
     def raw_file_names(self):
-        return sname
+        return name
 
     @property
     def processed_file_names(self):
-        return sname
+        return name
 
     def download(self):
         pass
@@ -137,14 +140,16 @@ class GraphDataset(InMemoryDataset):
         print("Preprocessing.")
 
         data_list = []
-        num_graphs = len(os.listdir(data_path))
+        num_graphs = len(os.listdir(pd))
+
+        print(pd)
 
         # Iterate over instance files and create data objects.
-        for num, filename in enumerate(os.listdir(data_path)):
+        for num, filename in enumerate(os.listdir(pd)):
             print(filename, num, num_graphs)
 
             # Get graph.
-            graph = nx.read_gpickle(data_path + filename)
+            graph = nx.read_gpickle(pd + filename)
 
             # Make graph directed.
             graph = nx.convert_node_labels_to_integers(graph)
@@ -162,12 +167,17 @@ class GraphDataset(InMemoryDataset):
             num_nodes_con = 0
             # Targets (classes).
             y = []
+            y_real = []
             # Features for variable nodes.
             feat_var = []
             # Feature for constraints nodes.
             feat_con = []
             # Right-hand sides of equations.
             feat_rhs = []
+
+            index = []
+            index_var = []
+            obj = []
 
             # Iterate over nodes, and collect features.
             for i, (node, node_data) in enumerate(graph.nodes(data=True)):
@@ -176,21 +186,34 @@ class GraphDataset(InMemoryDataset):
                     node_to_varnode[i] = num_nodes_var
                     num_nodes_var += 1
 
+                    y_real.append(node_data['bias'])
                     if (node_data['bias'] < bias_threshold):
                         y.append(0)
                     else:
                         y.append(1)
 
-                    feat_var.append([node_data['objcoeff'], graph.degree[i]])
+                    if 'objcoeff' in node_data:
+                        feat_var.append([node_data['objcoeff'], graph.degree[i]])
+                        obj.append([node_data['objcoeff']])
+                    else:
+                        feat_var.append([node_data['obj_coeff'], graph.degree[i]])
+                        obj.append([node_data['obj_coeff']])
+
+                    index_var.append(0)
 
                 # Node is constraint node.
                 elif node_data['bipartite'] == 1:
                     node_to_connode[i] = num_nodes_con
                     num_nodes_con += 1
 
-                    rhs = node_data['rhs']
-                    feat_rhs.append(rhs)
+                    if 'rhs' in node_data:
+                        rhs = node_data['rhs']
+                    else:
+                        rhs = node_data['bound']
+
+                    feat_rhs.append([rhs])
                     feat_con.append([rhs, graph.degree[i]])
+                    index.append(0)
                 else:
                     print("Error in graph format.")
                     exit(-1)
@@ -227,13 +250,17 @@ class GraphDataset(InMemoryDataset):
             data.edge_index_con = edge_index_con
 
             data.y = torch.from_numpy(np.array(y)).to(torch.long)
+            data.y_real = torch.from_numpy(np.array(y_real)).to(torch.float)
             data.var_node_features = torch.from_numpy(np.array(feat_var)).to(torch.float)
             data.con_node_features = torch.from_numpy(np.array(feat_con)).to(torch.float)
             data.rhs = torch.from_numpy(np.array(feat_rhs)).to(torch.float)
+            data.obj = torch.from_numpy(np.array(obj)).to(torch.float)
             data.edge_features_con = torch.from_numpy(np.array(edge_features_con)).to(torch.float)
             data.edge_features_var = torch.from_numpy(np.array(edge_features_var)).to(torch.float)
             data.num_nodes_var = num_nodes_var
             data.num_nodes_con = num_nodes_con
+            data.index = torch.from_numpy(np.array(index)).to(torch.long)
+            data.index_var = torch.from_numpy(np.array(index_var)).to(torch.long)
 
             data_list.append(data)
 
@@ -248,6 +275,10 @@ class MyData(Data):
             return torch.tensor([self.num_nodes_var, self.num_nodes_con]).view(2, 1)
         elif key in ['edge_index_con']:
             return torch.tensor([self.num_nodes_con, self.num_nodes_var]).view(2, 1)
+        elif key in ['index']:
+            return torch.tensor(self.num_nodes_con)
+        elif key in ['index_var']:
+            return torch.tensor(self.num_nodes_var)
         else:
             return 0
 
@@ -258,7 +289,6 @@ class MyTransform(object):
         for key, item in data:
             new_data[key] = item
         return new_data
-
 
 
 dataset_list = [
