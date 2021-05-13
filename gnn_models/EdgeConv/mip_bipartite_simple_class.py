@@ -341,7 +341,6 @@ name_list = [
     "11_train",
 ]
 
-
 pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
 bias_threshold = 0.001
 
@@ -369,7 +368,7 @@ for _ in range(4):
 
     val_dataset = train_dataset[val_index].shuffle()
     train_dataset = train_dataset[train_index].shuffle()
-    test_dataset = test_dataset.shuffle()#[0:200]
+    test_dataset = test_dataset.shuffle()  # [0:200]
 
     batch_size = 5
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
