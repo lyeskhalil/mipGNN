@@ -490,7 +490,6 @@ if log:
     print(train_dataset.data.y_real.mean())
     #val_dataset.data.y_real = torch.exp(val_dataset.data.y_real) - eps
 
-print(train_dataset.data.y.mean())
 plt.hist(train_dataset.data.y_real.cpu().numpy(), np.arange(10,0.1))
 plt.show()
 plt.savefig('plot_trans.png')
