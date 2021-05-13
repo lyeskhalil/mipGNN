@@ -494,7 +494,7 @@ for _ in range(4):
             data = data.to(device)
 
             y = data.y_real
-            y = torch.where(y == 0, torch.tensor([0]), torch.tensor([1]))
+            y = torch.where(y == 0, torch.tensor([0]), torch.tensor([1])).to(device)
 
 
             optimizer.zero_grad()
@@ -523,7 +523,7 @@ for _ in range(4):
             pred, softmax = model(data)
 
             y = data.y_real
-            y = torch.where(y == 0, torch.tensor([0]), torch.tensor([1]))
+            y = torch.where(y == 0, torch.tensor([0]), torch.tensor([1])).to(device)
 
             s_all.extend(list(softmax[:, 0].detach().cpu().numpy()))
 
