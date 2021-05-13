@@ -483,9 +483,9 @@ test_dataset = test_dataset[0:200].shuffle()
 print(val_dataset.data.y_real.mean())
 
 print(train_dataset.data.y_real.min(), train_dataset.data.y_real.mean(), train_dataset.data.y_real.max())
-plt.hist(train_dataset.data.y_real.cpu().numpy(), bins=1000)
-plt.show()
-plt.savefig('plot_pretrans.png')
+# plt.hist(train_dataset.data.y_real.cpu().numpy(), bins=1000)
+# plt.show()
+# plt.savefig('plot_pretrans.png')
 
 log = True
 if log:
@@ -497,7 +497,7 @@ if log:
 
 plt.clf()
 print(train_dataset.data.y_real.min(), train_dataset.data.y_real.mean(), train_dataset.data.y_real.max())
-plt.hist(train_dataset.data.y_real.cpu().numpy(), bins=1000)
+plt.hist(train_dataset.data.y_real.cpu().numpy(), bins=100)
 plt.show()
 plt.savefig('plot_trans.png')
 
