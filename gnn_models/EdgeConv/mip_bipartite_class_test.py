@@ -528,7 +528,7 @@ for _ in range(4):
 
         zero = torch.tensor([0]).to(device)
         one = torch.tensor([1]).to(device)
-        f1 = F1(num_classes=2).to(device)
+        f1 = F1(num_classes=2, average="Macro").to(device)
         pr = Precision(num_classes=2).to(device)
 
         for data in loader:
@@ -536,7 +536,6 @@ for _ in range(4):
             pred, softmax = model(data)
 
 
-            y = data.y_real
             y = data.y_real
             y = torch.where(y == 0, zero, one).to(device)
             pred = pred.max(dim=1)[1]
