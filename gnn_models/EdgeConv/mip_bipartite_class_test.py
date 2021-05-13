@@ -496,12 +496,9 @@ for _ in range(4):
         loss_all = 0
         zero = torch.tensor([0]).to(device)
         one = torch.tensor([1]).to(device)
-        f1 = F1(num_classes=2).to(device)
-
-        f1_all = 0
 
         weights = torch.tensor([0.1, 0.9]).to(device)
-        c = 0
+
         for data in train_loader:
             data = data.to(device)
 
@@ -512,14 +509,14 @@ for _ in range(4):
             optimizer.zero_grad()
             output, softmax = model(data)
 
-            f1_all += f1(softmax, y)
+
 
             loss = F.nll_loss(output, y, weight=weights)
             loss.backward()
             loss_all += batch_size * loss.item()
             optimizer.step()
-            c += 1
-        return loss_all / len(train_dataset), f1_all/c
+
+        return loss_all / len(train_dataset)
 
 
     @torch.no_grad()
@@ -529,28 +526,36 @@ for _ in range(4):
         correct = 0
         l = 0
 
-        s_all = []
+
 
         zero = torch.tensor([0]).to(device)
         one = torch.tensor([1]).to(device)
+        f1 = F1(num_classes=2).to(device)
+        f1_all = 0.0
+
+        weights = torch.tensor([0.1, 0.9]).to(device)
+
         for data in loader:
             data = data.to(device)
             pred, softmax = model(data)
 
+
             y = data.y_real
             y = data.y_real
             y = torch.where(y == 0, zero, one).to(device)
-
-            s_all.extend(list(softmax[:, 0].detach().cpu().numpy()))
-
             pred = pred.max(dim=1)[1]
+
+            f1_all += f1(pred, y)
+
+
             correct += pred.eq(y).float().mean().item()
             l += 1
 
-        return correct / l, s_all
+        return correct / l, f1_all/l
 
     best_val = 0.0
     test_acc = 0.0
+    test_f1 = 0.0
     r = []
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -564,16 +569,16 @@ for _ in range(4):
     for epoch in range(1, 20):
         print(i)
 
-        train_loss, _ = train(epoch)
-        train_acc, _ = test(train_loader)
+        train_loss = train(epoch)
+        train_acc, train_f1 = test(train_loader)
 
-        val_acc, _ = test(val_loader)
+        val_acc, val_f1 = test(val_loader)
         scheduler.step(val_acc)
         lr = scheduler.optimizer.param_groups[0]['lr']
 
         if val_acc > best_val:
             best_val = val_acc
-            test_acc, _ = test(test_loader)
+            test_acc, test_f1 = test(test_loader)
 
         r.append(test_acc)
 
@@ -586,125 +591,10 @@ for _ in range(4):
               'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
                                                                            train_acc, val_acc, test_acc))
 
+        print(train_f1, val_f1, test_f1)
+
     results.append(r)
     i += 2
 
 
 print(results)
-
-# hp_all = []
-# for i in range(len(file_list)):
-#
-#     print(name_list[i])
-#
-#     path = file_list[i]
-#     name = name_list[i]
-#
-#     results = []
-#
-#     # Prepare data.
-#     path = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
-#     # Path to raw graph data.
-#     data_path = path
-#     sname = name
-#     # Threshold for computing class labels.
-#     bias_threshold = 0.050
-#     # Create dataset.
-#     dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform())  # .shuffle()
-#
-#     # Split data.
-#     l = len(dataset)
-#     train_index, rest = train_test_split(list(range(0, l)), test_size=0.2)
-#     l = len(rest)
-#     val_index = rest[0:int(l / 2)]
-#     test_index = rest[int(l / 2):]
-#
-#     train_dataset = dataset[train_index].shuffle()
-#     val_dataset = dataset[val_index].shuffle()
-#     test_dataset = dataset[test_index].shuffle()
-#
-#     batch_size = 15
-#     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-#     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
-#     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
-#
-#
-#     def train(epoch):
-#         model.train()
-#
-#         loss_all = 0
-#         for data in train_loader:
-#             data = data.to(device)
-#             optimizer.zero_grad()
-#             output = model(data)
-#
-#             loss = F.nll_loss(output, data.y)
-#             loss.backward()
-#             loss_all += batch_size * loss.item()
-#             optimizer.step()
-#         return loss_all / len(train_dataset)
-#
-#
-#     def test(loader):
-#         model.eval()
-#
-#         correct = 0
-#         l = 0
-#
-#         for data in loader:
-#             data = data.to(device)
-#             pred = model(data)
-#             pred = pred.max(dim=1)[1]
-#             correct += pred.eq(data.y).float().mean().item()
-#             l += 1
-#
-#         return correct / l
-#
-#
-#     best_val = 0.0
-#     test_acc = 0.0
-#     best_hp = []
-#
-#
-#     for dim in [32, 64, 128]:
-#         for l in [2,3,4,5]:
-#             for aggr in ["mean", "max", "add"]:
-#                 print(dim, l, aggr)
-#
-#                 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-#                 model = SimpleNet(hidden=dim, num_layers=l, aggr = aggr).to(device)
-#                 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-#
-#                 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
-#                                                                        factor=0.8, patience=10,
-#                                                                        min_lr=0.0000001)
-#
-#                 for epoch in range(1, 100):
-#
-#                     train_loss = train(epoch)
-#                     train_acc = test(train_loader)
-#
-#                     val_acc = test(val_loader)
-#                     scheduler.step(val_acc)
-#                     lr = scheduler.optimizer.param_groups[0]['lr']
-#
-#                     if val_acc > best_val:
-#                         best_val = val_acc
-#                         test_acc = test(test_loader)
-#                         best_hp = [dim, l, aggr, test_acc]
-#
-#                     # Break if learning rate is smaller 10**-6.
-#                     if lr < 0.000001:
-#                         results.append(test_acc)
-#                         break
-#
-#                     #print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
-#                     #      'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
-#                     #                                                                    train_acc, val_acc, test_acc))
-#
-#     print(best_hp)
-#     hp_all.append(best_hp)
-#
-# print("###")
-# print(hp_all)
-
