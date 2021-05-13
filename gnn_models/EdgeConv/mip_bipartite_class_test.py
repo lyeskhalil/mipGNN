@@ -512,7 +512,7 @@ for _ in range(4):
             optimizer.zero_grad()
             output, softmax = model(data)
 
-            f1_all += f1(output, y)
+            f1_all += f1(softmax, y)
 
             loss = F.nll_loss(output, y, weight=weights)
             loss.backward()
