@@ -490,11 +490,13 @@ for _ in range(4):
         s_all = []
 
         loss_all = 0
+        zero = torch.tensor([0]).to(device)
+        one = torch.tensor([1]).to(device)
         for data in train_loader:
             data = data.to(device)
 
             y = data.y_real
-            y = torch.where(y == 0, torch.tensor([0]).to(device), torch.tensor([1]).to(device)).to(device)
+            y = torch.where(y == 0, zero, one).to(device)
 
 
             optimizer.zero_grad()
@@ -518,12 +520,15 @@ for _ in range(4):
 
         s_all = []
 
+        zero = torch.tensor([0]).to(device)
+        one = torch.tensor([1]).to(device)
         for data in loader:
             data = data.to(device)
             pred, softmax = model(data)
 
             y = data.y_real
-            y = torch.where(y == 0, torch.tensor([0]).to(device), torch.tensor([1]).to(device)).to(device)
+            y = data.y_real
+            y = torch.where(y == 0, zero, one).to(device)
 
             s_all.extend(list(softmax[:, 0].detach().cpu().numpy()))
 
