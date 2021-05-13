@@ -460,7 +460,7 @@ bias_threshold = 0.0001
 results = []
 
 
-i = 0
+i = 2
 for _ in range(4):
     pd = path_train = path_trainpath_train = dataset_list[i]
     name = name_train = name_list[i]
@@ -497,7 +497,8 @@ for _ in range(4):
         zero = torch.tensor([0]).to(device)
         one = torch.tensor([1]).to(device)
 
-        weights = torch.tensor([0.05, 0.95]).to(device)
+        # TODO
+        #weights = torch.tensor([0.05, 0.95]).to(device)
 
         for data in train_loader:
             data = data.to(device)
@@ -511,7 +512,7 @@ for _ in range(4):
 
 
             # TODO
-            loss = F.nll_loss(output, y, weight=weights)
+            loss = F.nll_loss(output, y)
             loss.backward()
             loss_all += batch_size * loss.item()
             optimizer.step()
