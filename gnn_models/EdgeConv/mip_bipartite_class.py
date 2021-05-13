@@ -542,7 +542,7 @@ scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
                                                        factor=0.8, patience=6,
                                                        min_lr=0.0000001)
 
-for epoch in range(1, 50):
+for epoch in range(1, 20):
     print(i)
 
     train_loss, _ = train(epoch)
