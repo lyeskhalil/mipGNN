@@ -10,6 +10,10 @@ import numpy as np
 import networkx as nx
 from sklearn.model_selection import train_test_split
 
+import torchmetrics as tm
+from torchmetrics import F1
+
+
 from torch_geometric.data import (InMemoryDataset, Data)
 from torch_geometric.data import DataLoader
 
@@ -492,8 +496,12 @@ for _ in range(4):
         loss_all = 0
         zero = torch.tensor([0]).to(device)
         one = torch.tensor([1]).to(device)
+        f1 = F1(num_classes=2)
+
+        f1_all = 0
 
         weights = torch.tensor([0.1, 0.9]).to(device)
+        c = 0
         for data in train_loader:
             data = data.to(device)
 
@@ -504,13 +512,14 @@ for _ in range(4):
             optimizer.zero_grad()
             output, softmax = model(data)
 
-            s_all.extend(list(softmax[:, 0].detach().cpu().numpy()))
+            f1_all += f1(output, y)
 
             loss = F.nll_loss(output, y, weight=weights)
             loss.backward()
             loss_all += batch_size * loss.item()
             optimizer.step()
-        return loss_all / len(train_dataset), s_all
+            c += 1
+        return loss_all / len(train_dataset), f1_all/c
 
 
     @torch.no_grad()
