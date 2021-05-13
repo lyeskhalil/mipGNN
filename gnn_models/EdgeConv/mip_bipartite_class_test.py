@@ -450,9 +450,9 @@ name_list = [
 # Prepare data.
 pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
 # Threshold for computing class labels.
-# TODO
+# TODOwww
 #bias_threshold = 0.005
-bias_threshold = 0.0001
+bias_threshold = 0.001
 
 
 
@@ -460,7 +460,7 @@ bias_threshold = 0.0001
 results = []
 
 
-i = 2
+i = 0
 for _ in range(4):
     pd = path_train = path_trainpath_train = dataset_list[i]
     name = name_train = name_list[i]
@@ -491,8 +491,6 @@ for _ in range(4):
     def train(epoch):
         model.train()
 
-        s_all = []
-
         loss_all = 0
         zero = torch.tensor([0]).to(device)
         one = torch.tensor([1]).to(device)
@@ -504,7 +502,7 @@ for _ in range(4):
             data = data.to(device)
 
             y = data.y_real
-            y = torch.where(y == 0, zero, one).to(device)
+            y = torch.where(y <= bias_threshold, zero, one).to(device)
 
 
             optimizer.zero_grad()
@@ -538,7 +536,7 @@ for _ in range(4):
 
 
             y = data.y_real
-            y = torch.where(y == 0, zero, one).to(device)
+            y = torch.where(y <= bias_threshold, zero, one).to(device)
             pred = pred.max(dim=1)[1]
 
 
