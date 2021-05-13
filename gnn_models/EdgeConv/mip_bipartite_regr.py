@@ -487,7 +487,7 @@ print(train_dataset.data.y_real.min(), train_dataset.data.y_real.mean(), train_d
 # plt.show()
 # plt.savefig('plot_pretrans.png')
 
-log = True
+log = False
 if log:
     eps = 1.
     train_dataset.data.y_real = torch.log(train_dataset.data.y_real + eps)
