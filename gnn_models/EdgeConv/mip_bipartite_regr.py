@@ -489,7 +489,7 @@ print(train_dataset.data.y_real.min(), train_dataset.data.y_real.mean(), train_d
 
 log = True
 if log:
-    eps = 1.
+    eps = 10.
     train_dataset.data.y_real = torch.log(train_dataset.data.y_real + eps)
     test_dataset.data.y_real = torch.log(test_dataset.data.y_real + eps)
     print(train_dataset.data.y_real.mean())
