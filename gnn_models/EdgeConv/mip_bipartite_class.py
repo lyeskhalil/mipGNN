@@ -478,7 +478,7 @@ train_dataset = train_dataset[train_index].shuffle()
 test_dataset = test_dataset.shuffle()
 
 
-batch_size = 15
+batch_size = 5
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
