@@ -530,53 +530,44 @@ test_acc = 0.0
 best_hp = []
 
 
-results = []
-models = []
-for i in range(5):
+best_val = 0.0
+test_acc = 0.0
+r = []
 
-    models.append(SimpleNet(hidden=32, num_layers=5, aggr="mean"))
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+model = SimpleNet(hidden=32, num_layers=5, aggr="mean").to(device)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
+scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
+                                                       factor=0.8, patience=6,
+                                                       min_lr=0.0000001)
 
-for i in range(5):
-    best_val = 0.0
-    test_acc = 0.0
-    r = []
+for epoch in range(1, 50):
+    print(i)
 
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model = models[i].to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    train_loss, _ = train(epoch)
+    train_acc, _ = test(train_loader)
 
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
-                                                           factor=0.8, patience=6,
-                                                           min_lr=0.0000001)
+    val_acc, _ = test(val_loader)
+    scheduler.step(val_acc)
+    lr = scheduler.optimizer.param_groups[0]['lr']
 
-    for epoch in range(1, 50):
-        print(i)
+    if val_acc > best_val:
+        best_val = val_acc
+        test_acc, _ = test(test_loader)
 
-        train_loss, _ = train(epoch)
-        train_acc, _ = test(train_loader)
+    r.append(test_acc)
 
-        val_acc, _ = test(val_loader)
-        scheduler.step(val_acc)
-        lr = scheduler.optimizer.param_groups[0]['lr']
+    # Break if learning rate is smaller 10**-6.
+    if lr < 0.000001:
+        results.append(test_acc)
+        break
 
-        if val_acc > best_val:
-            best_val = val_acc
-            test_acc, _ = test(test_loader)
+    print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
+          'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
+                                                                       train_acc, val_acc, test_acc))
 
-        r.append(test_acc)
-
-        # Break if learning rate is smaller 10**-6.
-        if lr < 0.000001:
-            results.append(test_acc)
-            break
-
-        print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
-              'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
-                                                                           train_acc, val_acc, test_acc))
-
-    results.append(r)
-
+print(r)
 
 
 # hp_all = []
