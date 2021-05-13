@@ -390,32 +390,57 @@ class MyTransform(object):
 # i = int(sys.argv[1])
 
 
-
-file_list = [
-    "../../DATA1/er_SET2/200_200/alpha_0.75_setParam_100/train/",
-    "../../DATA1/er_SET2/200_200/alpha_0.25_setParam_100/train/",
-    "../../DATA1/er_SET2/200_200/alpha_0.5_setParam_100/train/",
-    "../../DATA1/er_SET2/300_300/alpha_0.75_setParam_100/train/",
-    "../../DATA1/er_SET2/300_300/alpha_0.25_setParam_100/train/",
-    "../../DATA1/er_SET2/300_300/alpha_0.5_setParam_100/train/",
-    "../../DATA1/er_SET1/400_400/alpha_0.75_setParam_100/train/",
-    "../../DATA1/er_SET1/400_400/alpha_0.5_setParam_100/train/",
-    # "../../DATA1/er_SET1/400_400/alpha_0.25_setParam_100/train/",
+dataset_list = [
+"../../data_new/data_graphsonly/gisp/p_hat300-2.clq/train/",
+"../../data_new/data_graphsonly/gisp/p_hat300-2.clq/test/",
+"../../data_new/data_graphsonly/gisp/C250.9.clq/train/",
+"../../data_new/data_graphsonly/gisp/C250.9.clq/test/",
+"../../data_new/data_graphsonly/gisp/keller4.clq/train/",
+"../../data_new/data_graphsonly/gisp/keller4.clq/test/",
+"../../data_new/data_graphsonly/gisp/hamming8-4.clq/train/",
+"../../data_new/data_graphsonly/gisp/hamming8-4.clq/test/",
+"../../data_new/data_graphsonly/gisp/gen200_p0.9_55.clq/train/",
+"../../data_new/data_graphsonly/gisp/gen200_p0.9_55.clq/test/",
+"../../data_new/data_graphsonly/gisp/gen200_p0.9_44.clq/train/",
+"../../data_new/data_graphsonly/gisp/gen200_p0.9_44.clq/test/",
+"../../data_new/data_graphsonly/gisp/C125.9.clq/train/",
+"../../data_new/data_graphsonly/gisp/C125.9.clq/test/",
+"../../data_new/data_graphsonly/gisp/p_hat300-1.clq/train/",
+"../../data_new/data_graphsonly/gisp/p_hat300-1.clq/test/",
+"../../data_new/data_graphsonly/gisp/brock200_4.clq/train/",
+"../../data_new/data_graphsonly/gisp/brock200_4.clq/test/",
+"../../data_new/data_graphsonly/gisp/brock200_2.clq/train/",
+"../../data_new/data_graphsonly/gisp/brock200_2.clq/test/",
+"../../data_new/data_graphsonly/fcmnf/L_n200_p0.02_c500/train/",
+"../../data_new/data_graphsonly/fcmnf/L_n200_p0.02_c500/test/"
 ]
 
 name_list = [
-    "er_SET2_200_200_alpha_0_75_setParam_100_train",
-    "er_SET2_200_200_alpha_0_25_setParam_100_train",
-    "er_SET2_200_200_alpha_0_5_setParam_100_train",
-    "er_SET2_300_300_alpha_0_75_setParam_100_train",
-    "er_SET2_300_300_alpha_0_25_setParam_100_train",
-    "er_SET2_300_300_alpha_0_5_setParam_100_train",
-    "er_SET1_400_400_alpha_0_75_setParam_100_train",
-    "er_SET1_400_400_alpha_0_5_setParam_100_train",
-    # "er_SET1_400_400_alpha_0_25_setParam_100_train",
+"1_test",
+"1_train",
+"2_test",
+"2_train",
+"3_test",
+"3_train",
+"4_test",
+"4_train",
+"5_test",
+"5_train",
+"6_test",
+"6_train",
+"7_test",
+"7_train",
+"8_test",
+"8_train",
+"9_test",
+"9_train",
+"10_test",
+"10_train",
+"11_test",
+"11_train",
 ]
 
-
+i = 6
 
 #print(name_list[i])
 # Prepare data.
@@ -424,15 +449,14 @@ pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
 # TODO
 bias_threshold = 0.005
 
-#pd = path_train = "../../data_new/data_graphsonly/gisp/brock200_2.clq/train/"
-pd = path_train = "../../data_new/data_graphsonly/gisp/hamming8-4.clq/train/"
-name = name_train = "hamming8-4clq_train"
+pd = path_train = path_trainpath_train = dataset_list[i]
+name = name_train = name_list[i]
 train_dataset = GraphDataset(name_train, pathr, path_train, bias_threshold, transform=MyTransform()).shuffle()
 
-#pd = path_test = "../../data_new/data_graphsonly/gisp/brock200_2.clq/test/"
-pd = path_test = "../../data_new/data_graphsonly/gisp/hamming8-4.clq/test/"
-name = name_test = "hamming8-4clq_test"
+pd = path_test = path_testpath_test = dataset_list[i+1]
+name = name_test = name_list[i]
 test_dataset = GraphDataset(name_test, pathr, path_test, bias_threshold, transform=MyTransform()).shuffle()
+
 
 results = []
 
