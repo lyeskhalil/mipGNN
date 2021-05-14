@@ -196,7 +196,7 @@ class SimpleNet(torch.nn.Module):
         x = F.relu(self.lin2(x))
         x = F.relu(self.lin3(x))
         x = self.lin4(x)
-        return F.log_softmax(x, dim=-1), F.softmax(x, dim=-1)
+        return F.log_softmax(x, dim=-1)
 
     def __repr__(self):
         return self.__class__.__name__
