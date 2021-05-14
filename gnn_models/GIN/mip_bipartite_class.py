@@ -575,7 +575,7 @@ for epoch in range(1, 100):
     if val_acc > best_val:
         best_val = val_acc
         test_acc, test_f1, test_pr, test_re = test(test_loader)
-        torch.save(model.state_dict(), "trained_p_hat300-2_100")
+        torch.save(model.state_dict(), "trained_p_hat300-2_100_GIN")
 
     r.append(test_acc)
 
