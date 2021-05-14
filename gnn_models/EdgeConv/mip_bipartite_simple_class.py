@@ -20,7 +20,7 @@ from torch.nn import Sequential, Linear, ReLU
 from torch_geometric.nn import MessagePassing
 
 
-from model_execution import predict
+from model_execution.predict import get_prediction
 from torchmetrics import F1, Precision, Recall, Accuracy
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -371,7 +371,7 @@ test_dataset = GraphDataset(name_test, pathr, path_test, bias_threshold, transfo
 n = os.listdir(pd)[0]
 graph = nx.read_gpickle(pd + n)
 
-print(predict.get_prediction("trained_p_hat300-2", graph))
+print(get_prediction("trained_p_hat300-2", graph))
 
 exit()
 
