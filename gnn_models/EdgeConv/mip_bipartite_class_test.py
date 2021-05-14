@@ -128,8 +128,8 @@ class SimpleNet(torch.nn.Module):
         self.num_layers = num_layers
 
         # Embed initial node features.
-        self.var_node_encoder = Sequential(Linear(2, hidden), ReLU(), Linear(hidden, hidden))
-        self.con_node_encoder = Sequential(Linear(2, hidden), ReLU(), Linear(hidden, hidden))
+        self.var_node_encoder = Sequential(Linear(1, hidden), ReLU(), Linear(hidden, hidden))
+        self.con_node_encoder = Sequential(Linear(1, hidden), ReLU(), Linear(hidden, hidden))
 
         # Compute variable assignement.
         self.layers_ass = []
@@ -158,8 +158,8 @@ class SimpleNet(torch.nn.Module):
 
     def forward(self, data):
         # Get data of batch.
-        var_node_features = data.var_node_features
-        con_node_features = data.con_node_features
+        var_node_features = data.var_node_features[:,0]
+        con_node_features = data.con_node_features[:,0]
         edge_index_var = data.edge_index_var
         edge_index_con = data.edge_index_con
         edge_features_var = data.edge_features_var
