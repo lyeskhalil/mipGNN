@@ -20,7 +20,6 @@ from torch.nn import Sequential, Linear, ReLU
 from torch_geometric.nn import MessagePassing
 
 
-from model_execution.predict import get_prediction
 from torchmetrics import F1, Precision, Recall, Accuracy
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
