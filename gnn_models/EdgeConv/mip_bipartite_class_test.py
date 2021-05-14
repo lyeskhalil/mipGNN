@@ -436,24 +436,24 @@ name_list = [
 
 
 pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
-bias_threshold = 0.00
+bias_threshold = 0.0
 
 results = []
 
 i = 0
-
 
 pd = path_train = path_trainpath_train = dataset_list[i]
 name = name_train = name_list[i]
 train_dataset = GraphDataset(name_train, pathr, path_train, bias_threshold, transform=MyTransform()).shuffle()
 
 pd = path_test = path_testpath_test = dataset_list[i + 1]
-name = name_test = name_list[i+1]
+name = name_test = name_list[i + 1]
 test_dataset = GraphDataset(name_test, pathr, path_test, bias_threshold, transform=MyTransform()).shuffle()
 
 print("###")
 zero = torch.tensor([0])
 one = torch.tensor([1])
+# TODO
 print(torch.where(test_dataset.data.y_real <= bias_threshold, zero, one).to(torch.float).mean())
 
 # Split data.
@@ -463,7 +463,7 @@ l = len(val_index)
 
 val_dataset = train_dataset[val_index].shuffle()
 train_dataset = train_dataset[train_index].shuffle()
-test_dataset = test_dataset.shuffle()#[0:200]
+test_dataset = test_dataset.shuffle()  # [0:200]
 
 batch_size = 5
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
@@ -487,7 +487,7 @@ def train(epoch):
         y = torch.where(y <= bias_threshold, zero, one).to(device)
 
         optimizer.zero_grad()
-        output, softmax = model(data)
+        output = model(data)
 
         # TODO
         loss = F.nll_loss(output, y)
@@ -502,9 +502,6 @@ def train(epoch):
 def test(loader):
     model.eval()
 
-    correct = 0
-    l = 0
-
     zero = torch.tensor([0]).to(device)
     one = torch.tensor([1]).to(device)
     f1 = F1(num_classes=2, average="macro").to(device)
@@ -514,9 +511,10 @@ def test(loader):
 
     for data in loader:
         data = data.to(device)
-        pred, softmax = model(data)
+        pred = model(data)
 
         y = data.y_real
+        # TODO
         y = torch.where(y <= bias_threshold, zero, one).to(device)
         pred = pred.max(dim=1)[1]
 
@@ -527,10 +525,9 @@ def test(loader):
             pred_all = pred
             y_all = y
 
-        correct += pred.eq(y).float().mean().item()
-        l += 1
 
     return acc(pred_all, y_all), f1(pred_all, y_all), pr(pred_all, y_all), re(pred_all, y_all)
+
 
 
 best_val = 0.0
@@ -545,7 +542,7 @@ model = SimpleNet(hidden=64, num_layers=5, aggr="mean").to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
-                                                       factor=0.8, patience=5,
+                                                       factor=0.8, patience=10,
                                                        min_lr=0.0000001)
 
 for epoch in range(1, 50):
@@ -561,7 +558,7 @@ for epoch in range(1, 50):
     if val_acc > best_val:
         best_val = val_acc
         test_acc, test_f1, test_pr, test_re = test(test_loader)
-        torch.save(model.state_dict(), "trained_p_hat300-2_error_prop")
+        torch.save(model.state_dict(), "trained_p_hat300-2")
 
     r.append(test_acc)
 
@@ -577,6 +574,7 @@ for epoch in range(1, 50):
     print("Pr", train_pr, val_pr, test_pr)
     print("Re", train_re, val_re, test_re)
 
-
+results.append(r)
+i += 2
 
 
