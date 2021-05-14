@@ -446,8 +446,10 @@ for _ in range(4):
     train_dataset = GraphDataset(name_train, pathr, path_train, bias_threshold, transform=MyTransform()).shuffle()
 
     pd = path_test = path_testpath_test = dataset_list[i + 1]
-    name = name_test = name_list[i]
+    name = name_test = name_list[i+1]
     test_dataset = GraphDataset(name_test, pathr, path_test, bias_threshold, transform=MyTransform()).shuffle()
+
+    exit()
 
     print("###")
     zero = torch.tensor([0])
