@@ -34,6 +34,8 @@ def get_prediction(model_name, graph, bias_threshold=0.00):
     # out = model(data).max(dim=1)[1].cpu().detach().numpy()
     out = model(data).exp()[:,1].cpu().detach().numpy()
 
+    print("ffff")
+
     # return out, node_var, var_node
     return out, node_to_varnode
 
