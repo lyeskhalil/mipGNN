@@ -443,7 +443,7 @@ results = []
 i = 0
 
 
-for _ in range(dataset_list):
+for _ in dataset_list:
 
     pd = path_train = path_trainpath_train = dataset_list[i]
     name = name_train = name_list[i]
