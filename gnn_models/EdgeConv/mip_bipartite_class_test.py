@@ -128,8 +128,8 @@ class SimpleNet(torch.nn.Module):
         self.num_layers = num_layers
 
         # Embed initial node features.
-        self.var_node_encoder = Sequential(Linear(1, hidden), ReLU(), Linear(hidden, hidden))
-        self.con_node_encoder = Sequential(Linear(1, hidden), ReLU(), Linear(hidden, hidden))
+        self.var_node_encoder = Sequential(Linear(2, hidden), ReLU(), Linear(hidden, hidden))
+        self.con_node_encoder = Sequential(Linear(2, hidden), ReLU(), Linear(hidden, hidden))
 
         # Compute variable assignement.
         self.layers_ass = []
