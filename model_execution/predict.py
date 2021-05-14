@@ -159,3 +159,14 @@ def create_data_object(graph, bias_threshold):
     data.index_var = torch.from_numpy(np.array(index_var)).to(torch.long)
 
     return data, node_to_varnode, node_to_connode
+
+
+
+
+
+n = os.listdir("../../data_new/data_graphsonly/gisp/p_hat300-2.clq/train/")[0]
+graph = nx.read_gpickle("../../data_new/data_graphsonly/gisp/p_hat300-2.clq/train/" + n)
+
+print(get_prediction("trained_p_hat300-2", graph))
+
+exit()

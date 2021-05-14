@@ -28,11 +28,3 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 
-
-n = os.listdir("../../data_new/data_graphsonly/gisp/p_hat300-2.clq/train/")[0]
-graph = nx.read_gpickle("../../data_new/data_graphsonly/gisp/p_hat300-2.clq/train/" + n)
-
-print(get_prediction("trained_p_hat300-2", graph))
-
-exit()
-
