@@ -164,4 +164,7 @@ pd = "../data_new/data_graphsonly/gisp/p_hat300-2.clq/train/"
 filename = os.listdir(pd)[0]
 graph = nx.read_gpickle(pd + filename)
 
+
+get_prediction("../gnn_models/EdgeConv/trained_p_hat300-2", graph)
+
 print("xxx")
