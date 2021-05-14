@@ -353,13 +353,14 @@ for _ in range(4):
     train_dataset = GraphDataset(name_train, pathr, path_train, bias_threshold, transform=MyTransform()).shuffle()
 
     pd = path_test = path_testpath_test = dataset_list[i + 1]
-    name = name_test = name_list[i+1]
+    name = name_test = name_list[i + 1]
     test_dataset = GraphDataset(name_test, pathr, path_test, bias_threshold, transform=MyTransform()).shuffle()
 
     print("###")
     zero = torch.tensor([0])
     one = torch.tensor([1])
-    print(torch.where(test_dataset.data.y_real <= bias_threshold, zero, one).to(torch.float).mean())
+    # TODO
+    print(torch.where(test_dataset.data.y_real == bias_threshold, zero, one).to(torch.float).mean())
 
     # Split data.
     l = len(train_dataset)
@@ -407,9 +408,6 @@ for _ in range(4):
     def test(loader):
         model.eval()
 
-        correct = 0
-        l = 0
-
         zero = torch.tensor([0]).to(device)
         one = torch.tensor([1]).to(device)
         f1 = F1(num_classes=2, average="macro").to(device)
@@ -422,7 +420,8 @@ for _ in range(4):
             pred, softmax = model(data)
 
             y = data.y_real
-            y = torch.where(y <= bias_threshold, zero, one).to(device)
+            # TODO
+            y = torch.where(y == 0, zero, one).to(device)
             pred = pred.max(dim=1)[1]
 
             if l == 1:
@@ -432,8 +431,6 @@ for _ in range(4):
                 pred_all = pred
                 y_all = y
 
-            correct += pred.eq(y).float().mean().item()
-            l += 1
 
         return acc(pred_all, y_all), f1(pred_all, y_all), pr(pred_all, y_all), re(pred_all, y_all)
 

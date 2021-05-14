@@ -415,7 +415,6 @@ for _ in range(4):
     def test(loader):
         model.eval()
 
-        correct = 0
         l = 0
 
         zero = torch.tensor([0]).to(device)
@@ -440,7 +439,6 @@ for _ in range(4):
                 pred_all = pred
                 y_all = y
 
-            correct += pred.eq(y).float().mean().item()
             l += 1
 
         return acc(pred_all, y_all), f1(pred_all, y_all), pr(pred_all, y_all), re(pred_all, y_all)
