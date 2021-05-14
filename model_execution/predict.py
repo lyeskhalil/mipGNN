@@ -15,6 +15,9 @@ from torch_geometric.data import (InMemoryDataset, Data)
 from torch_geometric.data import DataLoader
 from gnn_models.EdgeConv.mip_bipartite_simple_class import SimpleNet
 
+# TODO: Uncomment for second model. 
+#from gnn_models.EdgeConv.mip_bipartite_class_test import SimpleNet
+
 
 def get_prediction(model_name, graph, bias_threshold=0.00):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
