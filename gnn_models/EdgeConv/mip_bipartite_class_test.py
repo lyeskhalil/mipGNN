@@ -431,7 +431,7 @@ name_list = [
 
 
 pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
-bias_threshold = 0.001
+bias_threshold = 0.01
 
 results = []
 
