@@ -16,7 +16,7 @@ from torch_geometric.data import DataLoader
 from gnn_models.EdgeConv.mip_bipartite_simple_class import SimpleNet
 
 
-def get_prediction(model_name, graph, bias_threshold=0.05):
+def get_prediction(model_name, graph, bias_threshold=0.00):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     model = SimpleNet(64, aggr="mean", num_layers=5).to(device)
@@ -80,7 +80,7 @@ def create_data_object(graph, bias_threshold):
             num_nodes_var += 1
 
             y_real.append(node_data['bias'])
-            if (node_data['bias'] < bias_threshold):
+            if (node_data['bias'] <= bias_threshold):
                 y.append(0)
             else:
                 y.append(1)

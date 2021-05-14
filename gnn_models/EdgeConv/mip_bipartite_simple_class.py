@@ -107,7 +107,7 @@ class SimpleNet(torch.nn.Module):
         x = F.relu(self.lin2(x))
         x = F.relu(self.lin3(x))
         x = self.lin4(x)
-        return F.log_softmax(x, dim=-1), F.softmax(x, dim=-1)
+        return F.log_softmax(x, dim=-1) #, F.softmax(x, dim=-1)
 
     def __repr__(self):
         return self.__class__.__name__
@@ -347,139 +347,139 @@ bias_threshold = 0.0
 results = []
 
 i = 0
-for _ in range(4):
-    pd = path_train = path_trainpath_train = dataset_list[i]
-    name = name_train = name_list[i]
-    train_dataset = GraphDataset(name_train, pathr, path_train, bias_threshold, transform=MyTransform()).shuffle()
 
-    pd = path_test = path_testpath_test = dataset_list[i + 1]
-    name = name_test = name_list[i + 1]
-    test_dataset = GraphDataset(name_test, pathr, path_test, bias_threshold, transform=MyTransform()).shuffle()
+pd = path_train = path_trainpath_train = dataset_list[i]
+name = name_train = name_list[i]
+train_dataset = GraphDataset(name_train, pathr, path_train, bias_threshold, transform=MyTransform()).shuffle()
 
-    print("###")
-    zero = torch.tensor([0])
-    one = torch.tensor([1])
+pd = path_test = path_testpath_test = dataset_list[i + 1]
+name = name_test = name_list[i + 1]
+test_dataset = GraphDataset(name_test, pathr, path_test, bias_threshold, transform=MyTransform()).shuffle()
+
+print("###")
+zero = torch.tensor([0])
+one = torch.tensor([1])
+# TODO
+print(torch.where(test_dataset.data.y_real <= bias_threshold, zero, one).to(torch.float).mean())
+
+# Split data.
+l = len(train_dataset)
+train_index, val_index = train_test_split(list(range(0, l)), test_size=0.2)
+l = len(val_index)
+
+val_dataset = train_dataset[val_index].shuffle()
+train_dataset = train_dataset[train_index].shuffle()
+test_dataset = test_dataset.shuffle()  # [0:200]
+
+batch_size = 5
+train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
+
+
+def train(epoch):
+    model.train()
+
+    loss_all = 0
+    zero = torch.tensor([0]).to(device)
+    one = torch.tensor([1]).to(device)
+
     # TODO
-    print(torch.where(test_dataset.data.y_real <= bias_threshold, zero, one).to(torch.float).mean())
+    # weights = torch.tensor([0.05, 0.95]).to(device)
+    for data in train_loader:
+        data = data.to(device)
 
-    # Split data.
-    l = len(train_dataset)
-    train_index, val_index = train_test_split(list(range(0, l)), test_size=0.2)
-    l = len(val_index)
+        y = data.y_real
+        y = torch.where(y <= bias_threshold, zero, one).to(device)
 
-    val_dataset = train_dataset[val_index].shuffle()
-    train_dataset = train_dataset[train_index].shuffle()
-    test_dataset = test_dataset.shuffle()  # [0:200]
-
-    batch_size = 5
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
-    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
-
-
-    def train(epoch):
-        model.train()
-
-        loss_all = 0
-        zero = torch.tensor([0]).to(device)
-        one = torch.tensor([1]).to(device)
+        optimizer.zero_grad()
+        output = model(data)
 
         # TODO
-        # weights = torch.tensor([0.05, 0.95]).to(device)
-        for data in train_loader:
-            data = data.to(device)
+        loss = F.nll_loss(output, y)
+        loss.backward()
+        loss_all += batch_size * loss.item()
+        optimizer.step()
 
-            y = data.y_real
-            y = torch.where(y <= bias_threshold, zero, one).to(device)
-
-            optimizer.zero_grad()
-            output, softmax = model(data)
-
-            # TODO
-            loss = F.nll_loss(output, y)
-            loss.backward()
-            loss_all += batch_size * loss.item()
-            optimizer.step()
-
-        return loss_all / len(train_dataset)
+    return loss_all / len(train_dataset)
 
 
-    @torch.no_grad()
-    def test(loader):
-        model.eval()
+@torch.no_grad()
+def test(loader):
+    model.eval()
 
-        zero = torch.tensor([0]).to(device)
-        one = torch.tensor([1]).to(device)
-        f1 = F1(num_classes=2, average="macro").to(device)
-        pr = Precision(num_classes=2, average="macro").to(device)
-        re = Recall(num_classes=2, average="macro").to(device)
-        acc = Accuracy(num_classes=2).to(device)
+    zero = torch.tensor([0]).to(device)
+    one = torch.tensor([1]).to(device)
+    f1 = F1(num_classes=2, average="macro").to(device)
+    pr = Precision(num_classes=2, average="macro").to(device)
+    re = Recall(num_classes=2, average="macro").to(device)
+    acc = Accuracy(num_classes=2).to(device)
 
-        for data in loader:
-            data = data.to(device)
-            pred, softmax = model(data)
+    for data in loader:
+        data = data.to(device)
+        pred = model(data)
 
-            y = data.y_real
-            # TODO
-            y = torch.where(y <= bias_threshold, zero, one).to(device)
-            pred = pred.max(dim=1)[1]
+        y = data.y_real
+        # TODO
+        y = torch.where(y <= bias_threshold, zero, one).to(device)
+        pred = pred.max(dim=1)[1]
 
-            if l == 1:
-                pred_all = torch.cat([pred_all, pred])
-                y_all = torch.cat([y_all, y])
-            else:
-                pred_all = pred
-                y_all = y
-
-
-        return acc(pred_all, y_all), f1(pred_all, y_all), pr(pred_all, y_all), re(pred_all, y_all)
+        if l == 1:
+            pred_all = torch.cat([pred_all, pred])
+            y_all = torch.cat([y_all, y])
+        else:
+            pred_all = pred
+            y_all = y
 
 
-    best_val = 0.0
-    test_acc = 0.0
-    test_f1 = 0.0
-    test_re = 0.0
-    test_pr = 0.0
-    r = []
+    return acc(pred_all, y_all), f1(pred_all, y_all), pr(pred_all, y_all), re(pred_all, y_all)
 
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model = SimpleNet(hidden=64, num_layers=5, aggr="mean").to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
-                                                           factor=0.8, patience=10,
-                                                           min_lr=0.0000001)
+best_val = 0.0
+test_acc = 0.0
+test_f1 = 0.0
+test_re = 0.0
+test_pr = 0.0
+r = []
 
-    for epoch in range(1, 50):
-        print(i)
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+model = SimpleNet(hidden=64, num_layers=5, aggr="mean").to(device)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
-        train_loss = train(epoch)
-        train_acc, train_f1, train_pr, train_re = test(train_loader)
+scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
+                                                       factor=0.8, patience=10,
+                                                       min_lr=0.0000001)
 
-        val_acc, val_f1, val_pr, val_re = test(val_loader)
-        scheduler.step(val_acc)
-        lr = scheduler.optimizer.param_groups[0]['lr']
+for epoch in range(1, 50):
+    print(i)
 
-        if val_acc > best_val:
-            best_val = val_acc
-            test_acc, test_f1, test_pr, test_re = test(test_loader)
-            torch.save(model.state_dict(), "trained_p_hat300-2")
+    train_loss = train(epoch)
+    train_acc, train_f1, train_pr, train_re = test(train_loader)
 
-        r.append(test_acc)
+    val_acc, val_f1, val_pr, val_re = test(val_loader)
+    scheduler.step(val_acc)
+    lr = scheduler.optimizer.param_groups[0]['lr']
 
-        # Break if learning rate is smaller 10**-6.
-        if lr < 0.000001:
-            break
+    if val_acc > best_val:
+        best_val = val_acc
+        test_acc, test_f1, test_pr, test_re = test(test_loader)
+        torch.save(model.state_dict(), "trained_p_hat300-2")
 
-        print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
-              'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
-                                                                            train_acc, val_acc, test_acc))
+    r.append(test_acc)
 
-        print("F1", train_f1, val_f1, test_f1)
-        print("Pr", train_pr, val_pr, test_pr)
-        print("Re", train_re, val_re, test_re)
+    # Break if learning rate is smaller 10**-6.
+    if lr < 0.000001:
+        break
 
-    results.append(r)
-    i += 2
+    print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
+          'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
+                                                                        train_acc, val_acc, test_acc))
 
-print(results)
+    print("F1", train_f1, val_f1, test_f1)
+    print("Pr", train_pr, val_pr, test_pr)
+    print("Re", train_re, val_re, test_re)
+
+results.append(r)
+i += 2
+
+
