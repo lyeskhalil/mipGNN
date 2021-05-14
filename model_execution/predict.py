@@ -13,13 +13,13 @@ from pathlib import Path
 import torch
 from torch_geometric.data import (InMemoryDataset, Data)
 from torch_geometric.data import DataLoader
-from gnn_models.mip_bipartite_arch import SimpleNet
+from gnn_models.EdgeConv.mip_bipartite_simple_class import SimpleNet
 
 
 def get_prediction(model_name, graph, bias_threshold=0.05):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    model = SimpleNet(128).to(device)
+    model = SimpleNet(64, aggr="mean", num_layers=5).to(device)
     model.load_state_dict(torch.load(model_name, map_location=device))
 
     # data, var_node, node_var = create_data_object(graph)
@@ -60,6 +60,7 @@ def create_data_object(graph, bias_threshold):
     num_nodes_con = 0
     # Targets (classes).
     y = []
+    y_real = []
     # Features for variable nodes.
     feat_var = []
     # Feature for constraints nodes.
@@ -78,13 +79,19 @@ def create_data_object(graph, bias_threshold):
             node_to_varnode[i] = num_nodes_var
             num_nodes_var += 1
 
+            y_real.append(node_data['bias'])
             if (node_data['bias'] < bias_threshold):
                 y.append(0)
             else:
                 y.append(1)
 
-            feat_var.append([node_data['objcoeff'], graph.degree[i]])
-            obj.append([node_data['objcoeff']])
+            if 'objcoeff' in node_data:
+                feat_var.append([node_data['objcoeff'], graph.degree[i]])
+                obj.append([node_data['objcoeff']])
+            else:
+                feat_var.append([node_data['obj_coeff'], graph.degree[i]])
+                obj.append([node_data['obj_coeff']])
+
             index_var.append(0)
 
         # Node is constraint node.
@@ -92,7 +99,11 @@ def create_data_object(graph, bias_threshold):
             node_to_connode[i] = num_nodes_con
             num_nodes_con += 1
 
-            rhs = node_data['rhs']
+            if 'rhs' in node_data:
+                rhs = node_data['rhs']
+            else:
+                rhs = node_data['bound']
+
             feat_rhs.append([rhs])
             feat_con.append([rhs, graph.degree[i]])
             index.append(0)
@@ -132,6 +143,7 @@ def create_data_object(graph, bias_threshold):
     data.edge_index_con = edge_index_con
 
     data.y = torch.from_numpy(np.array(y)).to(torch.long)
+    data.y_real = torch.from_numpy(np.array(y_real)).to(torch.float)
     data.var_node_features = torch.from_numpy(np.array(feat_var)).to(torch.float)
     data.con_node_features = torch.from_numpy(np.array(feat_con)).to(torch.float)
     data.rhs = torch.from_numpy(np.array(feat_rhs)).to(torch.float)
