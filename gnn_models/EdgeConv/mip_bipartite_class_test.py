@@ -302,7 +302,8 @@ class GraphDataset(InMemoryDataset):
                         rhs = node_data['bound']
 
                     feat_rhs.append([rhs])
-                    feat_con.append([rhs, graph.degree[i]])
+                    #feat_con.append([rhs, graph.degree[i]])
+                    feat_con.append([rhs])
                     index.append(0)
                 else:
                     print("Error in graph format.")
