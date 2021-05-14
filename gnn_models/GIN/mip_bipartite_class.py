@@ -217,22 +217,26 @@ class SimpleNet(torch.nn.Module):
     def __repr__(self):
         return self.__class__.__name__
 
+
 # Preprocessing to create Torch dataset.
 class GraphDataset(InMemoryDataset):
-    def __init__(self, root, data_path, bias_threshold, transform=None, pre_transform=None,
+
+    def __init__(self, name, root, data_path, bias_threshold, transform=None, pre_transform=None,
                  pre_filter=None):
         super(GraphDataset, self).__init__(root, transform, pre_transform, pre_filter)
         self.data, self.slices = torch.load(self.processed_paths[0])
-        self.data_path = data_path
+
         self.bias_threshold = bias_threshold
+        global global_name
+        global global_data_path
 
     @property
     def raw_file_names(self):
-        return sname
+        return name
 
     @property
     def processed_file_names(self):
-        return sname
+        return name
 
     def download(self):
         pass
@@ -241,16 +245,16 @@ class GraphDataset(InMemoryDataset):
         print("Preprocessing.")
 
         data_list = []
-        num_graphs = len(os.listdir(data_path))
+        num_graphs = len(os.listdir(pd))
+
+        print(pd)
 
         # Iterate over instance files and create data objects.
-        for num, filename in enumerate(os.listdir(data_path)):
+        for num, filename in enumerate(os.listdir(pd)):
             print(filename, num, num_graphs)
-            if num == 608:
-                continue
 
             # Get graph.
-            graph = nx.read_gpickle(data_path + filename)
+            graph = nx.read_gpickle(pd + filename)
 
             # Make graph directed.
             graph = nx.convert_node_labels_to_integers(graph)
@@ -268,6 +272,7 @@ class GraphDataset(InMemoryDataset):
             num_nodes_con = 0
             # Targets (classes).
             y = []
+            y_real = []
             # Features for variable nodes.
             feat_var = []
             # Feature for constraints nodes.
@@ -286,13 +291,19 @@ class GraphDataset(InMemoryDataset):
                     node_to_varnode[i] = num_nodes_var
                     num_nodes_var += 1
 
-                    if (node_data['bias'] < bias_threshold):
+                    y_real.append(node_data['bias'])
+                    if (node_data['bias'] <= bias_threshold):
                         y.append(0)
                     else:
                         y.append(1)
 
-                    feat_var.append([node_data['objcoeff'], graph.degree[i]])
-                    obj.append([node_data['objcoeff']])
+                    if 'objcoeff' in node_data:
+                        feat_var.append([node_data['objcoeff'], graph.degree[i]])
+                        obj.append([node_data['objcoeff']])
+                    else:
+                        feat_var.append([node_data['obj_coeff'], graph.degree[i]])
+                        obj.append([node_data['obj_coeff']])
+
                     index_var.append(0)
 
                 # Node is constraint node.
@@ -300,7 +311,11 @@ class GraphDataset(InMemoryDataset):
                     node_to_connode[i] = num_nodes_con
                     num_nodes_con += 1
 
-                    rhs = node_data['rhs']
+                    if 'rhs' in node_data:
+                        rhs = node_data['rhs']
+                    else:
+                        rhs = node_data['bound']
+
                     feat_rhs.append([rhs])
                     feat_con.append([rhs, graph.degree[i]])
                     index.append(0)
@@ -340,6 +355,7 @@ class GraphDataset(InMemoryDataset):
             data.edge_index_con = edge_index_con
 
             data.y = torch.from_numpy(np.array(y)).to(torch.long)
+            data.y_real = torch.from_numpy(np.array(y_real)).to(torch.float)
             data.var_node_features = torch.from_numpy(np.array(feat_var)).to(torch.float)
             data.con_node_features = torch.from_numpy(np.array(feat_con)).to(torch.float)
             data.rhs = torch.from_numpy(np.array(feat_rhs)).to(torch.float)
@@ -380,62 +396,91 @@ class MyTransform(object):
         return new_data
 
 
-print(sys.argv[1])
-i = int(sys.argv[1])
-
-file_list = [
-    "../../DATA1/er_SET2/200_200/alpha_0.75_setParam_100/train/",
-    "../../DATA1/er_SET2/200_200/alpha_0.25_setParam_100/train/",
-    "../../DATA1/er_SET2/200_200/alpha_0.5_setParam_100/train/",
-    "../../DATA1/er_SET2/300_300/alpha_0.75_setParam_100/train/",
-    "../../DATA1/er_SET2/300_300/alpha_0.25_setParam_100/train/",
-    "../../DATA1/er_SET2/300_300/alpha_0.5_setParam_100/train/",
-    "../../DATA1/er_SET1/400_400/alpha_0.75_setParam_100/train/",
-    "../../DATA1/er_SET1/400_400/alpha_0.5_setParam_100/train/",
-    # "../../DATA1/er_SET1/400_400/alpha_0.25_setParam_100/train/",
+dataset_list = [
+    "../../data_new/data_graphsonly/gisp/p_hat300-2.clq/train/",
+    "../../data_new/data_graphsonly/gisp/p_hat300-2.clq/test/",
+    "../../data_new/data_graphsonly/gisp/C250.9.clq/train/",
+    "../../data_new/data_graphsonly/gisp/C250.9.clq/test/",
+    "../../data_new/data_graphsonly/gisp/keller4.clq/train/",
+    "../../data_new/data_graphsonly/gisp/keller4.clq/test/",
+    "../../data_new/data_graphsonly/gisp/hamming8-4.clq/train/",
+    "../../data_new/data_graphsonly/gisp/hamming8-4.clq/test/",
+    "../../data_new/data_graphsonly/gisp/gen200_p0.9_55.clq/train/",
+    "../../data_new/data_graphsonly/gisp/gen200_p0.9_55.clq/test/",
+    "../../data_new/data_graphsonly/gisp/gen200_p0.9_44.clq/train/",
+    "../../data_new/data_graphsonly/gisp/gen200_p0.9_44.clq/test/",
+    "../../data_new/data_graphsonly/gisp/C125.9.clq/train/",
+    "../../data_new/data_graphsonly/gisp/C125.9.clq/test/",
+    "../../data_new/data_graphsonly/gisp/p_hat300-1.clq/train/",
+    "../../data_new/data_graphsonly/gisp/p_hat300-1.clq/test/",
+    "../../data_new/data_graphsonly/gisp/brock200_4.clq/train/",
+    "../../data_new/data_graphsonly/gisp/brock200_4.clq/test/",
+    "../../data_new/data_graphsonly/gisp/brock200_2.clq/train/",
+    "../../data_new/data_graphsonly/gisp/brock200_2.clq/test/",
+    "../../data_new/data_graphsonly/fcmnf/L_n200_p0.02_c500/train/",
+    "../../data_new/data_graphsonly/fcmnf/L_n200_p0.02_c500/test/"
 ]
 
 name_list = [
-    "er_SET2_200_200_alpha_0_75_setParam_100_train",
-    "er_SET2_200_200_alpha_0_25_setParam_100_train",
-    "er_SET2_200_200_alpha_0_5_setParam_100_train",
-    "er_SET2_300_300_alpha_0_75_setParam_100_train",
-    "er_SET2_300_300_alpha_0_25_setParam_100_train",
-    "er_SET2_300_300_alpha_0_5_setParam_100_train",
-    "er_SET1_400_400_alpha_0_75_setParam_100_train",
-    "er_SET1_400_400_alpha_0_5_setParam_100_train",
-    # "er_SET1_400_400_alpha_0_25_setParam_100_train",
+    "1_test",
+    "1_train",
+    "2_test",
+    "2_train",
+    "3_test",
+    "3_train",
+    "4_test",
+    "4_train",
+    "5_test",
+    "5_train",
+    "6_test",
+    "6_train",
+    "7_test",
+    "7_train",
+    "8_test",
+    "8_train",
+    "9_test",
+    "9_train",
+    "10_test",
+    "10_train",
+    "11_test",
+    "11_train",
 ]
 
-print(name_list[i])
-
-path = file_list[i]
-name = name_list[i]
+pathr = osp.join(osp.dirname(osp.realpath(__file__)), '../EdgeConv', 'data', 'DS')
+bias_threshold = 0.0
 
 results = []
 
-# Prepare data.
-path = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
-# Path to raw graph data.
-data_path = path
-sname = name
-# Threshold for computing class labels.
-bias_threshold = 0.050
-# Create dataset.
-dataset = GraphDataset(path, data_path, bias_threshold, transform=MyTransform())  # .shuffle()
+
+
+i = 0
+
+pd = path_train = path_trainpath_train = dataset_list[i]
+name = name_train = name_list[i]
+train_dataset = GraphDataset(name_train, pathr, path_train, bias_threshold, transform=MyTransform()).shuffle()
+
+pd = path_test = path_testpath_test = dataset_list[i + 1]
+name = name_test = name_list[i + 1]
+test_dataset = GraphDataset(name_test, pathr, path_test, bias_threshold, transform=MyTransform()).shuffle()
+
+
+
+print("###")
+zero = torch.tensor([0])
+one = torch.tensor([1])
+# TODO
+print(torch.where(test_dataset.data.y_real <= bias_threshold, zero, one).to(torch.float).mean())
 
 # Split data.
-l = len(dataset)
-train_index, rest = train_test_split(list(range(0, l)), test_size=0.2)
-l = len(rest)
-val_index = rest[0:int(l / 2)]
-test_index = rest[int(l / 2):]
+l = len(train_dataset)
+train_index, val_index = train_test_split(list(range(0, l)), test_size=0.2)
+l = len(val_index)
 
-train_dataset = dataset[train_index].shuffle()
-val_dataset = dataset[val_index].shuffle()
-test_dataset = dataset[test_index].shuffle()
+val_dataset = train_dataset[val_index].shuffle()
+train_dataset = train_dataset[train_index].shuffle()
+test_dataset = test_dataset.shuffle()  # [0:200]
 
-batch_size = 15
+batch_size = 5
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
@@ -445,74 +490,105 @@ def train(epoch):
     model.train()
 
     loss_all = 0
+    zero = torch.tensor([0]).to(device)
+    one = torch.tensor([1]).to(device)
+
+    # TODO
+    # weights = torch.tensor([0.05, 0.95]).to(device)
     for data in train_loader:
         data = data.to(device)
+
+        y = data.y_real
+        y = torch.where(y <= bias_threshold, zero, one).to(device)
+
         optimizer.zero_grad()
         output = model(data)
 
-        loss = F.nll_loss(output, data.y)
+        # TODO
+        loss = F.nll_loss(output, y)
         loss.backward()
         loss_all += batch_size * loss.item()
         optimizer.step()
+
     return loss_all / len(train_dataset)
 
 
+@torch.no_grad()
 def test(loader):
     model.eval()
 
-    correct = 0
-    l = 0
+    zero = torch.tensor([0]).to(device)
+    one = torch.tensor([1]).to(device)
+    f1 = F1(num_classes=2, average="macro").to(device)
+    pr = Precision(num_classes=2, average="macro").to(device)
+    re = Recall(num_classes=2, average="macro").to(device)
+    acc = Accuracy(num_classes=2).to(device)
 
     for data in loader:
         data = data.to(device)
         pred = model(data)
-        pred = pred.max(dim=1)[1]
-        correct += pred.eq(data.y).float().mean().item()
-        l += 1
 
-    return correct / l
+        y = data.y_real
+        # TODO
+        y = torch.where(y <= bias_threshold, zero, one).to(device)
+        pred = pred.max(dim=1)[1]
+
+        if l == 1:
+            pred_all = torch.cat([pred_all, pred])
+            y_all = torch.cat([y_all, y])
+        else:
+            pred_all = pred
+            y_all = y
+
+
+    return acc(pred_all, y_all), f1(pred_all, y_all), pr(pred_all, y_all), re(pred_all, y_all)
+
 
 
 best_val = 0.0
 test_acc = 0.0
-best_hp = []
+test_f1 = 0.0
+test_re = 0.0
+test_pr = 0.0
+r = []
 
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+model = SimpleNet(hidden=64, num_layers=4, aggr="mean").to(device)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
-for dim in [32, 64, 128]:
-    for l in [2,3,4,5]:
-        for aggr in ["mean", "max", "add"]:
-            print(dim, l, aggr)
+scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
+                                                       factor=0.8, patience=10,
+                                                       min_lr=0.0000001)
 
-            device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-            model = SimpleNet(hidden=dim, num_layers=l, aggr = aggr).to(device)
-            optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+for epoch in range(1, 100):
+    print(i)
 
-            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
-                                                                   factor=0.8, patience=10,
-                                                                   min_lr=0.0000001)
+    train_loss = train(epoch)
+    train_acc, train_f1, train_pr, train_re = test(train_loader)
 
-            for epoch in range(1, 100):
+    val_acc, val_f1, val_pr, val_re = test(val_loader)
+    scheduler.step(val_acc)
+    lr = scheduler.optimizer.param_groups[0]['lr']
 
-                train_loss = train(epoch)
-                train_acc = test(train_loader)
+    if val_acc > best_val:
+        best_val = val_acc
+        test_acc, test_f1, test_pr, test_re = test(test_loader)
+        torch.save(model.state_dict(), "trained_p_hat300-2_100")
 
-                val_acc = test(val_loader)
-                scheduler.step(val_acc)
-                lr = scheduler.optimizer.param_groups[0]['lr']
+    r.append(test_acc)
 
-                if val_acc > best_val:
-                    best_val = val_acc
-                    test_acc = test(test_loader)
-                    best_hp = [dim, l, aggr, test_acc]
+    # Break if learning rate is smaller 10**-6.
+    if lr < 0.000001:
+        break
 
-                # Break if learning rate is smaller 10**-6.
-                if lr < 0.000001:
-                    results.append(test_acc)
-                    break
+    print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
+          'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
+                                                                        train_acc, val_acc, test_acc))
 
-                print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
-                      'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
-                                                                                    train_acc, val_acc, test_acc))
+    print("F1", train_f1, val_f1, test_f1)
+    print("Pr", train_pr, val_pr, test_pr)
+    print("Re", train_re, val_re, test_re)
 
-print(best_hp)
+results.append(r)
+i += 2
 
