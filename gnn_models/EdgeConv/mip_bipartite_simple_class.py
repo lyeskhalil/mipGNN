@@ -19,6 +19,8 @@ from torch.nn import BatchNorm1d as BN
 from torch.nn import Sequential, Linear, ReLU
 from torch_geometric.nn import MessagePassing
 
+
+from model_execution import predict
 from torchmetrics import F1, Precision, Recall, Accuracy
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -350,6 +352,10 @@ bias_threshold = 0.0
 
 results = []
 
+
+
+
+
 i = 0
 
 pd = path_train = path_trainpath_train = dataset_list[i]
@@ -359,6 +365,16 @@ train_dataset = GraphDataset(name_train, pathr, path_train, bias_threshold, tran
 pd = path_test = path_testpath_test = dataset_list[i + 1]
 name = name_test = name_list[i + 1]
 test_dataset = GraphDataset(name_test, pathr, path_test, bias_threshold, transform=MyTransform()).shuffle()
+
+
+
+n = os.listdir(pd)[0]
+graph = nx.read_gpickle(pd + n)
+
+print(predict.get_prediction("trained_p_hat300-2", graph))
+
+exit()
+
 
 print("###")
 zero = torch.tensor([0])
@@ -486,5 +502,4 @@ for epoch in range(1, 50):
 
 results.append(r)
 i += 2
-
 

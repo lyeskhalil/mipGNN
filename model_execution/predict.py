@@ -15,7 +15,7 @@ from torch_geometric.data import (InMemoryDataset, Data)
 from torch_geometric.data import DataLoader
 from gnn_models.EdgeConv.mip_bipartite_simple_class import SimpleNet
 
-# TODO: Uncomment for second model. 
+# TODO: Uncomment for second model.
 #from gnn_models.EdgeConv.mip_bipartite_class_test import SimpleNet
 
 
