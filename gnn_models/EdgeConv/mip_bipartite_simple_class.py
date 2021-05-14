@@ -447,7 +447,7 @@ for _ in range(4):
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
-                                                           factor=0.8, patience=5,
+                                                           factor=0.8, patience=10,
                                                            min_lr=0.0000001)
 
     for epoch in range(1, 50):
@@ -463,6 +463,7 @@ for _ in range(4):
         if val_acc > best_val:
             best_val = val_acc
             test_acc, test_f1, test_pr, test_re = test(test_loader)
+            torch.save(model.state_dict(), "trained_p_hat300-2")
 
         r.append(test_acc)
 
