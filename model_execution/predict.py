@@ -23,7 +23,7 @@ def get_prediction(model_name, graph, bias_threshold=0.00):
     model.load_state_dict(torch.load(model_name, map_location=device))
 
     # data, var_node, node_var = create_data_object(graph)
-    data, node_to_varnode, _ = create_data_object(graph, bias_threshold)
+    data, node_to_varnode, _ = create_data_object(graph, 0.0)
     model.eval()
 
     data = data.to(device)
