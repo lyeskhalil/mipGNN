@@ -172,9 +172,10 @@ class SimpleNet(torch.nn.Module):
 
         # Compute initial node embeddings.
         print(var_node_features.size())
-        exit()
+
 
         var_node_features_0 = self.var_node_encoder(var_node_features)
+        exit()
         con_node_features_0 = self.con_node_encoder(con_node_features)
 
         x_var = [var_node_features_0]
