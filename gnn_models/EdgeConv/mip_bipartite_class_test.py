@@ -170,7 +170,6 @@ class SimpleNet(torch.nn.Module):
         index = data.index
         obj = data.obj
 
-
         var_node_features_0 = self.var_node_encoder(var_node_features)
         con_node_features_0 = self.con_node_encoder(con_node_features)
 
@@ -434,7 +433,7 @@ name_list = [
 
 
 pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
-bias_threshold = 0.001
+bias_threshold = 0.00
 
 results = []
 
