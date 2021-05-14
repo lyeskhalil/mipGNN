@@ -165,6 +165,8 @@ filename = os.listdir(pd)[0]
 graph = nx.read_gpickle(pd + filename)
 
 
-get_prediction("../gnn_models/EdgeConv/trained_p_hat300-2", graph)
+out,_ =get_prediction("../gnn_models/EdgeConv/trained_p_hat300-2", graph)
+
+print(out, out.mean())
 
 print("xxx")
