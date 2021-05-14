@@ -160,6 +160,8 @@ def create_data_object(graph, bias_threshold):
 
     return data, node_to_varnode, node_to_connode
 
+pd = "../data_new/data_graphsonly/gisp/p_hat300-2.clq/train/"
+filename = os.listdir(pd)[0]
+graph = nx.read_gpickle(pd + filename)
 
-
-
+print("xxx")
