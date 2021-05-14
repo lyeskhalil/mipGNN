@@ -22,7 +22,7 @@ from gnn_models.EdgeConv.mip_bipartite_simple_class import SimpleNet
 def get_prediction(model_name, graph, bias_threshold=0.00):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    model = SimpleNet(64, aggr="mean", num_layers=5).to(device)
+    model = SimpleNet(64, aggr="mean", num_layers=4).to(device)
     model.load_state_dict(torch.load(model_name, map_location=device))
 
     # data, var_node, node_var = create_data_object(graph)
