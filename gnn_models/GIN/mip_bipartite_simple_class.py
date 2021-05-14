@@ -116,6 +116,7 @@ class SimpleNet(torch.nn.Module):
         return self.__class__.__name__
 
 
+
 # Preprocessing to create Torch dataset.
 class GraphDataset(InMemoryDataset):
 
@@ -196,10 +197,12 @@ class GraphDataset(InMemoryDataset):
                         y.append(1)
 
                     if 'objcoeff' in node_data:
-                        feat_var.append([node_data['objcoeff'], graph.degree[i]])
+                        #feat_var.append([node_data['objcoeff'], graph.degree[i]])
+                        feat_var.append([node_data['objcoeff']])
                         obj.append([node_data['objcoeff']])
                     else:
-                        feat_var.append([node_data['obj_coeff'], graph.degree[i]])
+                        #feat_var.append([node_data['obj_coeff'], graph.degree[i]])
+                        feat_var.append([node_data['obj_coeff']])
                         obj.append([node_data['obj_coeff']])
 
                     index_var.append(0)
@@ -215,7 +218,8 @@ class GraphDataset(InMemoryDataset):
                         rhs = node_data['bound']
 
                     feat_rhs.append([rhs])
-                    feat_con.append([rhs, graph.degree[i]])
+                    #feat_con.append([rhs, graph.degree[i]])
+                    feat_con.append([rhs])
                     index.append(0)
                 else:
                     print("Error in graph format.")
