@@ -158,8 +158,8 @@ class SimpleNet(torch.nn.Module):
 
     def forward(self, data):
         # Get data of batch.
-        var_node_features = data.var_node_features[:,0]
-        con_node_features = data.con_node_features[:,0]
+        var_node_features = data.var_node_features
+        con_node_features = data.con_node_features
         edge_index_var = data.edge_index_var
         edge_index_con = data.edge_index_con
         edge_features_var = data.edge_features_var
@@ -170,12 +170,8 @@ class SimpleNet(torch.nn.Module):
         index = data.index
         obj = data.obj
 
-        # Compute initial node embeddings.
-        print(var_node_features.size())
-
 
         var_node_features_0 = self.var_node_encoder(var_node_features)
-        exit()
         con_node_features_0 = self.con_node_encoder(con_node_features)
 
         x_var = [var_node_features_0]
@@ -285,10 +281,12 @@ class GraphDataset(InMemoryDataset):
                         y.append(1)
 
                     if 'objcoeff' in node_data:
-                        feat_var.append([node_data['objcoeff'], graph.degree[i]])
+                        #feat_var.append([node_data['objcoeff'], graph.degree[i]])
+                        feat_var.append([node_data['objcoeff']])
                         obj.append([node_data['objcoeff']])
                     else:
-                        feat_var.append([node_data['obj_coeff'], graph.degree[i]])
+                        #feat_var.append([node_data['obj_coeff'], graph.degree[i]])
+                        feat_var.append([node_data['obj_coeff']])
                         obj.append([node_data['obj_coeff']])
 
                     index_var.append(0)
