@@ -342,7 +342,7 @@ name_list = [
 ]
 
 pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
-bias_threshold = 0.001
+bias_threshold = 0.0
 
 results = []
 
@@ -360,7 +360,7 @@ for _ in range(4):
     zero = torch.tensor([0])
     one = torch.tensor([1])
     # TODO
-    print(torch.where(test_dataset.data.y_real == bias_threshold, zero, one).to(torch.float).mean())
+    print(torch.where(test_dataset.data.y_real <= bias_threshold, zero, one).to(torch.float).mean())
 
     # Split data.
     l = len(train_dataset)
@@ -421,7 +421,7 @@ for _ in range(4):
 
             y = data.y_real
             # TODO
-            y = torch.where(y == 0, zero, one).to(device)
+            y = torch.where(y <= bias_threshold, zero, one).to(device)
             pred = pred.max(dim=1)[1]
 
             if l == 1:
