@@ -94,12 +94,16 @@ class SimpleNet(torch.nn.Module):
         x_var = [var_node_features_0]
         x_con = [con_node_features_0]
 
+        num_var = var_node_features_0.size(0)
+        num_con = con_node_features_0.size(0)
+
+
         for i in range(self.num_layers):
             x_con.append(F.relu(self.layers_var[i](x_var[-1], x_con[-1], edge_index_var, edge_features_var,
-                                                   (num_nodes_var.sum(), num_nodes_con.sum()))))
+                                                   (num_var, num_con))))
 
             x_var.append(F.relu(self.layers_con[i](x_con[-1], x_var[-1], edge_index_con, edge_features_con,
-                                                   (num_nodes_con.sum(), num_nodes_var.sum()))))
+                                                   (num_con, num_var))))
 
         x = torch.cat(x_var[:], dim=-1)
 
@@ -187,7 +191,7 @@ class GraphDataset(InMemoryDataset):
                     num_nodes_var += 1
 
                     y_real.append(node_data['bias'])
-                    if (node_data['bias'] < bias_threshold):
+                    if (node_data['bias'] <= bias_threshold):
                         y.append(0)
                     else:
                         y.append(1)
