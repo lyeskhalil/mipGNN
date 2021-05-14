@@ -177,15 +177,18 @@ class SimpleNet(torch.nn.Module):
         x_con = [con_node_features_0]
         x_err = []
 
+        num_var = var_node_features_0.size(0)
+        num_con = con_node_features_0.size(0)
+
         for i in range(self.num_layers):
             x_err.append(self.layers_err[i](x_var[-1], edge_index_var, edge_features_var, rhs, index,
-                                            (var_node_features_0.size(0), con_node_features.size(0))))
+                                            (num_var, num_con)))
 
             x_con.append(F.relu(self.layers_var[i](x_var[-1], x_con[-1], edge_index_var, edge_features_var, rhs,
-                                                   (num_nodes_var.sum(), num_nodes_con.sum()))))
+                                                   (num_var, num_con))))
 
             x_var.append(F.relu(self.layers_con[i](x_con[-1], x_var[-1], edge_index_con, edge_features_con, x_err[-1],
-                                                   (num_nodes_con.sum(), num_nodes_var.sum()))))
+                                                   (num_con, num_var))))
 
         x = torch.cat(x_var[:], dim=-1)
 
@@ -280,12 +283,12 @@ class GraphDataset(InMemoryDataset):
                         y.append(1)
 
                     if 'objcoeff' in node_data:
-                        #feat_var.append([node_data['objcoeff'], graph.degree[i]])
-                        feat_var.append([node_data['objcoeff']])
+                        feat_var.append([node_data['objcoeff'], graph.degree[i]])
+                        #feat_var.append([node_data['objcoeff']])
                         obj.append([node_data['objcoeff']])
                     else:
-                        #feat_var.append([node_data['obj_coeff'], graph.degree[i]])
-                        feat_var.append([node_data['obj_coeff']])
+                        feat_var.append([node_data['obj_coeff'], graph.degree[i]])
+                        #feat_var.append([node_data['obj_coeff']])
                         obj.append([node_data['obj_coeff']])
 
                     index_var.append(0)
@@ -301,8 +304,8 @@ class GraphDataset(InMemoryDataset):
                         rhs = node_data['bound']
 
                     feat_rhs.append([rhs])
-                    #feat_con.append([rhs, graph.degree[i]])
-                    feat_con.append([rhs])
+                    feat_con.append([rhs, graph.degree[i]])
+                    #feat_con.append([rhs])
                     index.append(0)
                 else:
                     print("Error in graph format.")
