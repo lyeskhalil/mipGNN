@@ -333,7 +333,6 @@ for i in [0, 2, 4, 6, 8, 10]:
 
             def train(epoch):
                 model.train()
-                total_loss = 0
                 total_loss_mae = 0
 
                 lf = torch.nn.L1Loss()
@@ -349,7 +348,6 @@ for i in [0, 2, 4, 6, 8, 10]:
 
                     loss.backward()
 
-                    total_loss += loss.item() * batch_size
                     optimizer.step()
 
                     total_loss_mae += lf_sum(out, data.y_real).item()
@@ -374,7 +372,6 @@ for i in [0, 2, 4, 6, 8, 10]:
                     c += data.y_real.size(-1)
 
                 return error / c
-
 
             best_val = 0.0
             test_acc = 0.0
