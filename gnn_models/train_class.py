@@ -266,7 +266,7 @@ i = 0
 bias_threshold = 0.0
 batch_size = 5
 num_epochs = 30
-pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
+pathr = osp.join(osp.dirname(osp.realpath(__file__)), '../EdgeConv', 'data', 'DS')
 
 pd = path_train = path_trainpath_train = dataset_list[i]
 name = name_train = name_list[i]
