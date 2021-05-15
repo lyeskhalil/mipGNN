@@ -269,11 +269,17 @@ name_list = [
 test_scores = []
 
 # Datasets.
-for i in [0, 2, 4, 6, 8, 10]:
+# for i in [0, 2, 4, 6, 8, 10]:
+#     # Bias.
+#     for bias in [0.0, 0.001, 0.1]:
+#         # GNN.
+#         for m in ["EC", "ECS", "GIN", "GINS", "SG", "SGS"]:
+
+for i in [0]:
     # Bias.
-    for bias in [0.0, 0.001, 0.1]:
+    for bias in [0.0]:
         # GNN.
-        for m in ["EC", "ECS", "GIN", "GINS", "SG", "SGS"]:
+        for m in ["EC"]:
 
             # Setup model.
             device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
