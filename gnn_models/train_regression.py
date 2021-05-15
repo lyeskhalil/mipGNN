@@ -268,8 +268,11 @@ name_list = [
 
 test_scores = []
 
+# Datasets.
 for i in [0, 2, 4, 6, 8, 10]:
+    # Bias.
     for bias in [0.0, 0.001, 0.1]:
+        # GNN.
         for m in ["EC", "ECS", "GIN", "GINS", "SG", "SGS"]:
 
             # Setup model.
