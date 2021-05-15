@@ -1,0 +1,190 @@
+import sys
+
+sys.path.insert(0, '..')
+sys.path.insert(0, '../..')
+sys.path.insert(0, '.')
+
+import torch_geometric.utils.softmax
+import torch
+
+import torch.nn.functional as F
+from torch.nn import BatchNorm1d as BN
+from torch.nn import Sequential, Linear, ReLU, Sigmoid
+from torch_geometric.nn import MessagePassing
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+
+# Variables to constrains.
+class VarConBipartiteLayer(MessagePassing):
+
+    def __init__(self, edge_dim, dim, var_assigment, aggr):
+        super(VarConBipartiteLayer, self).__init__(aggr=aggr, flow="source_to_target")
+
+        # Combine node and edge features of adjacent nodes.
+        self.nn = Sequential(Linear(3 * dim + 1, dim), ReLU(), Linear(dim, dim), ReLU(),
+                             BN(dim))
+
+        # Maps edge features to the same number of components as node features.
+        self.edge_encoder = Sequential(Linear(edge_dim, dim), ReLU(), Linear(dim, dim), ReLU(),
+                                       BN(dim))
+
+        # Maps variable embeddings to scalar variable assigment.
+        self.var_assigment = var_assigment
+
+    def forward(self, source, target, edge_index, edge_attr, rhs, size):
+        # Compute scalar variable assignment.
+        var_assignment = self.var_assigment(source)
+
+        # Map edge features to embeddings with the same number of components as node embeddings.
+        edge_embedding = self.edge_encoder(edge_attr)
+
+        out = self.propagate(edge_index, x=source, t=target, v=var_assignment, edge_attr=edge_embedding, size=size)
+
+        return out
+
+    def message(self, x_j, t_i, v_j, edge_attr):
+        return self.nn(torch.cat([t_i, x_j, v_j, edge_attr], dim=-1))
+
+    def __repr__(self):
+        return '{}(nn={})'.format(self.__class__.__name__, self.nn)
+
+
+# Compute error signal.
+class ErrorLayer(MessagePassing):
+    def __init__(self, dim, var_assignment):
+        super(ErrorLayer, self).__init__(aggr="add", flow="source_to_target")
+        self.var_assignment = var_assignment
+        self.error_encoder = Sequential(Linear(1, dim), ReLU(), Linear(dim, dim), ReLU(),
+                                        BN(dim))
+
+    def forward(self, source, edge_index, edge_attr, rhs, index, size):
+        # Compute scalar variable assignment.
+        new_source = self.var_assignment(source)
+
+        tmp = self.propagate(edge_index, x=new_source, edge_attr=edge_attr, size=size)
+
+        # Compute residual, i.e., Ax-b.
+        out = tmp - rhs
+
+        out = self.error_encoder(out)
+
+        out = torch_geometric.utils.softmax(out, index)
+
+        return out
+
+    def message(self, x_j, edge_attr):
+        msg = x_j * edge_attr
+
+        return msg
+
+    def update(self, aggr_out):
+        return aggr_out
+
+
+class ConVarBipartiteLayer(MessagePassing):
+    def __init__(self, edge_dim, dim, aggr):
+        super(ConVarBipartiteLayer, self).__init__(aggr=aggr, flow="source_to_target")
+
+        # Combine node and edge features of adjacent nodes.
+        self.nn = Sequential(Linear(4 * dim, dim), ReLU(), Linear(dim, dim), ReLU(),
+                             BN(dim))
+
+        # Maps edge features to the same number of components as node features.
+        self.edge_encoder = Sequential(Linear(edge_dim, dim), ReLU(), Linear(dim, dim), ReLU(),
+                                       BN(dim))
+
+    def forward(self, source, target, edge_index, edge_attr, error_con, size):
+        # Map edge features to embeddings with the same number of components as node embeddings.
+        edge_embedding = self.edge_encoder(edge_attr)
+
+        out = self.propagate(edge_index, x=source, t=target, e=error_con, edge_attr=edge_embedding, size=size)
+
+        return out
+
+    def message(self, x_j, t_i, e_j, edge_attr):
+        return self.nn(torch.cat([t_i, x_j, e_j, edge_attr], dim=-1))
+
+    def __repr__(self):
+        return '{}(nn={})'.format(self.__class__.__name__, self.nn)
+
+
+class SimpleNet(torch.nn.Module):
+    def __init__(self, hidden, aggr, num_layers):
+        super(SimpleNet, self).__init__()
+        self.num_layers = num_layers
+
+        # Embed initial node features.
+        self.var_node_encoder = Sequential(Linear(2, hidden), ReLU(), Linear(hidden, hidden))
+        self.con_node_encoder = Sequential(Linear(2, hidden), ReLU(), Linear(hidden, hidden))
+
+        # Compute variable assignement.
+        self.layers_ass = []
+        for i in range(self.num_layers):
+            self.layers_ass.append(Sequential(Linear(hidden, hidden), ReLU(), Linear(hidden, 1), Sigmoid()))
+
+        # Bipartite GNN architecture.
+        self.layers_con = []
+        self.layers_var = []
+        self.layers_err = []
+
+        for i in range(self.num_layers):
+            self.layers_con.append(ConVarBipartiteLayer(1, hidden, aggr=aggr))
+            self.layers_var.append(VarConBipartiteLayer(1, hidden, self.layers_ass[i], aggr=aggr))
+            self.layers_err.append(ErrorLayer(hidden, self.layers_ass[i]))
+
+        self.layers_con = torch.nn.ModuleList(self.layers_con)
+        self.layers_var = torch.nn.ModuleList(self.layers_var)
+        self.layers_err = torch.nn.ModuleList(self.layers_err)
+
+        # MLP used for classification.
+        self.lin1 = Linear((self.num_layers + 1) * hidden, hidden)
+        self.lin2 = Linear(hidden, hidden)
+        self.lin3 = Linear(hidden, hidden)
+        self.lin4 = Linear(hidden, 2)
+
+    def forward(self, data):
+        # Get data of batch.
+        var_node_features = data.var_node_features
+        con_node_features = data.con_node_features
+        edge_index_var = data.edge_index_var
+        edge_index_con = data.edge_index_con
+        edge_features_var = data.edge_features_var
+        edge_features_con = data.edge_features_con
+        num_nodes_var = data.num_nodes_var
+        num_nodes_con = data.num_nodes_con
+        rhs = data.rhs
+        index = data.index
+        obj = data.obj
+
+        var_node_features_0 = self.var_node_encoder(var_node_features)
+        con_node_features_0 = self.con_node_encoder(con_node_features)
+
+        x_var = [var_node_features_0]
+        x_con = [con_node_features_0]
+        x_err = []
+
+        num_var = var_node_features_0.size(0)
+        num_con = con_node_features_0.size(0)
+
+        for i in range(self.num_layers):
+            x_err.append(self.layers_err[i](x_var[-1], edge_index_var, edge_features_var, rhs, index,
+                                            (num_var, num_con)))
+
+            x_con.append(F.relu(self.layers_var[i](x_var[-1], x_con[-1], edge_index_var, edge_features_var, rhs,
+                                                   (num_var, num_con))))
+
+            x_var.append(F.relu(self.layers_con[i](x_con[-1], x_var[-1], edge_index_con, edge_features_con, x_err[-1],
+                                                   (num_con, num_var))))
+
+        x = torch.cat(x_var[:], dim=-1)
+
+        x = F.relu(self.lin1(x))
+        x = F.relu(self.lin2(x))
+        x = F.relu(self.lin3(x))
+        x = self.lin4(x)
+        return F.log_softmax(x, dim=-1)
+
+    def __repr__(self):
+        return self.__class__.__name__
+
