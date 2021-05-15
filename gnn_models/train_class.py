@@ -342,6 +342,8 @@ for i in [0, 2, 4, 6, 8, 10]:
                 zero = torch.tensor([0]).to(device)
                 one = torch.tensor([1]).to(device)
 
+                loss_all = 0
+
                 for data in train_loader:
                     data = data.to(device)
 
