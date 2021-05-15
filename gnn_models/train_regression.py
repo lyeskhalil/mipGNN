@@ -373,7 +373,6 @@ for i in [0, 2, 4, 6, 8, 10]:
                 return error / c
 
             best_val = 0.0
-            test_acc = 0.0
             test_mae = 0.0
             for epoch in range(1, num_epochs+1):
 
@@ -386,12 +385,12 @@ for i in [0, 2, 4, 6, 8, 10]:
 
                 if val_mse < best_val:
                     best_val = val_mse
-                    test_acc = test(test_loader)
+                    test_mae = test(test_loader)
                     torch.save(model.state_dict(), model_name)
 
                 # Break if learning rate is smaller 10**-6.
                 if lr < 0.000001 or epoch == num_epochs:
-                    test_scores.append([model_name, test_acc])
+                    test_scores.append([model_name, test_mae])
 
                     break
 
