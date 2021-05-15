@@ -279,27 +279,27 @@ for i in [0, 2, 4, 6, 8, 10]:
             device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
             if m == "EC":
-                model = EdgeConv(hidden=64, num_layers=4, aggr="mean").to(device)
+                model = EdgeConv(hidden=64, num_layers=4, aggr="mean", regression=False).to(device)
                 model_name = "EC_" + name_list[i] + str(bias)
                 print(model_name, bias, name_list[i])
             elif m == "ECS":
-                model = EdgeConvSimple(hidden=64, num_layers=4, aggr="mean").to(device)
+                model = EdgeConvSimple(hidden=64, num_layers=4, aggr="mean", regression=False).to(device)
                 model_name = "ECS_" + name_list[i] + str(bias)
                 print(model_name, bias, name_list[i])
             elif m == "GIN":
-                model = GIN(hidden=64, num_layers=4, aggr="mean").to(device)
+                model = GIN(hidden=64, num_layers=4, aggr="mean", regression=False).to(device)
                 model_name = "GIN_" + name_list[i] + str(bias)
                 print(model_name, bias, name_list[i])
             elif m == "GINS":
-                model = GINSimple(hidden=64, num_layers=4, aggr="mean").to(device)
+                model = GINSimple(hidden=64, num_layers=4, aggr="mean", regression=False).to(device)
                 model_name = "GINS_" + name_list[i] + str(bias)
                 print(model_name, bias, name_list[i])
             elif m == "SG":
-                model = Sage(hidden=64, num_layers=4, aggr="mean").to(device)
+                model = Sage(hidden=64, num_layers=4, aggr="mean", regression=False).to(device)
                 model_name = "SG_" + name_list[i] + str(bias)
                 print(model_name, bias, name_list[i])
             elif m == "SGS":
-                model = SageSimple(hidden=64, num_layers=4, aggr="mean").to(device)
+                model = SageSimple(hidden=64, num_layers=4, aggr="mean", regression=False).to(device)
                 model_name = "SGS_" + name_list[i] + str(bias)
                 print(model_name, bias, name_list[i])
 
@@ -417,8 +417,6 @@ for i in [0, 2, 4, 6, 8, 10]:
                     test_scores.append([model_name, test_acc, test_f1, test_pr, test_re])
 
                     break
-
-
 
                 # print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
                 #       'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,

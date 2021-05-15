@@ -42,9 +42,11 @@ class SimpleBipartiteLayer(MessagePassing):
 
 
 class SimpleNet(torch.nn.Module):
-    def __init__(self, hidden, aggr, num_layers):
+    def __init__(self, hidden, aggr, num_layers, regression):
         super(SimpleNet, self).__init__()
         self.num_layers = num_layers
+
+        self.regression = regression
 
         # Embed initial node features.
         self.var_node_encoder = Sequential(Linear(1, hidden), ReLU(), Linear(hidden, hidden))
@@ -98,7 +100,10 @@ class SimpleNet(torch.nn.Module):
         x = F.relu(self.lin2(x))
         x = F.relu(self.lin3(x))
         x = self.lin4(x)
-        return F.log_softmax(x, dim=-1)
+        if not self.regression:
+            return F.log_softmax(x, dim=-1)
+        else:
+            return x.view(-1)
 
     def __repr__(self):
         return self.__class__.__name__
