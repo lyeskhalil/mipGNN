@@ -268,31 +268,30 @@ bias = float(sys.argv[3])
 # Setup model.
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-
 if m == "EC":
     model = EdgeConv(hidden=64, num_layers=4, aggr="mean").to(device)
     model_name = "EC_" + name_list[i] + str(bias)
     print(model_name, bias)
 elif m == "ECS":
     model = EdgeConvSimple(hidden=64, num_layers=4, aggr="mean").to(device)
-    model_name = "ECS_" + name_list[i]+ str(bias)
-    print(model_name)
+    model_name = "ECS_" + name_list[i] + str(bias)
+    print(model_name, bias)
 elif m == "GIN":
     model = GIN(hidden=64, num_layers=4, aggr="mean").to(device)
-    model_name = "GIN_" + name_list[i]+ str(bias)
-    print(model_name)
+    model_name = "GIN_" + name_list[i] + str(bias)
+    print(model_name, bias)
 elif m == "GINS":
     model = GINSimple(hidden=64, num_layers=4, aggr="mean").to(device)
-    model_name = "GINS_" + name_list[i]+ str(bias)
-    print(model_name)
+    model_name = "GINS_" + name_list[i] + str(bias)
+    print(model_name, bias)
 elif m == "SG":
     model = Sage(hidden=64, num_layers=4, aggr="mean").to(device)
-    model_name = "SG_" + name_list[i]+ str(bias)
-    print(model_name)
+    model_name = "SG_" + name_list[i] + str(bias)
+    print(model_name, bias)
 elif m == "SGS":
     model = SageSimple(hidden=64, num_layers=4, aggr="mean").to(device)
-    model_name = "SGS_" + name_list[i]+ str(bias)
-    print(model_name)
+    model_name = "SGS_" + name_list[i] + str(bias)
+    print(model_name, bias)
 
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
@@ -322,7 +321,6 @@ test_dataset = test_dataset.shuffle()
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
-
 
 
 def train(epoch):
