@@ -65,6 +65,9 @@ class GraphDataset(InMemoryDataset):
         for num, filename in enumerate(os.listdir(pd)):
             print(filename, num, num_graphs)
 
+            if (num == 881):
+                continue
+
             # Get graph.
             graph = nx.read_gpickle(pd + filename)
 
