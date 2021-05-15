@@ -14,7 +14,6 @@ from torch_geometric.data import DataLoader
 import numpy as np
 import pandas as pd
 import torch
-import torch.nn.functional as F
 
 from gnn_models.EdgeConv.mip_bipartite_class import SimpleNet as EdgeConv
 from gnn_models.EdgeConv.mip_bipartite_simple_class import SimpleNet as EdgeConvSimple
@@ -278,27 +277,27 @@ for i in [0, 2, 4, 6, 8, 10]:
 
             if m == "EC":
                 model = EdgeConv(hidden=64, num_layers=4, aggr="mean", regression=True).to(device)
-                model_name = "EC_" + name_list[i] + str(bias)
+                model_name = "EC_" + name_list[i] + str(bias) + "_regress"
                 print(model_name, bias, name_list[i])
             elif m == "ECS":
                 model = EdgeConvSimple(hidden=64, num_layers=4, aggr="mean", regression=True).to(device)
-                model_name = "ECS_" + name_list[i] + str(bias)
+                model_name = "ECS_" + name_list[i] + str(bias) + "_regress"
                 print(model_name, bias, name_list[i])
             elif m == "GIN":
                 model = GIN(hidden=64, num_layers=4, aggr="mean", regression=True).to(device)
-                model_name = "GIN_" + name_list[i] + str(bias)
+                model_name = "GIN_" + name_list[i] + str(bias) + "_regress"
                 print(model_name, bias, name_list[i])
             elif m == "GINS":
                 model = GINSimple(hidden=64, num_layers=4, aggr="mean", regression=True).to(device)
-                model_name = "GINS_" + name_list[i] + str(bias)
+                model_name = "GINS_" + name_list[i] + str(bias) + "_regress"
                 print(model_name, bias, name_list[i])
             elif m == "SG":
                 model = Sage(hidden=64, num_layers=4, aggr="mean", regression=True).to(device)
-                model_name = "SG_" + name_list[i] + str(bias)
+                model_name = "SG_" + name_list[i] + str(bias) + "_regress"
                 print(model_name, bias, name_list[i])
             elif m == "SGS":
                 model = SageSimple(hidden=64, num_layers=4, aggr="mean", regression=True).to(device)
-                model_name = "SGS_" + name_list[i] + str(bias)
+                model_name = "SGS_" + name_list[i] + str(bias) + "_regress"
                 print(model_name, bias, name_list[i])
 
             optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
@@ -316,7 +315,8 @@ for i in [0, 2, 4, 6, 8, 10]:
 
             pd = path_train = path_trainpath_train = dataset_list[i]
             name = name_train = name_list[i]
-            train_dataset = GraphDataset(name_train, pathr, path_train, bias_threshold, transform=MyTransform()).shuffle()
+            train_dataset = GraphDataset(name_train, pathr, path_train, bias_threshold,
+                                         transform=MyTransform()).shuffle()
 
             pd = path_test = path_testpath_test = dataset_list[i + 1]
             name = name_test = name_list[i + 1]
@@ -330,6 +330,7 @@ for i in [0, 2, 4, 6, 8, 10]:
             train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
             val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
             test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
+
 
             def train(epoch):
                 model.train()
@@ -372,9 +373,10 @@ for i in [0, 2, 4, 6, 8, 10]:
 
                 return error / c
 
+
             best_val = 0.0
             test_mae = 0.0
-            for epoch in range(1, num_epochs+1):
+            for epoch in range(1, num_epochs + 1):
 
                 train_loss = train(epoch)
                 train_mse = test(train_loader)
@@ -401,6 +403,5 @@ for i in [0, 2, 4, 6, 8, 10]:
                 # print("F1", train_f1, val_f1, test_f1)
                 # print("Pr", train_pr, val_pr, test_pr)
                 # print("Re", train_re, val_re, test_re)
-
 
 print(test_scores)
