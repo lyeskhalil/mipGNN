@@ -281,27 +281,27 @@ for i in [0, 2, 4, 6, 8, 10]:
             if m == "EC":
                 model = EdgeConv(hidden=64, num_layers=4, aggr="mean").to(device)
                 model_name = "EC_" + name_list[i] + str(bias)
-                print(model_name, bias)
+                print(model_name, bias, name_list[i])
             elif m == "ECS":
                 model = EdgeConvSimple(hidden=64, num_layers=4, aggr="mean").to(device)
                 model_name = "ECS_" + name_list[i] + str(bias)
-                print(model_name, bias)
+                print(model_name, bias, name_list[i])
             elif m == "GIN":
                 model = GIN(hidden=64, num_layers=4, aggr="mean").to(device)
                 model_name = "GIN_" + name_list[i] + str(bias)
-                print(model_name, bias)
+                print(model_name, bias, name_list[i])
             elif m == "GINS":
                 model = GINSimple(hidden=64, num_layers=4, aggr="mean").to(device)
                 model_name = "GINS_" + name_list[i] + str(bias)
-                print(model_name, bias)
+                print(model_name, bias, name_list[i])
             elif m == "SG":
                 model = Sage(hidden=64, num_layers=4, aggr="mean").to(device)
                 model_name = "SG_" + name_list[i] + str(bias)
-                print(model_name, bias)
+                print(model_name, bias, name_list[i])
             elif m == "SGS":
                 model = SageSimple(hidden=64, num_layers=4, aggr="mean").to(device)
                 model_name = "SGS_" + name_list[i] + str(bias)
-                print(model_name, bias)
+                print(model_name, bias, name_list[i])
 
             optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
