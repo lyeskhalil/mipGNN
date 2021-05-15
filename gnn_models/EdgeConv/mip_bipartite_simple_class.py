@@ -64,7 +64,10 @@ class SimpleNet(torch.nn.Module):
         self.lin1 = Linear((num_layers + 1) * hidden, hidden)
         self.lin2 = Linear(hidden, hidden)
         self.lin3 = Linear(hidden, hidden)
-        self.lin4 = Linear(hidden, 2)
+        if not self.regression:
+            self.lin4 = Linear(hidden, 2)
+        else:
+            self.lin4 = Linear(hidden, 1)
 
     def forward(self, data):
 
