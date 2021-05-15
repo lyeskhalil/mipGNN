@@ -344,6 +344,9 @@ for i in [0, 2, 4, 6, 8, 10]:
                     data = data.to(device)
                     out = model(data)
 
+                    print(out.size())
+                    print(data.y_real.size())
+                    exit()
                     loss = lf(out, data.y_real)
 
                     loss.backward()
