@@ -291,7 +291,7 @@ test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
 # Setup model.
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = SimpleNet(hidden=64, num_layers=4, aggr="mean").to(device)
+model = EdgeConv(hidden=64, num_layers=4, aggr="mean").to(device)
 model_name = name_list[i]
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
