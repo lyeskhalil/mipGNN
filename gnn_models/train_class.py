@@ -335,6 +335,7 @@ def test(loader):
     re = Recall(num_classes=2, average="macro").to(device)
     acc = Accuracy(num_classes=2).to(device)
 
+    first = True
     for data in loader:
         data = data.to(device)
         pred = model(data)
@@ -344,12 +345,13 @@ def test(loader):
         y = torch.where(y <= bias_threshold, zero, one).to(device)
         pred = pred.max(dim=1)[1]
 
-        if l == 1:
+        if not first:
             pred_all = torch.cat([pred_all, pred])
             y_all = torch.cat([y_all, y])
         else:
             pred_all = pred
             y_all = y
+            first = False
 
     return acc(pred_all, y_all), f1(pred_all, y_all), pr(pred_all, y_all), re(pred_all, y_all)
 
