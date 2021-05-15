@@ -261,8 +261,39 @@ name_list = [
     "11_train",
 ]
 
+i = int(sys.argv[1])
+m = sys.argv[2]
+
+# Setup model.
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+
+if m == "EC":
+    model = EdgeConv(hidden=64, num_layers=4, aggr="mean").to(device)
+    model_name = "EC_" + name_list[i]
+elif m == "ECS":
+    model = EdgeConvSimple(hidden=64, num_layers=4, aggr="mean").to(device)
+    model_name = "ECS_" + name_list[i]
+elif m == "GIN":
+    model = GIN(hidden=64, num_layers=4, aggr="mean").to(device)
+    model_name = "GIN_" + name_list[i]
+elif m == "GINS":
+    model = GINSimple(hidden=64, num_layers=4, aggr="mean").to(device)
+    model_name = "GINS_" + name_list[i]
+elif m == "SG":
+    model = Sage(hidden=64, num_layers=4, aggr="mean").to(device)
+    model_name = "SG_" + name_list[i]
+elif m == "SGS":
+    model = SageSimple(hidden=64, num_layers=4, aggr="mean").to(device)
+    model_name = "SGS_" + name_list[i]
+
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+
+scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
+                                                       factor=0.8, patience=10,
+                                                       min_lr=0.0000001)
+
 # Prepare data.
-i = 0
 bias_threshold = 0.0
 batch_size = 5
 num_epochs = 30
@@ -289,15 +320,6 @@ test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
 
 
-# Setup model.
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = EdgeConv(hidden=64, num_layers=4, aggr="mean").to(device)
-model_name = name_list[i]
-optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-
-scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
-                                                       factor=0.8, patience=10,
-                                                       min_lr=0.0000001)
 
 
 def train(epoch):
@@ -374,7 +396,7 @@ for epoch in range(1, num_epochs):
     if val_acc > best_val:
         best_val = val_acc
         test_acc, test_f1, test_pr, test_re = test(test_loader)
-        #torch.save(model.state_dict(), model_name)
+        torch.save(model.state_dict(), model_name)
 
     # Break if learning rate is smaller 10**-6.
     if lr < 0.000001:
