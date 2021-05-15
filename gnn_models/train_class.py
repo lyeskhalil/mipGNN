@@ -254,6 +254,7 @@ name_list = [
     "11_train",
 ]
 
+# Prepare data.
 i = 0
 bias_threshold = 0.0
 batch_size = 5
@@ -268,10 +269,7 @@ pd = path_test = path_testpath_test = dataset_list[i + 1]
 name = name_test = name_list[i + 1]
 test_dataset = GraphDataset(name_test, pathr, path_test, bias_threshold, transform=MyTransform()).shuffle()
 
-# Prepare data.
-l = len(train_dataset)
-train_index, val_index = train_test_split(list(range(0, l)), test_size=0.2)
-
+train_index, val_index = train_test_split(list(range(0, len(train_dataset))), test_size=0.2)
 val_dataset = train_dataset[val_index].shuffle()
 train_dataset = train_dataset[train_index].shuffle()
 test_dataset = test_dataset.shuffle()
@@ -279,6 +277,16 @@ test_dataset = test_dataset.shuffle()
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
+
+# Setup model.
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+model = SimpleNet(hidden=64, num_layers=4, aggr="mean").to(device)
+model_name = name_list[i]
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+
+scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
+                                                       factor=0.8, patience=10,
+                                                       min_lr=0.0000001)
 
 
 def train(epoch):
@@ -335,16 +343,6 @@ def test(loader):
     return acc(pred_all, y_all), f1(pred_all, y_all), pr(pred_all, y_all), re(pred_all, y_all)
 
 
-
-
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = SimpleNet(hidden=64, num_layers=4, aggr="mean").to(device)
-optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-
-scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
-                                                       factor=0.8, patience=10,
-                                                       min_lr=0.0000001)
-
 best_val = 0.0
 test_acc = 0.0
 test_f1 = 0.0
@@ -363,9 +361,7 @@ for epoch in range(1, num_epochs):
     if val_acc > best_val:
         best_val = val_acc
         test_acc, test_f1, test_pr, test_re = test(test_loader)
-        torch.save(model.state_dict(), "trained_p_hat300-2_error")
-
-    r.append(test_acc)
+        torch.save(model.state_dict(), model_name)
 
     # Break if learning rate is smaller 10**-6.
     if lr < 0.000001:
