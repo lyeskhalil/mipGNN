@@ -265,6 +265,9 @@ i = int(sys.argv[1])
 m = sys.argv[2]
 bias = float(sys.argv[3])
 
+
+
+
 # Setup model.
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -299,19 +302,30 @@ scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
                                                        factor=0.8, patience=10,
                                                        min_lr=0.0000001)
 
+
+
+
 # Prepare data.
 bias_threshold = bias
 batch_size = 5
 num_epochs = 30
-pathr = osp.join(osp.dirname(osp.realpath(__file__)), '../EdgeConv', 'data', 'DS')
 
-pd = path_train = path_trainpath_train = dataset_list[i]
-name = name_train = name_list[i]
-train_dataset = GraphDataset(name_train, pathr, path_train, bias_threshold, transform=MyTransform()).shuffle()
 
-pd = path_test = path_testpath_test = dataset_list[i + 1]
-name = name_test = name_list[i + 1]
-test_dataset = GraphDataset(name_test, pathr, path_test, bias_threshold, transform=MyTransform()).shuffle()
+
+for i in range(22):
+    print(name_list[i])
+
+    pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
+
+    pd = path_train = path_trainpath_train = dataset_list[i]
+    name = name_train = name_list[i]
+    train_dataset = GraphDataset(name_train, pathr, path_train, bias_threshold, transform=MyTransform()).shuffle()
+
+    # pd = path_test = path_testpath_test = dataset_list[i + 1]
+    # name = name_test = name_list[i + 1]
+    # test_dataset = GraphDataset(name_test, pathr, path_test, bias_threshold, transform=MyTransform()).shuffle()
+
+exit()
 
 train_index, val_index = train_test_split(list(range(0, len(train_dataset))), test_size=0.2)
 val_dataset = train_dataset[val_index].shuffle()
