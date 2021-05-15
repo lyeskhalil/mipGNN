@@ -338,7 +338,7 @@ for i in [0, 2, 4, 6, 8, 10]:
             def train(epoch):
                 model.train()
 
-                loss_all = 0
+                # loss_all = 0
                 zero = torch.tensor([0]).to(device)
                 one = torch.tensor([1]).to(device)
 
