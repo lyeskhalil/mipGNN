@@ -399,7 +399,6 @@ for i in [0, 2, 4, 6, 8, 10]:
             test_re = 0.0
             test_pr = 0.0
             for epoch in range(1, num_epochs+1):
-                print(i)
 
                 train_loss = train(epoch)
                 train_acc, train_f1, train_pr, train_re = test(train_loader)
