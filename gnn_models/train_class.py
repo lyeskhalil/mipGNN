@@ -18,7 +18,14 @@ import pandas as pd
 import torch
 import torch.nn.functional as F
 
-from gnn_models.EdgeConv.mip_bipartite_class import SimpleNet
+from gnn_models.EdgeConv.mip_bipartite_class import SimpleNet as EdgeConv
+from gnn_models.EdgeConv.mip_bipartite_simple_class import SimpleNet as EdgeConvSimple
+
+from gnn_models.GIN.mip_bipartite_class import SimpleNet as GIN
+from gnn_models.GIN.mip_bipartite_simple_class import SimpleNet as GINSimple
+
+from gnn_models.Sage.mip_bipartite_class import SimpleNet as Sage
+from gnn_models.Sage.mip_bipartite_simple_class import SimpleNet as SageSimple
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -278,6 +285,10 @@ train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
+
+
+
+
 # Setup model.
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = SimpleNet(hidden=64, num_layers=4, aggr="mean").to(device)
@@ -361,7 +372,7 @@ for epoch in range(1, num_epochs):
     if val_acc > best_val:
         best_val = val_acc
         test_acc, test_f1, test_pr, test_re = test(test_loader)
-        torch.save(model.state_dict(), model_name)
+        #torch.save(model.state_dict(), model_name)
 
     # Break if learning rate is smaller 10**-6.
     if lr < 0.000001:
