@@ -83,11 +83,12 @@ def create_data_object(graph, bias_threshold):
             node_to_varnode[i] = num_nodes_var
             num_nodes_var += 1
 
-            y_real.append(node_data['bias'])
-            if (node_data['bias'] <= bias_threshold):
-                y.append(0)
-            else:
-                y.append(1)
+            if 'bias' in node_data and node_data['bias'] is not None:
+                y_real.append(node_data['bias'])
+                if (node_data['bias'] <= bias_threshold):
+                    y.append(0)
+                else:
+                    y.append(1)
 
             if 'objcoeff' in node_data:
                 feat_var.append([node_data['objcoeff'], graph.degree[i]])

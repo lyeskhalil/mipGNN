@@ -12,6 +12,7 @@ import argparse
 import io
 import heapq
 from pathlib import Path
+import time
 
 import torch
 from torch_geometric.data import (InMemoryDataset, Data)
@@ -97,15 +98,27 @@ def mipeval(
         # DFS = 0, BEST-BOUND = 1 (default), BEST-EST = 2, BEST-EST-ALT = 3
         # instance_cpx.parameters.mip.strategy.nodeselect.set(3)
 
+    time_rem_cplex = timelimit
+    time_vcg = time.time()
     """ Solve CPLEX instance with user-selected method """
     if 'default' not in method:
         """ Read in the pickled graph and the trained model """
         # graph = nx.read_gpickle("../gisp_generator/DATA/" + instance_name + ".pk")
+        print("Reading VCG...")
         graph = nx.read_gpickle(graph)
+        print("\t took %g secs." % (time.time()-time_vcg))
+
+        print("Predicting...")
+        time_pred = time.time()
         prediction, node_to_varnode = predict.get_prediction(model_name=model, graph=graph)
         dict_varname_seqid = predict.get_variable_cpxid(graph, node_to_varnode, prediction)
+        print("\t took %g secs." % (time.time()-time_pred))
         # print(prediction)
         # todo check dimensions of p
+
+        time_rem_cplex = timelimit - (time.time() - time_vcg)
+        print("time_rem_cplex = %g" % time_rem_cplex)
+        instance_cpx.parameters.timelimit.set(time_rem_cplex)
 
         num_variables = instance_cpx.variables.get_num()
         var_names = rename_variables(instance_cpx.variables.get_names())
@@ -196,6 +209,10 @@ def mipeval(
         # instance_cpx.set_error_stream(logstring)
         instance_cpx.set_error_stream(open(os.devnull, 'w'))
 
+    time_rem_cplex = timelimit - (time.time() - time_vcg)
+    print("time_rem_cplex = %g" % time_rem_cplex)
+    instance_cpx.parameters.timelimit.set(time_rem_cplex)
+
     # todo: consider runseeds 
     #  https://www.ibm.com/support/knowledgecenter/SSSA5P_12.9.0/ilog.odms.cplex.help/refpythoncplex/html/cplex.Cplex-class.html?view=kc#runseeds
     instance_cpx.solve()
@@ -210,12 +227,13 @@ def mipeval(
         num_nodes = instance_cpx.solution.progress.get_num_nodes_processed()
         total_time = end_time - start_time
 
-        summary_string.write('solving stats,%s,%g,%g,%g,%i\n' % (
+        summary_string.write('solving stats,%s,%g,%g,%g,%i,%g\n' % (
             cplex_status, 
             best_objval,
             gap,
             total_time,
-            num_nodes))
+            num_nodes,
+            time_rem_cplex))
     else:
         summary_string.write('solving stats,no solutions found\n')
 
