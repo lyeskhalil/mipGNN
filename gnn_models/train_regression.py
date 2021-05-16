@@ -340,7 +340,7 @@ for i in [0, 2, 4, 6, 8, 10]:
             total_loss_mae = 0
 
             lf = torch.nn.MSELoss()
-            lf_sum = torch.nn.L1Loss(reduction="sum")
+            lf_sum = torch.nn.MSELoss(reduction="sum")
 
             c = 0
             for data in train_loader:
