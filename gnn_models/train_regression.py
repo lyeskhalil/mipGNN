@@ -398,6 +398,7 @@ for i in [0, 2, 4, 6, 8, 10]:
 
                 # Break if learning rate is smaller 10**-6.
                 if lr < 0.000001 or epoch == num_epochs:
+                    print([model_name, test_mae])
                     test_scores.append([model_name, test_mae])
 
                     break
