@@ -382,20 +382,20 @@ for i in [0]:
 
 
             best_val = 0.0
-            test_mae = 0.0
+            test_mae = None
             for epoch in range(1, num_epochs + 1):
 
                 train_loss = train(epoch)
                 train_mse = test(train_loader)
 
-                val_mse = test(val_loader)
-                scheduler.step(val_mse)
+                val_mae = test(val_loader)
+                scheduler.step(val_mae)
                 lr = scheduler.optimizer.param_groups[0]['lr']
 
-                if val_mse < best_val:
-                    best_val = val_mse
+                if val_mae < best_val:
+                    best_val = val_mae
                     test_mae = test(test_loader)
-                    torch.save(model.state_dict(), model_name)
+                    #torch.save(model.state_dict(), model_name)
 
                 # Break if learning rate is smaller 10**-6.
                 if lr < 0.000001 or epoch == num_epochs:
@@ -403,12 +403,10 @@ for i in [0]:
 
                     break
 
-                # print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
-                #       'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
-                #                                                                     train_acc, val_acc, test_acc))
-                #
-                # print("F1", train_f1, val_f1, test_f1)
-                # print("Pr", train_pr, val_pr, test_pr)
-                # print("Re", train_re, val_re, test_re)
+                print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
+                      'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
+                                                                                    train_mse, val_mse, test_mae))
+
+
 
 print(test_scores)
