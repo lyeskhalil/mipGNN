@@ -270,142 +270,141 @@ test_scores = []
 
 # Datasets.
 for i in [0, 2, 4, 6, 8, 10]:
+#for i in [0]:
     # Bias.
-    for bias in [0.0, 0.001, 0.1]:
-        # GNN.
-        for m in ["EC", "ECS", "GIN", "GINS", "SG", "SGS"]:
+    for m in ["EC", "ECS", "GIN", "GINS", "SG", "SGS"]:
+        bias = -1
 
-            # Setup model.
-            device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        # Setup model.
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-            if m == "EC":
-                model = EdgeConv(hidden=64, num_layers=4, aggr="mean", regression=True).to(device)
-                model_name = "EC_" + name_list[i] + str(bias) + "_regress"
-                print(model_name, bias, name_list[i])
-            elif m == "ECS":
-                model = EdgeConvSimple(hidden=64, num_layers=4, aggr="mean", regression=True).to(device)
-                model_name = "ECS_" + name_list[i] + str(bias) + "_regress"
-                print(model_name, bias, name_list[i])
-            elif m == "GIN":
-                model = GIN(hidden=64, num_layers=4, aggr="mean", regression=True).to(device)
-                model_name = "GIN_" + name_list[i] + str(bias) + "_regress"
-                print(model_name, bias, name_list[i])
-            elif m == "GINS":
-                model = GINSimple(hidden=64, num_layers=4, aggr="mean", regression=True).to(device)
-                model_name = "GINS_" + name_list[i] + str(bias) + "_regress"
-                print(model_name, bias, name_list[i])
-            elif m == "SG":
-                model = Sage(hidden=64, num_layers=4, aggr="mean", regression=True).to(device)
-                model_name = "SG_" + name_list[i] + str(bias) + "_regress"
-                print(model_name, bias, name_list[i])
-            elif m == "SGS":
-                model = SageSimple(hidden=64, num_layers=4, aggr="mean", regression=True).to(device)
-                model_name = "SGS_" + name_list[i] + str(bias) + "_regress"
-                print(model_name, bias, name_list[i])
+        if m == "EC":
+            model = EdgeConv(hidden=64, num_layers=4, aggr="mean", regression=True).to(device)
+            model_name = "EC_" + name_list[i] + str(bias) + "_regress"
+            print(model_name, bias, name_list[i])
+        elif m == "ECS":
+            model = EdgeConvSimple(hidden=64, num_layers=4, aggr="mean", regression=True).to(device)
+            model_name = "ECS_" + name_list[i] + str(bias) + "_regress"
+            print(model_name, bias, name_list[i])
+        elif m == "GIN":
+            model = GIN(hidden=64, num_layers=4, aggr="mean", regression=True).to(device)
+            model_name = "GIN_" + name_list[i] + str(bias) + "_regress"
+            print(model_name, bias, name_list[i])
+        elif m == "GINS":
+            model = GINSimple(hidden=64, num_layers=4, aggr="mean", regression=True).to(device)
+            model_name = "GINS_" + name_list[i] + str(bias) + "_regress"
+            print(model_name, bias, name_list[i])
+        elif m == "SG":
+            model = Sage(hidden=64, num_layers=4, aggr="mean", regression=True).to(device)
+            model_name = "SG_" + name_list[i] + str(bias) + "_regress"
+            print(model_name, bias, name_list[i])
+        elif m == "SGS":
+            model = SageSimple(hidden=64, num_layers=4, aggr="mean", regression=True).to(device)
+            model_name = "SGS_" + name_list[i] + str(bias) + "_regress"
+            print(model_name, bias, name_list[i])
 
-            optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
-            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
-                                                                   factor=0.8, patience=10,
-                                                                   min_lr=0.0000001)
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
+                                                               factor=0.8, patience=10,
+                                                               min_lr=0.0000001)
 
-            # Prepare data.
-            bias_threshold = bias
-            batch_size = 15
-            num_epochs = 30
+        # Prepare data.
+        bias_threshold = bias
+        batch_size = 10
+        num_epochs = 30
 
-            pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
+        pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
 
-            pd = path_train = path_trainpath_train = dataset_list[i]
-            name = name_train = name_list[i]
-            train_dataset = GraphDataset(name_train, pathr, path_train, bias_threshold,
-                                         transform=MyTransform()).shuffle()
+        pd = path_train = path_trainpath_train = dataset_list[i]
+        name = name_train = name_list[i]
+        train_dataset = GraphDataset(name_train, pathr, path_train, bias_threshold,
+                                     transform=MyTransform()).shuffle()
 
-            pd = path_test = path_testpath_test = dataset_list[i + 1]
-            name = name_test = name_list[i + 1]
-            test_dataset = GraphDataset(name_test, pathr, path_test, bias_threshold, transform=MyTransform()).shuffle()
+        pd = path_test = path_testpath_test = dataset_list[i + 1]
+        name = name_test = name_list[i + 1]
+        test_dataset = GraphDataset(name_test, pathr, path_test, bias_threshold, transform=MyTransform()).shuffle()
 
-            train_index, val_index = train_test_split(list(range(0, len(train_dataset))), test_size=0.2)
-            val_dataset = train_dataset[val_index].shuffle()
-            train_dataset = train_dataset[train_index].shuffle()
-            test_dataset = test_dataset.shuffle()
+        train_index, val_index = train_test_split(list(range(0, len(train_dataset))), test_size=0.2)
+        val_dataset = train_dataset[val_index].shuffle()
+        train_dataset = train_dataset[train_index].shuffle()
+        test_dataset = test_dataset.shuffle()
 
-            train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-            val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
-            test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
-
-
-            def train(epoch):
-                model.train()
-                total_loss_mae = 0
-
-                lf = torch.nn.L1Loss()
-                lf_sum = torch.nn.L1Loss(reduction="sum")
-
-                c = 0
-                for data in train_loader:
-                    optimizer.zero_grad()
-                    data = data.to(device)
-                    out = model(data)
-
-                    loss = lf(out, data.y_real)
-                    loss.backward()
-
-                    optimizer.step()
-
-                    total_loss_mae += lf_sum(out, data.y_real).item()
-                    c += data.y_real.size(-1)
-
-                return total_loss_mae / c
+        train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+        val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
+        test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
 
-            @torch.no_grad()
-            def test(loader):
-                model.eval()
-                error = 0
+        def train(epoch):
+            model.train()
+            total_loss_mae = 0
 
-                lf_sum = torch.nn.L1Loss(reduction="sum")
+            lf = torch.nn.L1Loss()
+            lf_sum = torch.nn.L1Loss(reduction="sum")
 
-                c = 0
-                for data in loader:
-                    data = data.to(device)
-                    out = model(data)
+            c = 0
+            for data in train_loader:
+                optimizer.zero_grad()
+                data = data.to(device)
+                out = model(data)
 
-                    loss = lf_sum(out, data.y_real)
-                    error += loss.item()
-                    c += data.y_real.size(-1)
+                loss = lf(out, data.y_real)
+                loss.backward()
 
-                return error / c
+                optimizer.step()
+
+                total_loss_mae += lf_sum(out, data.y_real).item()
+                c += data.y_real.size(-1)
+
+            return total_loss_mae / c
 
 
-            best_val = 0.0
-            test_mae = 0.0
-            for epoch in range(1, num_epochs + 1):
+        @torch.no_grad()
+        def test(loader):
+            model.eval()
+            error = 0
 
-                train_loss = train(epoch)
-                train_mse = test(train_loader)
+            lf_sum = torch.nn.L1Loss(reduction="sum")
 
-                val_mse = test(val_loader)
-                scheduler.step(val_mse)
-                lr = scheduler.optimizer.param_groups[0]['lr']
+            c = 0
+            for data in loader:
+                data = data.to(device)
+                out = model(data)
 
-                if val_mse < best_val:
-                    best_val = val_mse
-                    test_mae = test(test_loader)
-                    torch.save(model.state_dict(), model_name)
+                loss = lf_sum(out, data.y_real)
+                error += loss.item()
+                c += data.y_real.size(-1)
 
-                # Break if learning rate is smaller 10**-6.
-                if lr < 0.000001 or epoch == num_epochs:
-                    test_scores.append([model_name, test_mae])
+            return error / c
 
-                    break
 
-                # print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
-                #       'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
-                #                                                                     train_acc, val_acc, test_acc))
-                #
-                # print("F1", train_f1, val_f1, test_f1)
-                # print("Pr", train_pr, val_pr, test_pr)
-                # print("Re", train_re, val_re, test_re)
+        best_val = None
+        test_mae = None
+        for epoch in range(1, num_epochs + 1):
+
+            train_loss = train(epoch)
+            train_mse = test(train_loader)
+
+            val_mae = test(val_loader)
+            scheduler.step(val_mae)
+            lr = scheduler.optimizer.param_groups[0]['lr']
+
+            if (best_val is None) or (val_mae < best_val):
+                best_val = val_mae
+                test_mae = test(test_loader)
+                torch.save(model.state_dict(), model_name)
+
+            # Break if learning rate is smaller 10**-6.
+            if lr < 0.000001 or epoch == num_epochs:
+                print([model_name, test_mae])
+                test_scores.append([model_name, test_mae])
+
+                break
+
+            # print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
+            #       'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
+            #                                                                     train_mse, val_mae, test_mae))
+
+
 
 print(test_scores)
