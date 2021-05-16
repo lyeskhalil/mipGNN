@@ -403,9 +403,9 @@ for i in [0, 2, 4, 6, 8, 10]:
 
                     break
 
-                print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
-                      'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
-                                                                                    train_mse, val_mae, test_mae))
+                # print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
+                #       'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
+                #                                                                     train_mse, val_mae, test_mae))
 
 
 
