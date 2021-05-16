@@ -365,6 +365,7 @@ for i in [0]:
                 return total_loss_mae / c
 
 
+            @torch.no_grad()
             def test(loader):
                 model.eval()
                 error = 0
