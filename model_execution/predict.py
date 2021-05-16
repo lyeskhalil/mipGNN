@@ -34,8 +34,9 @@ def get_prediction(model_name, graph, bias_threshold=0.00):
     # out = model(data).max(dim=1)[1].cpu().detach().numpy()
     out = model(data).exp()[:,1].cpu().detach().numpy()
 
+    #y_real = data.y_real.cpu().detach().numpy()
     # return out, node_var, var_node
-    return out, node_to_varnode
+    return out, node_to_varnode#, y_real
 
 def get_variable_cpxid(graph, node_to_varnode, prediction):
     node_names_list = list(graph.nodes())
@@ -161,12 +162,28 @@ def create_data_object(graph, bias_threshold):
     return data, node_to_varnode, node_to_connode
 
 # pd = "../data_new/data_graphsonly/gisp/p_hat300-2.clq/train/"
-# filename = os.listdir(pd)[0]
-# graph = nx.read_gpickle(pd + filename)
+#pd = "../datagen/data/gisp/p_hat300-2.clq/test/"
+#filename = os.listdir(pd)[0]
+#graph = nx.read_gpickle(pd + filename)
 #
 #
-# out,_ =get_prediction("../gnn_models/EdgeConv/trained_p_hat300-2", graph)
+#out, node_to_varnode, y_real =get_prediction("../gnn_models/EdgeConv/trained_p_hat300-2", graph)
 #
-# print(out, out.mean())
+#print(out, out.mean())
+#print(y_real)
 #
-# print("xxx")
+
+#dict_results = get_variable_cpxid(graph, node_to_varnode, out)
+#print(dict_results)
+
+#y_prediction = [out[var_seqid] for 
+
+#loss = torch.nn.MSELoss()
+#output = loss(torch.from_numpy(out), torch.from_numpy(y_real))
+#print(output)
+#loss = torch.nn.L1Loss()
+#output = loss(torch.from_numpy(out), torch.from_numpy(y_real))
+#print(output)
+#np.random.shuffle(out)
+#output = loss(torch.from_numpy(out), torch.from_numpy(y_real))
+#print(output)

@@ -29,9 +29,9 @@ def chunks(lst, n):
 
 problem_class = "gisp" #"fcmnf/L_n200_p0.02_c500" #"gisp"
 path_prefix = "data/%s/" % (problem_class.replace('/','_'))
-#mps_paths = [str(path) for path in Path(path_prefix).rglob('*.mps')]
+mps_paths = [str(path) for path in Path(path_prefix).rglob('*.mps')]
 
-if True:
+if False:
 	paths_notupdated = []
 	paths_notexist = []
 	for mps_path in Path(path_prefix).rglob('*.mps'):

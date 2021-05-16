@@ -11,7 +11,7 @@ def combine_jobs(mps_paths_subset, timelimit, threads, memlimit):
     for counter, mps_path in enumerate(mps_paths_subset):
         print("job %d/%d" % (counter, len(mps_paths_subset)))
         try:
-            bias_search.search(mps_path, timelimit[0], threads[0], memlimit[0])
+            bias_search.search(mps_path, 0, timelimit[0], threads[0], memlimit[0])
         except CplexError as exc:
             print("errjob %d/%d" % (counter, len(mps_paths_subset)))
             print(exc)
@@ -28,13 +28,13 @@ def chunks(lst, n):
 
 
 problem_class = "gisp" #"fcmnf/L_n200_p0.02_c500" #"gisp"
-path_prefix = "data/%s/mipeval/" % (problem_class.replace('/','_'))
-#mps_paths = [str(path) for path in Path(path_prefix).rglob('*.mps')]
+path_prefix = "data/%s/" % (problem_class.replace('/','_'))
+mps_paths = [str(path) for path in Path(path_prefix).rglob('*/mipeval/*.mps')]
 
-if True:
+if False:
 	paths_notupdated = []
 	paths_notexist = []
-	for mps_path in Path(path_prefix).rglob('*.mps'):
+	for mps_path in Path(path_prefix).rglob('*/mipeval/*.mps'):
 		instance_name_noext = os.path.splitext(mps_path)[0]
 		vcg_labeled_path = "%s_graph_bias.pkl" % instance_name_noext
 		if not Path(vcg_labeled_path).is_file():
@@ -47,7 +47,6 @@ if True:
 	print(len(paths_notupdated), len(paths_notexist))
 	mps_paths = paths_notupdated + paths_notexist
 
-get_bias = [0]*len(mps_paths)
 mem_gb = 8
 timelimit = [1800]*len(mps_paths)
 threads = [1]*len(mps_paths)
@@ -57,7 +56,7 @@ memlimit = [int(mem_gb/2.0)*1024]*len(mps_paths)
 
 print("Chunks being mapped...")
 chunk_size = 100
-mps_paths_subsets, get_bias_subsets, timelimit_subsets, threads_subsets, memlimit_subsets = list(chunks(mps_paths, chunk_size)),list(chunks(get_bias, chunk_size)), list(chunks(timelimit, chunk_size)), list(chunks(threads, chunk_size)), list(chunks(memlimit, chunk_size))
+mps_paths_subsets, timelimit_subsets, threads_subsets, memlimit_subsets = list(chunks(mps_paths, chunk_size)), list(chunks(timelimit, chunk_size)), list(chunks(threads, chunk_size)), list(chunks(memlimit, chunk_size))
 
 timeout_min=120#70*chunk_size
 num_cpus = threads[0]
