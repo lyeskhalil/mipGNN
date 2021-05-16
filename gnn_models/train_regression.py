@@ -269,14 +269,13 @@ name_list = [
 test_scores = []
 
 # Datasets.
-#for i in [0, 2, 4, 6, 8, 10]:
-for i in [0]:
+for i in [0, 2, 4, 6, 8, 10]:
+#for i in [0]:
     # Bias.
-    #for bias in [0.0, 0.001, 0.1]:
-    for bias in [0.1]:
+    for bias in [0.0, 0.001, 0.1]:
         # GNN.
-        #for m in ["EC", "ECS", "GIN", "GINS", "SG", "SGS"]:
-        for m in ["SGS"]:
+        for m in ["EC", "ECS", "GIN", "GINS", "SG", "SGS"]:
+
 
             # Setup model.
             device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -381,7 +380,7 @@ for i in [0]:
                 return error / c
 
 
-            best_val = 0.0
+            best_val = None
             test_mae = None
             for epoch in range(1, num_epochs + 1):
 
@@ -392,7 +391,7 @@ for i in [0]:
                 scheduler.step(val_mae)
                 lr = scheduler.optimizer.param_groups[0]['lr']
 
-                if val_mae < best_val:
+                if (best_val is None) or (val_mae < best_val):
                     best_val = val_mae
                     test_mae = test(test_loader)
                     #torch.save(model.state_dict(), model_name)
