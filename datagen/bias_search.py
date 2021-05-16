@@ -96,6 +96,7 @@ def solveIP(ip, timelimit, mipgap, relgap_pool, maxsols, threads, memlimit, tree
 
 def search(
     mps_path,
+    get_bias,
     timelimit=120.0,
     threads=1,
     memlimit=2000,
@@ -122,6 +123,7 @@ def search(
 
     # Create IP, write it to file, and solve it with CPLEX
     ip = cplex.Cplex(mps_path)
+    num_vars = ip.variables.get_num()
     # ip, variable_names = createIP(g, E2, lp_dir + "/" + lpname)
     print("Read in MIP instance.")
     print(ip.variables.get_num(), ip.linear_constraints.get_num(), ip.linear_constraints.get_num_nonzeros())
@@ -143,7 +145,7 @@ def search(
             loaded_problem = FCMNFProblem(**params)
         vcg = loaded_problem.get_variable_constraint_graph()
 
-    if overwrite or not Path(npz_path).is_file():
+    if get_bias and (overwrite or not Path(npz_path).is_file()):
         num_solutions = 0
         phase1_gap = None
         phase2_bestobj = None
@@ -198,11 +200,13 @@ def search(
             print("Wrote npz file.")
 
             bias_vector = np.mean(solutions_matrix, axis=0)
-    else:
+    elif get_bias and overwrite and Path(npz_path).is_file():
         solutions_matrix = np.load(npz_path)['solutions'][:,1:]
         print("Read existing npz file.")
 
-    bias_vector = np.mean(solutions_matrix, axis=0)
+        bias_vector = np.mean(solutions_matrix, axis=0)
+    else:
+        bias_vector = [None] * num_vars
 
     # Create variable-constraint graph
     labelVCG(vcg, bias_vector, ip)
@@ -214,6 +218,7 @@ if __name__ == "__main__":
     """ Parse arguments """
     parser = argparse.ArgumentParser()
     parser.add_argument("-mps_path", type=str)
+    parser.add_argument("-get_bias", type=int)
     parser.add_argument("-timelimit", type=float, default=120.0)
     parser.add_argument("-threads", type=int, default=4)
     parser.add_argument("-memlimit", type=int, default=2000)
@@ -229,6 +234,7 @@ if __name__ == "__main__":
 
     search(
     args.mps_path,
+    args.get_bias,
     args.timelimit,
     args.threads,
     args.memlimit,

@@ -6,9 +6,9 @@ import os
 timeout_min=60
 mem_gb=8
 
-problem_class = "fcmnf"
+problem_class = "gisp" #"fcmnf"
 num_cpus = 16
-n_instances = 1000
+n_instances = 100
 n_jobs = num_cpus
 
 executor = submitit.AutoExecutor(folder="slurm_logs_datagen_%s" % (problem_class))
@@ -26,8 +26,8 @@ if problem_class == 'gisp':
     print(graphs_filenames)
 
     for graph in graphs_filenames:
-        for data_type in ['train', 'test']:
-            random_seed = int(data_type == 'test')
+        for data_type in ['mipeval']:#['train', 'test']:
+            random_seed = 2#int(data_type == 'test')
             path_prefix = "data/%s/%s/%s/" % (problem_class, graph, data_type)
             print(path_prefix)
             # generate(random_seed, path_prefix, graph_instance, n_instances, n_jobs)

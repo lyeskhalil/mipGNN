@@ -16,13 +16,23 @@ from pathlib import Path
 import torch
 from torch_geometric.data import (InMemoryDataset, Data)
 from torch_geometric.data import DataLoader
-from gnn_models.mip_bipartite_arch import SimpleNet
+from gnn_models.EdgeConv.mip_bipartite_simple_class import SimpleNet
 
 import cplex
 
 import callbacks_cplex
 import utils
 import predict
+
+
+def rename_variables(var_names):
+    for i in range(len(var_names)):
+        name = var_names[i]
+        name = name.replace('(','[')
+        name = name.replace(')',']')
+        name = name.replace('_',',')
+        var_names[i] = name
+    return var_names
 
 
 def set_cplex_priorities(instance_cpx, prediction):
@@ -101,7 +111,7 @@ if __name__ == '__main__':
         # todo check dimensions of p
 
         num_variables = instance_cpx.variables.get_num()
-        var_names = instance_cpx.variables.get_names()
+        var_names = rename_variables(instance_cpx.variables.get_names())
         prediction_reord = [dict_varname_seqid[var_name][1] for var_name in var_names]
         prediction = np.array(prediction_reord)
 
@@ -143,7 +153,7 @@ if __name__ == '__main__':
             branch_cb.rounding = rounding
 
             node_cb.last_best = 0
-            node_cb.freq_best = 10
+            node_cb.freq_best = 100
 
             node_priority = []
             branch_cb.node_priority = node_priority

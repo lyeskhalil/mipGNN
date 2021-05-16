@@ -254,7 +254,7 @@ class branch_attach_data2(BranchCallback):
             # if self.scoring_function == 'sum':
             var_score = self.scores[var_idx] if self.rounding[var_idx] == var_val else 1 - self.scores[var_idx]
             nodesel_score_child = (nodesel_score + var_score) #/ (self.get_current_node_depth() + 1.0)
-            nodesel_score_child_normalized = nodesel_score_child / (self.get_current_node_depth() + 1.0)
+            nodesel_score_child_normalized = nodesel_score_child #/ (self.get_current_node_depth() + 1.0)
             # elif self.scoring_function == 'estimate':
             #     var_is_zero = (int(var_val) == 0)
             #     var_score = pseudocosts[var_idx][int(1-var_is_zero)]*(self.scores[var_idx]*var_is_zero + (1-self.scores[var_idx])*(1-var_is_zero))
