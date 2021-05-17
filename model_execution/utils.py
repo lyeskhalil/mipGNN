@@ -33,6 +33,7 @@ def parse_cplex_log(logstring, time_offset=0.0):
             mipstart_fixedvars, mipstart_threshold, mipstart_fracvars = -1, -1, -1
             if is_mip_start:
                 mipstart_fixedvars, mipstart_threshold, mipstart_fracvars = int(line_vals[9]), float(line_vals[10]), float(line_vals[11])
+            else:
                 timing += time_offset
             
             incumbent_str_cur = "%d,%s,%s,%d,%d,%g,%g\n" % (num_nodes, timing, objval, is_heuristic_solution, mipstart_fixedvars, mipstart_threshold, mipstart_fracvars)
