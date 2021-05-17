@@ -156,7 +156,7 @@ class node_selection3(NodeCallback):
         self.last_best += 1
 
         # if np.random.rand() <= 0.05:
-        if self.last_best % self.freq_best == 0:
+        if self.freq_best > 0 and self.last_best % self.freq_best == 0:
             return
 
         # print("NODE SELECTION CALLBACK")
