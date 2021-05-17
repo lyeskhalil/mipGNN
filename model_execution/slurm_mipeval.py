@@ -36,8 +36,8 @@ memlimit = int(mem_gb/2.0)*1024
 
 problem_class = "gisp" #"fcmnf/L_n200_p0.02_c500" #"gisp"
 data_main_path = "../datagen/data/"
-data_specific_path = "%s/p_hat300-2.clq/mipeval/" % (problem_class.replace('/','_'))
-path_prefix = "%s/%s" % (data_main_path, data_specific_path)
+# data_specific_path = "%s/p_hat300-2.clq/mipeval/" % (problem_class.replace('/','_'))
+# path_prefix = "%s/%s" % (data_main_path, data_specific_path)
 model_path = "../gnn_models/EdgeConv/trained_p_hat300-2"
 # mps_paths = [str(path) for path in Path(path_prefix).rglob('*.mps')]
 output_dir = "OUTPUT_new/"
@@ -52,30 +52,37 @@ configs['branching_priorities-0'] = {'method':'branching_priorities', 'barebones
 configs['default_emptycb-0'] = {'method':'default_emptycb', 'barebones':barebones}
 
 dict_list = []
-for mps_path in Path(path_prefix).glob('*.mps'):
-    instance_path_noext = os.path.splitext(mps_path)[0]
-    vcg_path = "%s_graph_bias.pkl" % instance_path_noext
-    for config_name, config_dict in configs.items():
-        config_dict_final = dict(config_dict)
-        config_dict_final['timelimit'] = timelimit
-        config_dict_final['memlimit'] = memlimit
+graphs_path = '/home/khalile2/projects/def-khalile2/software/DiscreteNet/discretenet/problems/gisp/graphs'
+graphs_filenames = [os.path.basename(graph_fullpath) for graph_fullpath in glob.glob(graphs_path + "/*.clq")] 
 
-        if 'default' not in config_dict['method']:
-            if not Path(vcg_path).is_file():
-                print('Failed for %s' % mps_path)
-                print(config_dict)
-                continue
-            config_dict_final['model'] = model_path
-            config_dict_final['graph'] = vcg_path
+for graph in graphs_filenames:
+    data_specific_path = "%s/%s/mipeval/" % (problem_class.replace('/','_'), graph)
+    path_prefix = "%s/%s" % (data_main_path, data_specific_path)
 
-        # instance, logfile
-        instance_name_noext = os.path.splitext(os.path.basename(mps_path))[0]
-        config_dict_final['instance'] = str(mps_path)
-        config_dict_final['logfile'] = '%s/%s/%s/' % (output_dir, data_specific_path, config_name)#, instance_name_noext)
-        os.makedirs(config_dict_final['logfile'], exist_ok=True)
-        config_dict_final['logfile'] = '%s/%s.out' % (config_dict_final['logfile'], instance_name_noext)
-        #config_dict_final['logfile'] = 'sys.stdout'
-        dict_list += [config_dict_final]
+    for mps_path in Path(path_prefix).glob('*.mps'):
+        instance_path_noext = os.path.splitext(mps_path)[0]
+        vcg_path = "%s_graph_bias.pkl" % instance_path_noext
+        for config_name, config_dict in configs.items():
+            config_dict_final = dict(config_dict)
+            config_dict_final['timelimit'] = timelimit
+            config_dict_final['memlimit'] = memlimit
+
+            if 'default' not in config_dict['method']:
+                if not Path(vcg_path).is_file():
+                    print('Failed for %s' % mps_path)
+                    print(config_dict)
+                    continue
+                config_dict_final['model'] = model_path
+                config_dict_final['graph'] = vcg_path
+
+            # instance, logfile
+            instance_name_noext = os.path.splitext(os.path.basename(mps_path))[0]
+            config_dict_final['instance'] = str(mps_path)
+            config_dict_final['logfile'] = '%s/%s/%s/' % (output_dir, data_specific_path, config_name)#, instance_name_noext)
+            os.makedirs(config_dict_final['logfile'], exist_ok=True)
+            config_dict_final['logfile'] = '%s/%s.out' % (config_dict_final['logfile'], instance_name_noext)
+            #config_dict_final['logfile'] = 'sys.stdout'
+            dict_list += [config_dict_final]
 
 #combine_jobs([dict_list[1]])
 #exit()
@@ -88,8 +95,8 @@ dict_listoflistsofdicts = list(chunks(dict_list, chunk_size))
 timeout_min=math.ceil(math.ceil(timelimit/60.0)*chunk_size*2)
 print("timeout_min = %d" % timeout_min)
 
-#print(dict_listoflistsofdicts)
-#exit()
+print(dict_listoflistsofdicts)
+exit()
 
 print("Submitit initialization...")
 executor = submitit.AutoExecutor(folder="slurm_logs_mipeval")
