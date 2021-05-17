@@ -23,19 +23,19 @@ def parse_cplex_log(logstring, time_offset=0.0):
                 num_nodes = -1
 
         elif "Found" in line:
-                        line_vals = line.split()
-                        is_mip_start = (line_vals[8] == 'mipstart')
-                        is_heuristic_solution = 2 if is_mip_start else is_heuristic_solution
+            line_vals = line.split()
+            is_mip_start = (line_vals[8] == 'mipstart')
+            is_heuristic_solution = 2 if is_mip_start else is_heuristic_solution
 
-                        objval, timing = float(line_vals[4]), float(line_vals[6])
+            objval, timing = float(line_vals[4]), float(line_vals[6])
 
-                        #len(indices_integer), threshold, frac_variables[idx]
-                        mipstart_fixedvars, mipstart_threshold, mipstart_fracvars = -1, -1, -1
-                        if is_mip_start:
-                            mipstart_fixedvars, mipstart_threshold, mipstart_fracvars = int(line_vals[9]), float(line_vals[10]), float(line_vals[11])
-                            timing += time_offset
-                        
-                        incumbent_str_cur = "%d,%s,%s,%d,%d,%g,%g\n" % (num_nodes, timing, objval, is_heuristic_solution, mipstart_fixedvars, mipstart_threshold, mipstart_fracvars)
-                        incumbent_str += incumbent_str_cur
+            #len(indices_integer), threshold, frac_variables[idx]
+            mipstart_fixedvars, mipstart_threshold, mipstart_fracvars = -1, -1, -1
+            if is_mip_start:
+                mipstart_fixedvars, mipstart_threshold, mipstart_fracvars = int(line_vals[9]), float(line_vals[10]), float(line_vals[11])
+                timing += time_offset
+            
+            incumbent_str_cur = "%d,%s,%s,%d,%d,%g,%g\n" % (num_nodes, timing, objval, is_heuristic_solution, mipstart_fixedvars, mipstart_threshold, mipstart_fracvars)
+            incumbent_str += incumbent_str_cur
     return incumbent_str
 
