@@ -70,16 +70,13 @@ def mipeval(
     timelimit=60,
     memlimit=1024,
     freq_best=100,
-    lb_threshold=5
+    lb_threshold=5,
+    mipstart_numthresholds=10
     ):
-
-    instance_path_split = instance.split('/')
-    instance_name = instance_path_split[-2] + '/' + instance_path_split[-1][:-3]
 
     """ Create CPLEX instance """
     instance_cpx = cplex.Cplex(instance)
     start_time = instance_cpx.get_time()
-    # instance_cpx = cplex.Cplex("../gisp_generator/LP/" + instance_name + ".lp")
 
     """ Set CPLEX parameters, if any """
     instance_cpx.parameters.timelimit.set(timelimit)
@@ -101,9 +98,8 @@ def mipeval(
     time_rem_cplex = timelimit
     time_vcg = time.time()
     """ Solve CPLEX instance with user-selected method """
-    if 'default' not in method:
+    if 'default' not in method[0]:
         """ Read in the pickled graph and the trained model """
-        # graph = nx.read_gpickle("../gisp_generator/DATA/" + instance_name + ".pk")
         print("Reading VCG...")
         graph = nx.read_gpickle(graph)
         print("\t took %g secs." % (time.time()-time_vcg))
@@ -121,11 +117,12 @@ def mipeval(
         instance_cpx.parameters.timelimit.set(time_rem_cplex)
 
         num_variables = instance_cpx.variables.get_num()
+        num_constraints = instance_cpx.linear_constraints.get_num()
         var_names = rename_variables(instance_cpx.variables.get_names())
         prediction_reord = [dict_varname_seqid[var_name][1] for var_name in var_names]
         prediction = np.array(prediction_reord)
 
-        if 'local_branching' in method:
+        if len(method) == 1 and ('local_branching' in method[0]):
             pred_one_coeff = (prediction >= 0.9) * (-1)
             pred_zero_coeff = (prediction <= 0.1)
             num_ones = -np.sum(pred_one_coeff)
@@ -133,24 +130,24 @@ def mipeval(
 
             local_branching_coeffs = [list(range(len(prediction))), coeffs.tolist()]
 
-        elif method == 'branching_priorities':
+            if method[0] == 'local_branching_approx':
+                instance_cpx.linear_constraints.add(
+                    lin_expr=[local_branching_coeffs],
+                    senses=['L'],
+                    rhs=[float(lb_threshold - num_ones)],
+                    names=['local_branching'])
+            
+            elif method[0] == 'local_branching_exact':
+                branch_cb = instance_cpx.register_callback(callbacks_cplex.branch_local_exact)
+
+                branch_cb.coeffs = local_branching_coeffs
+                branch_cb.threshold = lb_threshold - num_ones
+                branch_cb.is_root = True
+
+        if 'branching_priorities' in method:
             set_cplex_priorities(instance_cpx, prediction)
 
-        elif method == 'local_branching_approx':
-            instance_cpx.linear_constraints.add(
-                lin_expr=[local_branching_coeffs],
-                senses=['L'],
-                rhs=[float(lb_threshold - num_ones)],
-                names=['local_branching'])
-        
-        elif method == 'local_branching_exact':
-            branch_cb = instance_cpx.register_callback(callbacks_cplex.branch_local_exact)
-
-            branch_cb.coeffs = local_branching_coeffs
-            branch_cb.threshold = lb_threshold - num_ones
-            branch_cb.is_root = True
-
-        elif 'node_selection' in method:
+        if 'node_selection' in method:
             # score variables based on bias prediction
             scores = np.max(((1-prediction), prediction), axis=0)
             rounding = np.round(prediction)
@@ -172,18 +169,12 @@ def mipeval(
             branch_cb.time = 0
             node_cb.time = 0
 
-            if 'branching' in method:
-                set_cplex_priorities(instance_cpx, prediction)
+        if ('primal_mipstart' in method) or ('primal_mipstart_only' in method):
 
-        elif method == 'primal_mipstart':
-            # instance_cpx.parameters.mip.limits.nodes.set(1)
+            mipstart_numthresholds = num_variables if mipstart_numthresholds == -1 else mipstart_numthresholds
+            threshold_set = np.minimum(prediction, 1-prediction)
+            threshold_set = np.sort(np.unique(threshold_set))[:mipstart_numthresholds]
 
-            # threshold_set = np.minimum(prediction, 1-prediction)
-            # threshold_set = np.sort(np.unique(threshold_set))
-
-            threshold_set = [0.01, 0.05, 0.1, 0.2, 0.4, 0.5]
-
-            # threshold = rounding_threshold
             for threshold in threshold_set:
                 indices_integer = np.where((prediction >= 1-threshold) | (prediction <= threshold))[0]
                 print(len(indices_integer), len(prediction))
@@ -194,7 +185,10 @@ def mipeval(
                         val=np.round(prediction[indices_integer]).tolist()),
                     instance_cpx.MIP_starts.effort_level.repair)
 
-    if method == 'default_emptycb':
+            if 'primal_mipstart_only' in method:
+                instance_cpx.parameters.mip.limits.nodes.set(0)
+
+    elif method[0] == 'default_emptycb':
         branch_cb = instance_cpx.register_callback(callbacks_cplex.branch_empty)
 
     """ CPLEX output management """
@@ -227,13 +221,18 @@ def mipeval(
         num_nodes = instance_cpx.solution.progress.get_num_nodes_processed()
         total_time = end_time - start_time
 
-        summary_string.write('solving stats,%s,%g,%g,%g,%i,%g\n' % (
+        instance_name = os.path.splitext(os.path.basename(instance))[0]
+
+        summary_string.write('solving stats,%s,%g,%g,%g,%i,%g,%s,%i,%i\n' % (
             cplex_status, 
             best_objval,
             gap,
             total_time,
             num_nodes,
-            time_rem_cplex))
+            time_rem_cplex,
+            instance_name,
+            num_variables,
+            num_constraints))
     else:
         summary_string.write('solving stats,no solutions found\n')
 
@@ -249,7 +248,8 @@ if __name__ == '__main__':
 
     """ Parse arguments """
     parser = argparse.ArgumentParser()
-    parser.add_argument("-method", type=str, default='default')
+    # parser.add_argument("-method", type=str, default='default')
+    parser.add_argument('-method', nargs='+', type=str, required=True)
     parser.add_argument("-instance", type=str)
     parser.add_argument("-graph", type=str, default='')
     parser.add_argument("-model", type=str, default="../gnn_models/EdgeConv/trained_p_hat300-2")
@@ -265,7 +265,7 @@ if __name__ == '__main__':
     parser.add_argument("-lb_threshold", type=int, default=5)
 
     # Parameters for primal heuristic mip start
-    # parser.add_argument("-rounding_threshold", type=float, default=0.1)
+    parser.add_argument("-mipstart_numthresholds", type=int, default=10)
 
     args = parser.parse_args()
     print(args)
