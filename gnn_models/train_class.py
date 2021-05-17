@@ -273,15 +273,11 @@ test_scores = []
 
 
 # Datasets.
-# for i in [0, 2, 4, 6, 8, 10]:
-for i in [0]:
+for i in [0, 2, 4, 6, 8, 10]:
     # Bias.
-    # for bias in [0.0, 0.001, 0.1]:
-    for bias in [0.1]:
+    for bias in [0.0, 0.001, 0.1]:
         # GNN.
-        # for m in ["EC", "ECS", "GIN", "GINS", "SG", "SGS"]:
-        for m in ["SGS"]:
-
+        for m in ["EC", "ECS", "GIN", "GINS", "SG", "SGS"]:
             # Setup model.
             device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -434,5 +430,5 @@ for i in [0]:
                 # print("Pr", train_pr, val_pr, test_pr)
                 # print("Re", train_re, val_re, test_re)
 
-
+        torch.cuda.empty_cache()
 print(test_scores)
