@@ -430,5 +430,5 @@ for i in [0, 2, 4, 6, 8, 10]:
                 # print("Pr", train_pr, val_pr, test_pr)
                 # print("Re", train_re, val_re, test_re)
 
-
+        torch.cuda.empty_cache()
 print(test_scores)
