@@ -175,6 +175,8 @@ def mipeval(
             threshold_set = np.minimum(prediction, 1-prediction)
             threshold_set = np.sort(np.unique(threshold_set))[:mipstart_numthresholds]
 
+            print("threshold_set = ", threshold_set)
+
             for threshold in threshold_set:
                 indices_integer = np.where((prediction >= 1-threshold) | (prediction <= threshold))[0]
                 print(len(indices_integer), len(prediction))
