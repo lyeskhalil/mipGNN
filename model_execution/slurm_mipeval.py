@@ -40,16 +40,16 @@ data_main_path = "../datagen/data/"
 # path_prefix = "%s/%s" % (data_main_path, data_specific_path)
 model_path = "../gnn_models/EdgeConv/trained_p_hat300-2"
 # mps_paths = [str(path) for path in Path(path_prefix).rglob('*.mps')]
-output_dir = "OUTPUT_new/"
+output_dir = "OUTPUT_new2/"
 
 barebones = 0
 configs = {}
-configs['default-0'] = {'method':'default', 'barebones':barebones}
-configs['node_selection-0-100'] = {'method':'node_selection', 'barebones':barebones, 'freq_best':100}
-configs['node_selection-0-10'] = {'method':'node_selection', 'barebones':barebones, 'freq_best':10}
-configs['primal_mipstart-0'] = {'method':'primal_mipstart', 'barebones':barebones}
-configs['branching_priorities-0'] = {'method':'branching_priorities', 'barebones':barebones}
-configs['default_emptycb-0'] = {'method':'default_emptycb', 'barebones':barebones}
+#configs['default_emptycb-0'] = {'method':'default_emptycb', 'barebones':barebones}
+configs['default-%d' % (barebones)] = {'method':['default'], 'barebones':barebones}
+configs['node_selection-%d-100' % (barebones)] = {'method':['node_selection'], 'barebones':barebones, 'freq_best':100}
+configs['primal_mipstart-%d-10' % (barebones)] = {'method':['primal_mipstart'], 'barebones':barebones, 'num_mipstarts':10}
+configs['branching_priorities-%d' % (barebones)] = {'method':['branching_priorities'], 'barebones':barebones}
+configs['combined-%d' % (barebones)] = {'method':['primal_mipstart', 'node_selection', 'branching_priorities'], 'barebones':barebones, 'freq_best':100, 'num_mipstarts':10}
 
 dict_list = []
 graphs_path = '/home/khalile2/projects/def-khalile2/software/DiscreteNet/discretenet/problems/gisp/graphs'
@@ -92,11 +92,11 @@ chunk_size = math.ceil(num_tasks / 1000.0)
 print("Chunks being mapped. chunk_size = %d" % chunk_size)
 dict_listoflistsofdicts = list(chunks(dict_list, chunk_size))
 
-timeout_min=math.ceil(math.ceil(timelimit/60.0)*chunk_size*2)
+timeout_min=math.ceil(math.ceil(timelimit/60.0)*chunk_size*1.2)
 print("timeout_min = %d" % timeout_min)
 
-print(dict_listoflistsofdicts)
-exit()
+#print(dict_listoflistsofdicts)
+#exit()
 
 print("Submitit initialization...")
 executor = submitit.AutoExecutor(folder="slurm_logs_mipeval")

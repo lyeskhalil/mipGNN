@@ -76,8 +76,10 @@ def mipeval(
     num_mipstarts=10
     ):
     
+    print(locals())
+
     assert (len(method) >= 1)
-    assert (cpx_emphasis >= 0 and cpx_emphasis <= 5)
+    assert (cpx_emphasis >= 0 and cpx_emphasis <= 4)
     assert (timelimit > 0)
 
     """ Create CPLEX instance """
@@ -199,7 +201,7 @@ def mipeval(
             mipstart_string = sys.stdout if logfile == "sys.stdout" else io.StringIO()
 
             #frac_variables = [0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
-            frac_variables = np.flip(np.linspace(0, 1, num=num_mipstarts+1))[:-1]
+            frac_variables = np.flip(np.linspace(0.5, 1, num=num_mipstarts+1))[:-1]
             print(frac_variables)
             threshold_set = np.minimum(prediction, 1-prediction)
             threshold_set = np.sort(threshold_set)#[:mipstart_numthresholds]
@@ -216,6 +218,7 @@ def mipeval(
                 indices_integer = np.where((prediction >= 1-threshold) | (prediction <= threshold))[0]
                 print(len(indices_integer), len(prediction))
 
+                instance_cpx.parameters.mip.display.set(0)
                 instance_cpx.parameters.mip.limits.nodes.set(0)
                 print("time_rem_cplex = %g" % time_rem_cplex)
                 instance_cpx.parameters.timelimit.set(time_rem_cplex)
@@ -235,6 +238,7 @@ def mipeval(
                     print("Found incumbent of value %g after %g sec. mipstart %d %g %g\n" % (best_objval_mipstart, best_time, len(indices_integer), threshold, frac_variables[idx]))
                     mipstart_string.write("Found incumbent of value %g after %g sec. mipstart %d %g %g\n" % (best_objval_mipstart, best_time, len(indices_integer), threshold, frac_variables[idx]))
 
+            instance_cpx.parameters.mip.display.set(3)
             if not barebones:
                 instance_cpx.parameters.mip.limits.cutpasses.set(0)
                 instance_cpx.parameters.mip.strategy.heuristicfreq.set(0)
