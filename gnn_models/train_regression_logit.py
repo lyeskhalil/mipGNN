@@ -321,13 +321,13 @@ for i in [0, 2, 4, 6, 8, 10]:
         train_dataset = GraphDataset(name_train, pathr, path_train, bias_threshold,
                                      transform=MyTransform()).shuffle()
 
-        train_dataset.data.y = torch.logit(train_dataset.data.y)
+        train_dataset.data.y = torch.logit(train_dataset.data.y_real)
 
 
         pd = path_test = path_testpath_test = dataset_list[i + 1]
         name = name_test = name_list[i + 1]
         test_dataset = GraphDataset(name_test, pathr, path_test, bias_threshold, transform=MyTransform()).shuffle()
-        test_dataset.data.y = torch.logit(test_dataset.data.y)
+        test_dataset.data.y = torch.logit(test_dataset.data.y_real)
 
         train_index, val_index = train_test_split(list(range(0, len(train_dataset))), test_size=0.2)
         val_dataset = train_dataset[val_index].shuffle()
