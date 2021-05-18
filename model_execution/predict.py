@@ -23,18 +23,19 @@ def get_prediction(model_name, graph, bias_threshold=0.00):
 
     if model_name[0:3] == "ECS":
         from gnn_models.EdgeConv.mip_bipartite_simple_class import SimpleNet
-    if model_name[0:3] == "EC_":
+    elif model_name[0:3] == "EC_":
         from gnn_models.EdgeConv.mip_bipartite_class import SimpleNet
-    if model_name[0:4] == "GINS":
+    elif model_name[0:4] == "GINS":
         from gnn_models.GIN.mip_bipartite_simple_class import SimpleNet
-    if model_name[0:4] == "GIN_":
+    elif model_name[0:4] == "GIN_":
         from gnn_models.GIN.mip_bipartite_class import SimpleNet
-    if model_name[0:3] == "SGS":
+    elif model_name[0:3] == "SGS":
         from gnn_models.Sage.mip_bipartite_simple_class import SimpleNet
-    if model_name[0:3] == "SG_":
+    elif model_name[0:3] == "SG_":
         from gnn_models.Sage.mip_bipartite_class import SimpleNet
-
-
+    else:
+        print("Model name does match any model!")
+        exit()
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
