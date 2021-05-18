@@ -20,18 +20,18 @@ from torch_geometric.data import DataLoader
 
 
 def get_prediction(model_name, graph, bias_threshold=0.00):
-
-    if model_name[0:3] == "ECS":
+    model_name_only = os.path.basename(model_name)
+    if model_name_only[0:3] == "ECS" or "trained" in model_name:
         from gnn_models.EdgeConv.mip_bipartite_simple_class import SimpleNet
-    elif model_name[0:3] == "EC_":
+    elif model_name_only[0:3] == "EC_":
         from gnn_models.EdgeConv.mip_bipartite_class import SimpleNet
-    elif model_name[0:4] == "GINS":
+    elif model_name_only[0:4] == "GINS":
         from gnn_models.GIN.mip_bipartite_simple_class import SimpleNet
-    elif model_name[0:4] == "GIN_":
+    elif model_name_only[0:4] == "GIN_":
         from gnn_models.GIN.mip_bipartite_class import SimpleNet
-    elif model_name[0:3] == "SGS":
+    elif model_name_only[0:3] == "SGS":
         from gnn_models.Sage.mip_bipartite_simple_class import SimpleNet
-    elif model_name[0:3] == "SG_":
+    elif model_name_only[0:3] == "SG_":
         from gnn_models.Sage.mip_bipartite_class import SimpleNet
     else:
         print("Model name does match any model!")
