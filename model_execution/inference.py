@@ -36,11 +36,11 @@ def rename_variables(var_names):
         var_names[i] = name
     return var_names
 
-
-def set_cplex_priorities(instance_cpx, prediction):
+# direction=1: branch on most integer first
+def set_cplex_priorities(instance_cpx, prediction, direction=1):
     # score variables based on bias prediction
-    scores = np.max((-(1-prediction), -prediction), axis=0)
-    priorities = np.argsort(scores)
+    scores = np.max(((1-prediction), prediction), axis=0)
+    priorities = np.argsort(direction * scores)
 
     # set priorities
     # reference: https://www.ibm.com/support/knowledgecenter/SSSA5P_12.7.1/ilog.odms.cplex.help/refpythoncplex/html/cplex._internal._subinterfaces.OrderInterface-class.html
@@ -59,7 +59,6 @@ def set_cplex_priorities(instance_cpx, prediction):
     # print(cur_priority)
     # z=1/0
     instance_cpx.order.set(order_tuples)
-    # print(instance_cpx.order.get())
 
 def mipeval(
     method, 
@@ -73,7 +72,8 @@ def mipeval(
     memlimit=1024,
     freq_best=100,
     lb_threshold=5,
-    num_mipstarts=10
+    num_mipstarts=10,
+    branching_direction=1
     ):
     
     print(locals())
@@ -167,7 +167,7 @@ def mipeval(
                 branch_cb.is_root = True
 
         if 'branching_priorities' in method:
-            set_cplex_priorities(instance_cpx, prediction)
+            set_cplex_priorities(instance_cpx, prediction, branching_direction)
 
         if 'node_selection' in method:
             # score variables based on bias prediction
@@ -322,6 +322,9 @@ if __name__ == '__main__':
 
     # Parameters for primal heuristic mip start
     parser.add_argument("-num_mipstarts", type=int, default=10)
+
+    # Parameters for branching priorities
+    parser.add_argument("-branching_direction", type=int, default=1)
 
     args = parser.parse_args()
     print(args)
