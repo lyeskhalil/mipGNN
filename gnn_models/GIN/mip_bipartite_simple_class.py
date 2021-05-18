@@ -42,7 +42,7 @@ class SimpleBipartiteLayer(MessagePassing):
 
 
 class SimpleNet(torch.nn.Module):
-    def __init__(self, hidden, aggr, num_layers, regression):
+    def __init__(self, hidden, aggr, num_layers, regression=False):
         super(SimpleNet, self).__init__()
         self.num_layers = num_layers
 
