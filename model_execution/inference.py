@@ -68,6 +68,7 @@ def mipeval(
     logfile='sys.stdout',
     barebones=0,
     cpx_emphasis=1,
+    cpx_threads=1,
     timelimit=60,
     memlimit=1024,
     freq_best=100,
@@ -104,7 +105,7 @@ def mipeval(
     instance_cpx.parameters.timelimit.set(timelimit)
     instance_cpx.parameters.emphasis.mip.set(cpx_emphasis)
     instance_cpx.parameters.mip.display.set(3)
-    instance_cpx.parameters.threads.set(1)
+    instance_cpx.parameters.threads.set(cpx_threads)
     instance_cpx.parameters.workmem.set(memlimit)
     instance_cpx.parameters.mip.limits.treememory.set(20000)
     instance_cpx.parameters.mip.strategy.file.set(2)
@@ -309,6 +310,7 @@ if __name__ == '__main__':
     parser.add_argument("-graph", type=str, default='')
     parser.add_argument("-model", type=str, default="../gnn_models/EdgeConv/trained_p_hat300-2")
     parser.add_argument("-cpx_emphasis", type=int, default=1)
+    parser.add_argument("-cpx_threads", type=int, default=1)
     parser.add_argument("-barebones", type=int, default=0)
     parser.add_argument("-timelimit", type=float, default=60)
     parser.add_argument("-memlimit", type=float, default=1024)

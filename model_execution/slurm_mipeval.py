@@ -29,9 +29,9 @@ def chunks(lst, n):
         yield lst[i:i + n]
 
 
-num_cpus = 1
+num_cpus = 8#1
 mem_gb = 8
-timelimit = 1800
+timelimit = 10800 #1800
 memlimit = int(mem_gb/2.0)*1024
 
 problem_class = "gisp" #"fcmnf/L_n200_p0.02_c500" #"gisp"
@@ -44,12 +44,13 @@ output_dir = "OUTPUT_new2/"
 
 barebones = 0
 configs = {}
+configs['default_3h8t2e'] = {'method':'default', 'barebones':0, 'cpx_emphasis':2, 'cpx_threads':num_cpus}
 #configs['default_emptycb-0'] = {'method':'default_emptycb', 'barebones':barebones}
 #configs['default-%d' % (barebones)] = {'method':['default'], 'barebones':barebones}
 #configs['node_selection-%d-100' % (barebones)] = {'method':['node_selection'], 'barebones':barebones, 'freq_best':100}
-configs['primal_mipstart-%d-10-agg' % (barebones)] = {'method':['primal_mipstart'], 'barebones':barebones, 'num_mipstarts':10}
+#configs['primal_mipstart-%d-10-agg' % (barebones)] = {'method':['primal_mipstart'], 'barebones':barebones, 'num_mipstarts':10}
 #configs['branching_priorities-%d' % (barebones)] = {'method':['branching_priorities'], 'barebones':barebones}
-configs['combined-%d-agg' % (barebones)] = {'method':['primal_mipstart', 'node_selection', 'branching_priorities'], 'barebones':barebones, 'freq_best':100, 'num_mipstarts':10}
+#configs['combined-%d-agg' % (barebones)] = {'method':['primal_mipstart', 'node_selection', 'branching_priorities'], 'barebones':barebones, 'freq_best':100, 'num_mipstarts':10}
 
 dict_list = []
 graphs_path = '/home/khalile2/projects/def-khalile2/software/DiscreteNet/discretenet/problems/gisp/graphs'
