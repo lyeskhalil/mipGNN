@@ -340,7 +340,7 @@ for i in [0, 2, 4, 6, 8, 10]:
         test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
 
-        def train(epoch):
+        def train(epoch, log=False):
             model.train()
             total_loss_mae = 0
 
@@ -348,10 +348,20 @@ for i in [0, 2, 4, 6, 8, 10]:
             lf_sum = torch.nn.L1Loss(reduction="sum")
 
             c = 0
+
+            first = True
             for data in train_loader:
                 optimizer.zero_grad()
                 data = data.to(device)
                 out = model(data)
+
+                if log:
+                    if first:
+                        diff = out - data.y_real
+                    else:
+
+                        diff = torch.cat([])
+
 
                 loss = lf(out, data.y_real)
                 loss.backward()
@@ -360,6 +370,8 @@ for i in [0, 2, 4, 6, 8, 10]:
 
                 total_loss_mae += lf_sum(out, data.y_real).item()
                 c += data.y_real.size(-1)
+
+                first = False
 
             return total_loss_mae / c
 
