@@ -13,13 +13,29 @@ from pathlib import Path
 import torch
 from torch_geometric.data import (InMemoryDataset, Data)
 from torch_geometric.data import DataLoader
-from gnn_models.EdgeConv.mip_bipartite_simple_class import SimpleNet
+#from gnn_models.EdgeConv.mip_bipartite_simple_class import SimpleNet
 
 # TODO: Uncomment for second model.
 #from gnn_models.EdgeConv.mip_bipartite_class_test import SimpleNet
 
 
 def get_prediction(model_name, graph, bias_threshold=0.00):
+
+    if model_name[0:3] == "ECS":
+        from gnn_models.EdgeConv.mip_bipartite_simple_class import SimpleNet
+    if model_name[0:3] == "EC_":
+        from gnn_models.EdgeConv.mip_bipartite_class import SimpleNet
+    if model_name[0:4] == "GINS":
+        from gnn_models.GIN.mip_bipartite_simple_class import SimpleNet
+    if model_name[0:4] == "GIN_":
+        from gnn_models.GIN.mip_bipartite_class import SimpleNet
+    if model_name[0:3] == "SGS":
+        from gnn_models.Sage.mip_bipartite_simple_class import SimpleNet
+    if model_name[0:3] == "SG_":
+        from gnn_models.Sage.mip_bipartite_class import SimpleNet
+
+
+
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     model = SimpleNet(64, aggr="mean", num_layers=4).to(device)
