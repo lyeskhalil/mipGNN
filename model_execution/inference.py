@@ -201,7 +201,7 @@ def mipeval(
             mipstart_string = sys.stdout if logfile == "sys.stdout" else io.StringIO()
 
             #frac_variables = [0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
-            frac_variables = np.flip(np.linspace(0.5, 1, num=num_mipstarts+1))[:-1]
+            frac_variables = np.flip(np.linspace(0, 1, num=num_mipstarts+1))[:-1]
             print(frac_variables)
             threshold_set = np.minimum(prediction, 1-prediction)
             threshold_set = np.sort(threshold_set)#[:mipstart_numthresholds]
@@ -227,7 +227,7 @@ def mipeval(
                     cplex.SparsePair(
                         ind=indices_integer.tolist(),
                         val=np.round(prediction[indices_integer]).tolist()),
-                    instance_cpx.MIP_starts.effort_level.solve_MIP)
+                    instance_cpx.MIP_starts.effort_level.repair)
 
                 instance_cpx.solve()
                 instance_cpx.MIP_starts.delete()
@@ -266,19 +266,21 @@ def mipeval(
     if instance_cpx.solution.is_primal_feasible():
         cplex_status = instance_cpx.solution.get_status_string()
         best_objval = instance_cpx.solution.get_objective_value()
+        best_bound = instance_cpx.solution.MIP.get_best_objective()
         gap = instance_cpx.solution.MIP.get_mip_relative_gap()
         num_nodes = instance_cpx.solution.progress.get_num_nodes_processed()
         total_time = end_time - start_time
 
         instance_name = os.path.splitext(os.path.basename(instance))[0]
 
-        summary_string.write('solving stats,%s,%g,%g,%g,%i,%g,%s,%i,%i\n' % (
+        summary_string.write('solving stats,%s,%g,%g,%g,%g,%i,%g,%s,%i,%i\n' % (
             cplex_status, 
             best_objval,
+            best_bound,
             gap,
             total_time,
             num_nodes,
-            time_rem_cplex,
+            timelimit - time_rem_cplex,
             instance_name,
             num_variables,
             num_constraints))

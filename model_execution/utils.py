@@ -36,7 +36,7 @@ def parse_cplex_log(logstring, time_offset=0.0):
             else:
                 timing += time_offset
             
-            incumbent_str_cur = "%d,%s,%s,%d,%d,%g,%g\n" % (num_nodes, timing, objval, is_heuristic_solution, mipstart_fixedvars, mipstart_threshold, mipstart_fracvars)
+            incumbent_str_cur = "%d,%g,%g,%d,%d,%g,%g\n" % (num_nodes, timing, objval, is_heuristic_solution, mipstart_fixedvars, mipstart_threshold, mipstart_fracvars)
             incumbent_str += incumbent_str_cur
     return incumbent_str
 

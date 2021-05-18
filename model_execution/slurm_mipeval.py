@@ -45,11 +45,11 @@ output_dir = "OUTPUT_new2/"
 barebones = 0
 configs = {}
 #configs['default_emptycb-0'] = {'method':'default_emptycb', 'barebones':barebones}
-configs['default-%d' % (barebones)] = {'method':['default'], 'barebones':barebones}
-configs['node_selection-%d-100' % (barebones)] = {'method':['node_selection'], 'barebones':barebones, 'freq_best':100}
-configs['primal_mipstart-%d-10' % (barebones)] = {'method':['primal_mipstart'], 'barebones':barebones, 'num_mipstarts':10}
-configs['branching_priorities-%d' % (barebones)] = {'method':['branching_priorities'], 'barebones':barebones}
-configs['combined-%d' % (barebones)] = {'method':['primal_mipstart', 'node_selection', 'branching_priorities'], 'barebones':barebones, 'freq_best':100, 'num_mipstarts':10}
+#configs['default-%d' % (barebones)] = {'method':['default'], 'barebones':barebones}
+#configs['node_selection-%d-100' % (barebones)] = {'method':['node_selection'], 'barebones':barebones, 'freq_best':100}
+configs['primal_mipstart-%d-10-agg' % (barebones)] = {'method':['primal_mipstart'], 'barebones':barebones, 'num_mipstarts':10}
+#configs['branching_priorities-%d' % (barebones)] = {'method':['branching_priorities'], 'barebones':barebones}
+configs['combined-%d-agg' % (barebones)] = {'method':['primal_mipstart', 'node_selection', 'branching_priorities'], 'barebones':barebones, 'freq_best':100, 'num_mipstarts':10}
 
 dict_list = []
 graphs_path = '/home/khalile2/projects/def-khalile2/software/DiscreteNet/discretenet/problems/gisp/graphs'
@@ -87,8 +87,9 @@ for graph in graphs_filenames:
 #combine_jobs([dict_list[1]])
 #exit()
 
+num_jobs_final = 500
 num_tasks = len(dict_list)
-chunk_size = math.ceil(num_tasks / 1000.0)
+chunk_size = math.ceil(num_tasks / num_jobs_final)
 print("Chunks being mapped. chunk_size = %d" % chunk_size)
 dict_listoflistsofdicts = list(chunks(dict_list, chunk_size))
 
