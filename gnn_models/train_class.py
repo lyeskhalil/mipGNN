@@ -273,7 +273,8 @@ test_scores = []
 
 
 # Datasets.
-for i in [0, 2, 4, 6, 8, 10]:
+#for i in [0, 2, 4, 6, 8, 10]:
+for i in [12, 14, 16, 18, 20]:
     # Bias.
     for bias in [0.0, 0.001, 0.1]:
         # GNN.
