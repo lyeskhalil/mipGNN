@@ -12,6 +12,7 @@ from sklearn.model_selection import train_test_split
 from torch_geometric.data import (InMemoryDataset, Data)
 from torch_geometric.data import DataLoader
 import numpy as np
+from numpy import savetxt
 import pandas as pd
 import torch
 
@@ -312,7 +313,7 @@ for i in [0, 2, 4, 6, 8, 10]:
         # Prepare data.
         bias_threshold = bias
         batch_size = 10
-        num_epochs = 30
+        num_epochs = 20
 
         pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
 
@@ -420,8 +421,8 @@ for i in [0, 2, 4, 6, 8, 10]:
                 print([model_name, test_mae])
                 test_scores.append([model_name, test_mae])
 
-                print(test(train_loader, log=True))
-                print()
+                log = test(train_loader, log=True).detach().detach().cpu().numpy()
+                savetxt('log.csv', log, delimiter=',')
 
                 break
 
