@@ -44,8 +44,8 @@ output_dir = "OUTPUT_new2/"
 
 barebones = 0
 configs = {}
-configs['default_3h8t2e'] = {'method':'default', 'barebones':0, 'cpx_emphasis':2, 'cpx_threads':num_cpus}
-#configs['default_emptycb-0'] = {'method':'default_emptycb', 'barebones':barebones}
+configs['default_3h8t2e'] = {'method':['default'], 'barebones':0, 'cpx_emphasis':2, 'cpx_threads':num_cpus}
+#configs['default_emptycb-0'] = {'method':['default_emptycb'], 'barebones':barebones}
 #configs['default-%d' % (barebones)] = {'method':['default'], 'barebones':barebones}
 #configs['node_selection-%d-100' % (barebones)] = {'method':['node_selection'], 'barebones':barebones, 'freq_best':100}
 #configs['primal_mipstart-%d-10-agg' % (barebones)] = {'method':['primal_mipstart'], 'barebones':barebones, 'num_mipstarts':10}
