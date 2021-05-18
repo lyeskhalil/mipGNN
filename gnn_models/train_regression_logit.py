@@ -312,7 +312,7 @@ for i in [0, 2, 4, 6, 8, 10]:
         # Prepare data.
         bias_threshold = bias
         batch_size = 10
-        num_epochs = 30
+        num_epochs = 3
 
         pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
 
@@ -340,7 +340,7 @@ for i in [0, 2, 4, 6, 8, 10]:
         test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
 
-        def train(epoch, log=False):
+        def train(epoch):
             model.train()
             total_loss_mae = 0
 
@@ -349,19 +349,10 @@ for i in [0, 2, 4, 6, 8, 10]:
 
             c = 0
 
-            first = True
             for data in train_loader:
                 optimizer.zero_grad()
                 data = data.to(device)
                 out = model(data)
-
-                if log:
-                    if first:
-                        diff = out - data.y_real
-                    else:
-
-                        diff = torch.cat([])
-
 
                 loss = lf(out, data.y_real)
                 loss.backward()
@@ -371,28 +362,41 @@ for i in [0, 2, 4, 6, 8, 10]:
                 total_loss_mae += lf_sum(out, data.y_real).item()
                 c += data.y_real.size(-1)
 
-                first = False
-
             return total_loss_mae / c
 
 
+
         @torch.no_grad()
-        def test(loader):
+        def test(loader, log=False):
             model.eval()
             error = 0
 
             lf_sum = torch.nn.L1Loss(reduction="sum")
 
             c = 0
+            first = True
             for data in loader:
                 data = data.to(device)
                 out = model(data)
+
+                if log:
+                    if first:
+                        diff = out - data.y_real
+                    else:
+                        tmp = out - data.y_real
+                        diff = torch.cat([diff, tmp])
+
 
                 loss = lf_sum(out, data.y_real)
                 error += loss.item()
                 c += data.y_real.size(-1)
 
-            return error / c
+                first = False
+
+            if not log:
+                return error / c
+            else:
+                return diff
 
 
         best_val = None
@@ -415,6 +419,9 @@ for i in [0, 2, 4, 6, 8, 10]:
             if lr < 0.000001 or epoch == num_epochs:
                 print([model_name, test_mae])
                 test_scores.append([model_name, test_mae])
+
+                print(test(train_loader, log=True))
+                print()
 
                 break
 
