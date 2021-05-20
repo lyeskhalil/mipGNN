@@ -314,7 +314,7 @@ for i in [20]:
 
             # Prepare data.
             bias_threshold = bias
-            batch_size = 5
+            batch_size = 1
             num_epochs = 30
 
 
