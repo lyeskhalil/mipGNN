@@ -15,7 +15,7 @@ def combine_jobs(dict_list):
         try:
             inference.mipeval(**dict_cur)
         except CplexError as exc:
-            print("errjob %d/%d" % (counter+1, len(mps_paths_subset)))
+            print("errjob %d/%d" % (counter+1, len(dict_list)))
             print(exc)
             continue
         except Exception as e:

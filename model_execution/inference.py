@@ -74,7 +74,8 @@ def mipeval(
     freq_best=100,
     lb_threshold=5,
     num_mipstarts=10,
-    branching_direction=1
+    branching_direction=1,
+    zero_damping=1.0
     ):
     
     print(locals())
@@ -181,6 +182,7 @@ def mipeval(
             branch_cb.scoring_function = 'sum' #'estimate'
             branch_cb.scores = scores
             branch_cb.rounding = rounding
+            branch_cb.zero_damping = zero_damping
 
             node_cb.last_best = 0
             node_cb.freq_best = freq_best
@@ -318,6 +320,7 @@ if __name__ == '__main__':
 
     # Parameters for node selection
     parser.add_argument("-freq_best", type=int, default=100)
+    parser.add_argument("-zero_damping", type=float, default=1.0)
 
     # Parameters for exact local branching
     parser.add_argument("-lb_threshold", type=int, default=5)
