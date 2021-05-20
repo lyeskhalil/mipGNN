@@ -332,7 +332,7 @@ for i in [0, 2, 4, 6, 8, 10]:
         test_dataset.data.y_real = torch.logit(test_dataset.data.y_real, eps=10**-6)
 
         train_index, val_index = train_test_split(list(range(0, len(train_dataset))), test_size=0.2)
-        val_dataset = train_dataset[val_index].shuffle()
+        val_dataset = etrain_dataset[val_index].shuffle()
         train_dataset = train_dataset[train_index].shuffle()
         test_dataset = test_dataset.shuffle()
 

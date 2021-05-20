@@ -268,13 +268,12 @@ name_list = [
 # m = sys.argv[2]
 # bias = float(sys.argv[3])
 
-
 test_scores = []
-
 
 # Datasets.
 #for i in [0, 2, 4, 6, 8, 10]:
-for i in [12, 14, 16, 18, 20]:
+#for i in [12, 14, 16, 18, 20]:
+for i in [20]:
     # Bias.
     for bias in [0.0, 0.001, 0.1]:
         # GNN.
@@ -315,7 +314,7 @@ for i in [12, 14, 16, 18, 20]:
 
             # Prepare data.
             bias_threshold = bias
-            batch_size = 10
+            batch_size = 5
             num_epochs = 30
 
 

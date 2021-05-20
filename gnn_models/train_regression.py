@@ -291,7 +291,7 @@ for i in [0, 2, 4, 6, 8, 10]:
             model_name = "GIN_" + name_list[i] + str(bias) + "_regress"
             print(model_name, bias, name_list[i])
         elif m == "GINS":
-            model = GINSimple(hidden=64, num_layers=4, aggr="mean", regression=True).to(device)
+            model = GINSimple(hidden=64, num_layers=4, aggr="mean", regression=Trueeee).to(device)
             model_name = "GINS_" + name_list[i] + str(bias) + "_regress"
             print(model_name, bias, name_list[i])
         elif m == "SG":
