@@ -271,14 +271,14 @@ name_list = [
 test_scores = []
 
 # Datasets.
-#for i in [0, 2, 4, 6, 8, 10]:
-#for i in [12, 14, 16, 18, 20]:
-for i in [20]:
+for i in [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20]:
     # Bias.
     for bias in [0.0, 0.001, 0.1]:
         # GNN.
-        #for m in ["EC", "ECS", "GIN"]:  # "GINS", "SG", "SGS"]:
-        for m in["GINS", "SG", "SGS"]:
+        for m in ["ECS"]:  # "GINS", "SG", "SGS"]:
+        #for m in ["GINS", "SG", "SGS"]:
+            log = []
+
             # Setup model.
             device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -308,10 +308,12 @@ for i in [20]:
                 print(model_name, bias, name_list[i])
 
             optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-
             scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
                                                                    factor=0.8, patience=10,
                                                                    min_lr=0.0000001)
+
+
+
 
             # Prepare data.
             bias_threshold = bias
@@ -418,11 +420,14 @@ for i in [20]:
                     test_acc, test_f1, test_pr, test_re = test(test_loader)
                     torch.save(model.state_dict(), model_name)
 
+                log.append([epoch, train_loss, train_acc, train_f1, train_pr, train_re, val_acc, val_f1, val_pr, val_re, best_val, test_acc, test_f1, test_pr, test_re])
+
                 # Break if learning rate is smaller 10**-6.
                 if lr < 0.000001 or epoch == num_epochs:
                     print([model_name, test_acc, test_f1, test_pr, test_re])
                     test_scores.append([model_name, test_acc, test_f1, test_pr, test_re])
-
+                    log = np.array(log)
+                    np.savetxt(model_name, log, delimiter=",")
                     break
 
                 # print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
