@@ -419,7 +419,7 @@ for i in [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20]:
                 if val_acc > best_val:
                     best_val = val_acc
                     test_acc, test_f1, test_pr, test_re = test(test_loader)
-                    torch.save(model.state_dict(), model_name)
+                    torch.save(model.state_dict(), "./model_new/" + model_name)
 
                 log.append([epoch, train_loss, train_acc, train_f1, train_pr, train_re, val_acc, val_f1, val_pr, val_re, best_val, test_acc, test_f1, test_pr, test_re])
 
@@ -428,7 +428,7 @@ for i in [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20]:
                     print([model_name, test_acc, test_f1, test_pr, test_re])
                     test_scores.append([model_name, test_acc, test_f1, test_pr, test_re])
                     log = np.array(log)
-                    np.savetxt(model_name + ".log", log, delimiter=",", fmt = '%1.3f')
+                    np.savetxt("./model_new/" + model_name + ".log", log, delimiter=",", fmt = '%1.3f')
                     break
 
                 # print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
