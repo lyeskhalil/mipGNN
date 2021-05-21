@@ -428,7 +428,7 @@ for i in [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20]:
                     print([model_name, test_acc, test_f1, test_pr, test_re])
                     test_scores.append([model_name, test_acc, test_f1, test_pr, test_re])
                     log = np.array(log)
-                    np.savetxt("./model_new/" + model_name + ".log", log, delimiter=",", fmt = '%1.3f')
+                    np.savetxt("./model_new/" + model_name + ".log", log, delimiter=",", fmt = '%1.5f')
                     break
 
                 # print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
