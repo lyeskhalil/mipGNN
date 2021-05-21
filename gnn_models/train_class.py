@@ -317,8 +317,9 @@ for i in [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20]:
 
             # Prepare data.
             bias_threshold = bias
-            #batch_size = 10
-            # TODO: Just for
+            # TODO: Just for network flow. 
+            #batch_size = 5
+
             batch_size = 10
             num_epochs = 3
 
@@ -427,7 +428,7 @@ for i in [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20]:
                     print([model_name, test_acc, test_f1, test_pr, test_re])
                     test_scores.append([model_name, test_acc, test_f1, test_pr, test_re])
                     log = np.array(log)
-                    np.savetxt(model_name, log, delimiter=",")
+                    np.savetxt(model_name + "log", log, delimiter=",")
                     break
 
                 # print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
