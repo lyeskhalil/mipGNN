@@ -275,7 +275,7 @@ for i in [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20]:
     # Bias.
     for bias in [0.0, 0.001, 0.1]:
         # GNN.
-        for m in ["ECS"]:  # "GINS", "SG", "SGS"]:
+        for m in ["ECS", "GINS", "SGS"]:
         #for m in ["GINS", "SG", "SGS"]:
             log = []
 
