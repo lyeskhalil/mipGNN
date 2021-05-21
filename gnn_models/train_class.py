@@ -271,7 +271,8 @@ name_list = [
 test_scores = []
 
 # Datasets.
-for i in [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20]:
+#for i in [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20]:
+for i in [0, 2, 4, 6, 8, 10]: # 12, 14, 16, 18, 20]:
     # Bias.
     for bias in [0.0, 0.001, 0.1]:
         # GNN.
@@ -321,7 +322,7 @@ for i in [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20]:
             #batch_size = 5
 
             batch_size = 10
-            num_epochs = 3
+            num_epochs = 30
 
 
             pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
