@@ -319,8 +319,8 @@ for i in [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20]:
             bias_threshold = bias
             #batch_size = 10
             # TODO: Just for
-            batch_size = 1
-            num_epochs = 30
+            batch_size = 10
+            num_epochs = 3
 
 
             pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
