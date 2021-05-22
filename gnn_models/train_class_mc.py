@@ -322,7 +322,7 @@ for i in [0]:
             # TODO: Just for network flow. 
             #batch_size = 5
 
-            batch_size = 10
+            batch_size = 1
             num_epochs = 30
 
 
