@@ -271,8 +271,8 @@ name_list = [
 test_scores = []
 
 # Datasets.
-for i in [0, 2, 4, 6, 8, 10]:
-#for i in [12, 14, 16, 18]:
+#for i in [0, 2, 4, 6, 8, 10]:
+for i in [12, 14, 16, 18]:
     # Bias.
     for bias in [0.0, 0.001, 0.1]:
         # GNN.
@@ -314,9 +314,6 @@ for i in [0, 2, 4, 6, 8, 10]:
                                                                    factor=0.8, patience=10,
                                                                    min_lr=0.0000001)
 
-
-
-
             # Prepare data.
             bias_threshold = bias
             # TODO: Just for network flow. 
@@ -324,7 +321,6 @@ for i in [0, 2, 4, 6, 8, 10]:
 
             batch_size = 10
             num_epochs = 30
-
 
             pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
 
