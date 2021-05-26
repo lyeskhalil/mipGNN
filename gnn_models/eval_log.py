@@ -24,9 +24,9 @@ name_list = [
     "L_n200_p0.02_c500_train",
 ]
 
-name = name_list[10]
-bias = 0.0 #[0.0, 0.001, 0.1]
-architecture = "GIN" #["ECS", "GINS", "SGS", "EC", "GIN", "SG"]
+name = name_list[0]
+bias = 0.1 #[0.0, 0.001, 0.1]
+architecture = "ECS" #["ECS", "GINS", "SGS", "EC", "GIN", "SG"]
 
 log = architecture + "_" + name + str(bias) + ".log"
 
@@ -38,7 +38,7 @@ data = np.loadtxt(fname="./model_new/logs/" + log, delimiter= ",")
 data = pd.DataFrame(data, columns = ["epoch", "train_loss", "train_acc", "train_f1", "train_pr", "train_re", "val_acc", "val_f1", "val_pr", "val_re", "best_val", "test_acc", "test_f1", "test_pr", "test_re"])
 
 
-fig = sns.relplot(data=data, x="epoch", y="train_loss", kind="line")
+fig = sns.relplot(data=data, x="epoch", y="test_re", kind="line")
 fig .set_axis_labels('Epochs', 'train_loss')
 plt.tight_layout()
 
