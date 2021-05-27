@@ -262,6 +262,9 @@ def mipeval(
                 indices_integer = np.where((prediction >= 1-threshold) | (prediction <= threshold))[0]
                 print(len(indices_integer), len(prediction))
 
+                if len(indices_integer) == 0:
+                    continue
+
                 instance_cpx.parameters.mip.display.set(0)
                 instance_cpx.parameters.mip.limits.nodes.set(0)
                 print("time_rem_cplex = %g" % time_rem_cplex)
