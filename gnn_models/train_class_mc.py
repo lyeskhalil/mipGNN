@@ -346,7 +346,6 @@ for i in [20]:
             val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
             test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
-
             def train(epoch):
                 model.train()
 
