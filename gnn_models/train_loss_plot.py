@@ -18,20 +18,20 @@ name_list = [
     "p_hat300-1.clq_train",
     "brock200_4.clq_train",
     "brock200_2.clq_train",
-    # "L_n200_p0.02_c500_train",
+    "L_n200_p0.02_c500_train",
 ]
 
-sns.set_context(context="paper", font_scale=1.5, rc=None)
+sns.set_context(context="paper", font_scale=1.5, rc={'text.usetex': True})
 sns.set(font="Arial")
 
 ###############
 # Set architecture here.
-architecture = "EC"  # ["ECS", "GINS", "SGS", "EC", "GIN", "SG"]
+architecture = "ECS"  # ["ECS", "GINS", "SGS", "EC", "GIN", "SG"]
 ######################
 
 bias = [0.0, 0.001, 0.1]
 
-cols = ['Bias {}'.format(col) for col in bias]
+cols = ['Threshold {}'.format(col) for col in bias]
 rows = ['{}'.format(row) for row in name_list]
 fig, axes = plt.subplots(len(name_list), len(bias), figsize=(15, 50), sharey=False)
 fig.suptitle("Architecture: " + architecture)
@@ -66,4 +66,5 @@ for i, name in enumerate(name_list):
 fig.tight_layout()
 
 fig.subplots_adjust(left=0.15, top=0.95)
+#plt.savefig('losses'+architecture+'.pdf', bbox_inches="tight")
 plt.show()
