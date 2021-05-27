@@ -29,32 +29,34 @@ def chunks(lst, n):
         yield lst[i:i + n]
 
 
-num_cpus = 8#1
+num_cpus = 1
 mem_gb = 8
-timelimit = 10800 #1800
+timelimit = 1800
 memlimit = int(mem_gb/2.0)*1024
 
 problem_class = "gisp" #"fcmnf/L_n200_p0.02_c500" #"gisp"
 data_main_path = "../datagen/data/"
 # data_specific_path = "%s/p_hat300-2.clq/mipeval/" % (problem_class.replace('/','_'))
 # path_prefix = "%s/%s" % (data_main_path, data_specific_path)
-model_path = "../gnn_models/EdgeConv/trained_p_hat300-2"
+model_path = "../gnn_models/models/SG_gisp_C250.9.clq_train0.1"#"../gnn_models/EdgeConv/trained_p_hat300-2"
 # mps_paths = [str(path) for path in Path(path_prefix).rglob('*.mps')]
 output_dir = "OUTPUT_new2/"
 
 barebones = 0
 configs = {}
-configs['default_3h8t2e'] = {'method':['default'], 'barebones':0, 'cpx_emphasis':2, 'cpx_threads':num_cpus}
+#configs['default_3h8t2e'] = {'method':['default'], 'barebones':0, 'cpx_emphasis':2, 'cpx_threads':num_cpus}
 #configs['default_emptycb-0'] = {'method':['default_emptycb'], 'barebones':barebones}
 #configs['default-%d' % (barebones)] = {'method':['default'], 'barebones':barebones}
 #configs['node_selection-%d-100' % (barebones)] = {'method':['node_selection'], 'barebones':barebones, 'freq_best':100}
 #configs['primal_mipstart-%d-10-agg' % (barebones)] = {'method':['primal_mipstart'], 'barebones':barebones, 'num_mipstarts':10}
 #configs['branching_priorities-%d' % (barebones)] = {'method':['branching_priorities'], 'barebones':barebones}
 #configs['combined-%d-agg' % (barebones)] = {'method':['primal_mipstart', 'node_selection', 'branching_priorities'], 'barebones':barebones, 'freq_best':100, 'num_mipstarts':10}
+configs['node_selection-%d-100-SG_gisp_C250.9.clq_train0.1' % (barebones)] = {'method':['node_selection'], 'barebones':barebones, 'freq_best':100}
 
 dict_list = []
 graphs_path = '/home/khalile2/projects/def-khalile2/software/DiscreteNet/discretenet/problems/gisp/graphs'
 graphs_filenames = [os.path.basename(graph_fullpath) for graph_fullpath in glob.glob(graphs_path + "/*.clq")] 
+graphs_filenames = ["p_hat300-2.clq"]#["C250.9.clq"]
 
 for graph in graphs_filenames:
     data_specific_path = "%s/%s/mipeval/" % (problem_class.replace('/','_'), graph)
@@ -88,7 +90,7 @@ for graph in graphs_filenames:
 #combine_jobs([dict_list[1]])
 #exit()
 
-num_jobs_final = 500
+num_jobs_final = 1000
 num_tasks = len(dict_list)
 chunk_size = math.ceil(num_tasks / num_jobs_final)
 print("Chunks being mapped. chunk_size = %d" % chunk_size)

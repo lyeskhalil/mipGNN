@@ -26,6 +26,13 @@ import callbacks_cplex
 import utils
 import predict
 
+import pickle
+sys.path.extend(["/home/khalile2/projects/def-khalile2/software/DiscreteNet"])
+from discretenet.problems.gisp import GISPProblem
+from discretenet.problems.fcmnf import FCMNFProblem
+
+sys.path.extend(["../datagen"])
+import bias_search
 
 def rename_variables(var_names):
     for i in range(len(var_names)):
@@ -63,7 +70,8 @@ def set_cplex_priorities(instance_cpx, prediction, direction=1):
 def mipeval(
     method, 
     instance, 
-    graph='', 
+    graph='',
+    instance_params='',
     model='', 
     logfile='sys.stdout',
     barebones=0,
@@ -74,6 +82,7 @@ def mipeval(
     freq_best=100,
     lb_threshold=5,
     num_mipstarts=10,
+    mipstart_strategy='repair',
     branching_direction=1,
     zero_damping=1.0
     ):
@@ -121,20 +130,38 @@ def mipeval(
 
     time_rem_cplex = timelimit
     time_vcg = time.time()
+    time_vcg_reading = 0
+    time_pred = 0
 
     is_primal_mipstart = False
     """ Solve CPLEX instance with user-selected method """
     if 'default' not in method[0]:
+        assert (len(graph) > 0 or len(instance_params) > 0) and len(model) > 0
         """ Read in the pickled graph and the trained model """
-        print("Reading VCG...")
-        graph = nx.read_gpickle(graph)
-        print("\t took %g secs." % (time.time()-time_vcg))
+        time_vcg_reading = time.time()
+        if len(graph) > 0:
+            print("Reading VCG...")
+            graph = nx.read_gpickle(graph)
+            print("\t took %g secs." % (time.time()-time_vcg))
+        elif len(instance_params) > 0:
+            parameters_path = instance_params
+            with open(parameters_path, "rb") as fd:
+                params  = pickle.load(fd)
+            if "gisp" in instance:
+                loaded_problem = GISPProblem(**params)
+            elif "fcmnf" in instance:
+                loaded_problem = FCMNFProblem(**params)
+            graph = loaded_problem.get_variable_constraint_graph()
+            bias_search.labelVCG(graph, np.zeros(num_variables), instance_cpx)
+            print("\t took %g secs." % (time.time()-time_vcg))
+        time_vcg_reading = time.time() - time_vcg_reading
 
         print("Predicting...")
         time_pred = time.time()
         prediction, node_to_varnode = predict.get_prediction(model_name=model, graph=graph)
         dict_varname_seqid = predict.get_variable_cpxid(graph, node_to_varnode, prediction)
         print("\t took %g secs." % (time.time()-time_pred))
+        time_pred = time.time() - time_pred
         # print(prediction)
         # todo check dimensions of p
 
@@ -175,6 +202,9 @@ def mipeval(
             # score variables based on bias prediction
             scores = np.max(((1-prediction), prediction), axis=0)
             rounding = np.round(prediction)
+            
+            print(np.mean(scores), np.mean(rounding))
+            print(np.argsort(prediction), np.sort(prediction)[:10], np.sort(prediction)[-10:])
 
             branch_cb = instance_cpx.register_callback(callbacks_cplex.branch_attach_data2)
             node_cb = instance_cpx.register_callback(callbacks_cplex.node_selection3)
@@ -196,7 +226,7 @@ def mipeval(
 
         if ('primal_mipstart' in method) or ('primal_mipstart_only' in method):
             is_primal_mipstart = True
-            if not barebones:
+            if not barebones or 'primal_mipstart_only' in method:
                 instance_cpx.parameters.mip.limits.cutpasses.set(-1)
                 instance_cpx.parameters.mip.strategy.heuristicfreq.set(-1)
                 instance_cpx.parameters.preprocessing.presolve.set(0)
@@ -204,14 +234,25 @@ def mipeval(
             mipstart_string = sys.stdout if logfile == "sys.stdout" else io.StringIO()
 
             #frac_variables = [0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
-            frac_variables = np.flip(np.linspace(0, 1, num=num_mipstarts+1))[:-1]
-            print(frac_variables)
-            threshold_set = np.minimum(prediction, 1-prediction)
-            threshold_set = np.sort(threshold_set)#[:mipstart_numthresholds]
+            #frac_variables = np.flip(np.linspace(0, 1, num=num_mipstarts+1))[:-1]
+            #print(frac_variables)
+            #threshold_set = np.minimum(prediction, 1-prediction)
+            #threshold_set = np.sort(threshold_set)#[:mipstart_numthresholds]
             
-            threshold_set = [threshold_set[max([0, int(math.ceil(frac_variables[i]*num_variables)) - 1])] for i in range(len(frac_variables))]
+            #threshold_set = [threshold_set[max([0, int(math.ceil(frac_variables[i]*num_variables)) - 1])] for i in range(len(frac_variables))]
+            
+            threshold_set = [0.01*(2**i) for i in range(6)]
+            threshold_set.reverse()
             print("threshold_set = ", threshold_set)
-    
+            
+            if mipstart_strategy == 'repair':
+                mipstart_strategy_int = instance_cpx.MIP_starts.effort_level.repair
+            elif mipstart_strategy == 'solve_MIP':
+                mipstart_strategy_int = instance_cpx.MIP_starts.effort_level.solve_MIP
+            else:
+                print("invalid mipstart_strategy %s" % mipstart_strategy)
+                exit()
+
             best_objval_mipstart = -math.inf
             for idx, threshold in enumerate(threshold_set):
                 time_rem_cplex = timelimit - (time.time() - time_vcg)
@@ -230,7 +271,7 @@ def mipeval(
                     cplex.SparsePair(
                         ind=indices_integer.tolist(),
                         val=np.round(prediction[indices_integer]).tolist()),
-                    instance_cpx.MIP_starts.effort_level.repair)
+                    mipstart_strategy_int)
 
                 instance_cpx.solve()
                 instance_cpx.MIP_starts.delete()
@@ -238,11 +279,12 @@ def mipeval(
                 if instance_cpx.solution.is_primal_feasible() and instance_cpx.solution.get_objective_value() > best_objval_mipstart:
                     best_objval_mipstart = instance_cpx.solution.get_objective_value()
                     best_time = time.time() - time_vcg
-                    print("Found incumbent of value %g after %g sec. mipstart %d %g %g\n" % (best_objval_mipstart, best_time, len(indices_integer), threshold, frac_variables[idx]))
-                    mipstart_string.write("Found incumbent of value %g after %g sec. mipstart %d %g %g\n" % (best_objval_mipstart, best_time, len(indices_integer), threshold, frac_variables[idx]))
+                    incb_str_cur = ("Found incumbent of value %g after %g sec. mipstart %d %g %g\n" % (best_objval_mipstart, best_time, len(indices_integer), threshold, len(indices_integer)/num_variables))
+                    print(incb_str_cur)
+                    mipstart_string.write(incb_str_cur)#"Found incumbent of value %g after %g sec. mipstart %d %g %g\n" % (best_objval_mipstart, best_time, len(indices_integer), threshold))
 
             instance_cpx.parameters.mip.display.set(3)
-            if not barebones:
+            if not barebones and not 'primal_mipstart_only' in method:
                 instance_cpx.parameters.mip.limits.cutpasses.set(0)
                 instance_cpx.parameters.mip.strategy.heuristicfreq.set(0)
                 instance_cpx.parameters.preprocessing.presolve.set(1)
@@ -266,17 +308,19 @@ def mipeval(
 
     """ Get solving performance statistics """
     incumbent_str = ''
+    cplex_status = instance_cpx.solution.get_status_string()
+    best_bound = instance_cpx.solution.MIP.get_best_objective()
+    num_nodes = instance_cpx.solution.progress.get_num_nodes_processed()
+    total_time = end_time - start_time
+
+    instance_name = os.path.splitext(os.path.basename(instance))[0]
+    
+    best_objval, gap = math.inf, math.inf
     if instance_cpx.solution.is_primal_feasible():
-        cplex_status = instance_cpx.solution.get_status_string()
         best_objval = instance_cpx.solution.get_objective_value()
-        best_bound = instance_cpx.solution.MIP.get_best_objective()
         gap = instance_cpx.solution.MIP.get_mip_relative_gap()
-        num_nodes = instance_cpx.solution.progress.get_num_nodes_processed()
-        total_time = end_time - start_time
 
-        instance_name = os.path.splitext(os.path.basename(instance))[0]
-
-        summary_string.write('solving stats,%s,%g,%g,%g,%g,%i,%g,%s,%i,%i\n' % (
+    summary_string.write('solving stats,%s,%g,%g,%g,%g,%i,%g,%g,%g,%s,%i,%i\n' % (
             cplex_status, 
             best_objval,
             best_bound,
@@ -284,11 +328,11 @@ def mipeval(
             total_time,
             num_nodes,
             timelimit - time_rem_cplex,
+            time_vcg_reading,
+            time_pred,
             instance_name,
             num_variables,
             num_constraints))
-    else:
-        summary_string.write('solving stats,no solutions found\n')
 
     if logfile != 'sys.stdout':
         if instance_cpx.solution.is_primal_feasible():
@@ -310,6 +354,7 @@ if __name__ == '__main__':
     parser.add_argument('-method', nargs='+', type=str, required=True)
     parser.add_argument("-instance", type=str)
     parser.add_argument("-graph", type=str, default='')
+    parser.add_argument("-instance_params", type=str, default='')
     parser.add_argument("-model", type=str, default="../gnn_models/EdgeConv/trained_p_hat300-2")
     parser.add_argument("-cpx_emphasis", type=int, default=1)
     parser.add_argument("-cpx_threads", type=int, default=1)
@@ -326,7 +371,8 @@ if __name__ == '__main__':
     parser.add_argument("-lb_threshold", type=int, default=5)
 
     # Parameters for primal heuristic mip start
-    parser.add_argument("-num_mipstarts", type=int, default=10)
+    parser.add_argument("-num_mipstarts", type=int, default=6)
+    parser.add_argument("-mipstart_strategy", type=str, default="repair")
 
     # Parameters for branching priorities
     parser.add_argument("-branching_direction", type=int, default=1)

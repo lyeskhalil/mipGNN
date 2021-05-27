@@ -28,6 +28,10 @@ pip install torch-geometric
 
 python /home/khalile2/software/CPLEX_Studio1210/python/setup.py install
 
+pip install --no-index -r ../datagen/requirements_discretenet.txt
+
+pip uninstall numpy
+pip install numpy
 
 ## execution
 module load python/3.7
