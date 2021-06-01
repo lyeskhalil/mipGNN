@@ -319,6 +319,7 @@ for rep in [0, 1, 2, 3, 4]:
                 # batch_size = 5
 
                 batch_size = 10
+                # TODO: Change
                 num_epochs = 50
 
                 pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
