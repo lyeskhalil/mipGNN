@@ -260,8 +260,8 @@ name_list = [
     "brock200_4.clq_test",
     "brock200_2.clq_train",
     "brock200_2.clq_test",
-    #"L_n200_p0.02_c500_train",
-    #"L_n200_p0.02_c500_test"
+    # "L_n200_p0.02_c500_train",
+    # "L_n200_p0.02_c500_test"
 ]
 
 # i = int(sys.argv[1])
@@ -285,27 +285,27 @@ for rep in [0, 1, 2, 3, 4]:
 
                 if m == "EC":
                     model = EdgeConv(hidden=64, num_layers=4, aggr="mean", regression=False).to(device)
-                    model_name = "EC_" + name_list[i] + str(bias)
+                    model_name = "EC_" + name_list[i] + str(bias) + "_" + str(rep)
                     print(model_name, bias, name_list[i])
                 elif m == "ECS":
                     model = EdgeConvSimple(hidden=64, num_layers=4, aggr="mean", regression=False).to(device)
-                    model_name = "ECS_" + name_list[i] + str(bias)
+                    model_name = "ECS_" + name_list[i] + str(bias) + "_" + str(rep)
                     print(model_name, bias, name_list[i])
                 elif m == "GIN":
                     model = GIN(hidden=64, num_layers=4, aggr="mean", regression=False).to(device)
-                    model_name = "GIN_" + name_list[i] + str(bias)
+                    model_name = "GIN_" + name_list[i] + str(bias) + "_" + str(rep)
                     print(model_name, bias, name_list[i])
                 elif m == "GINS":
                     model = GINSimple(hidden=64, num_layers=4, aggr="mean", regression=False).to(device)
-                    model_name = "GINS_" + name_list[i] + str(bias)
+                    model_name = "GINS_" + name_list[i] + str(bias) + "_" + str(rep)
                     print(model_name, bias, name_list[i])
                 elif m == "SG":
                     model = Sage(hidden=64, num_layers=4, aggr="mean", regression=False).to(device)
-                    model_name = "SG_" + name_list[i] + str(bias)
+                    model_name = "SG_" + name_list[i] + str(bias) + "_" + str(rep)
                     print(model_name, bias, name_list[i])
                 elif m == "SGS":
                     model = SageSimple(hidden=64, num_layers=4, aggr="mean", regression=False).to(device)
-                    model_name = "SGS_" + name_list[i] + str(bias)
+                    model_name = "SGS_" + name_list[i] + str(bias) + "_" + str(rep)
                     print(model_name, bias, name_list[i])
 
                 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
@@ -316,7 +316,7 @@ for rep in [0, 1, 2, 3, 4]:
                 # Prepare data.
                 bias_threshold = bias
                 # TODO: Just for network flow.
-                #batch_size = 5
+                # batch_size = 5
 
                 batch_size = 10
                 num_epochs = 50
@@ -325,11 +325,13 @@ for rep in [0, 1, 2, 3, 4]:
 
                 pd = path_train = path_trainpath_train = dataset_list[i]
                 name = name_train = name_list[i]
-                train_dataset = GraphDataset(name_train, pathr, path_train, bias_threshold, transform=MyTransform()).shuffle()
+                train_dataset = GraphDataset(name_train, pathr, path_train, bias_threshold,
+                                             transform=MyTransform()).shuffle()
 
                 pd = path_test = path_testpath_test = dataset_list[i + 1]
                 name = name_test = name_list[i + 1]
-                test_dataset = GraphDataset(name_test, pathr, path_test, bias_threshold, transform=MyTransform()).shuffle()
+                test_dataset = GraphDataset(name_test, pathr, path_test, bias_threshold,
+                                            transform=MyTransform()).shuffle()
 
                 train_index, val_index = train_test_split(list(range(0, len(train_dataset))), test_size=0.2)
                 val_dataset = train_dataset[val_index].shuffle()
@@ -339,6 +341,7 @@ for rep in [0, 1, 2, 3, 4]:
                 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
                 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
                 test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
+
 
                 def train(epoch):
                     model.train()
@@ -403,7 +406,7 @@ for rep in [0, 1, 2, 3, 4]:
                 test_f1 = 0.0
                 test_re = 0.0
                 test_pr = 0.0
-                for epoch in range(1, num_epochs+1):
+                for epoch in range(1, num_epochs + 1):
 
                     train_loss = train(epoch)
                     train_acc, train_f1, train_pr, train_re = test(train_loader)
@@ -417,14 +420,17 @@ for rep in [0, 1, 2, 3, 4]:
                         test_acc, test_f1, test_pr, test_re = test(test_loader)
                         torch.save(model.state_dict(), "./model_new_reps/" + model_name)
 
-                    log.append([epoch, train_loss, train_acc, train_f1, train_pr, train_re, val_acc, val_f1, val_pr, val_re, best_val, test_acc, test_f1, test_pr, test_re])
+                    log.append(
+                        [epoch, train_loss, train_acc, train_f1, train_pr, train_re, val_acc, val_f1, val_pr, val_re,
+                         best_val, test_acc, test_f1, test_pr, test_re])
 
                     # Break if learning rate is smaller 10**-6.
                     if lr < 0.000001 or epoch == num_epochs:
                         print([model_name, test_acc, test_f1, test_pr, test_re])
                         test_scores.append([model_name, test_acc, test_f1, test_pr, test_re])
                         log = np.array(log)
-                        np.savetxt("./model_new/" + model_name + "_" + str(rep) + ".log", log, delimiter=",", fmt = '%1.5f')
+                        np.savetxt("./model_new_reps/" + model_name + ".log", log, delimiter=",",
+                                   fmt='%1.5f')
                         break
 
                     # print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
