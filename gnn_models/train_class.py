@@ -333,10 +333,15 @@ for rep in [0, 1, 2, 3, 4]:
                 test_dataset = GraphDataset(name_test, pathr, path_test, bias_threshold,
                                             transform=MyTransform()).shuffle()
 
+                print(len(train_dataset))
+                print(len(test_dataset))
+
                 train_index, val_index = train_test_split(list(range(0, len(train_dataset))), test_size=0.2)
                 val_dataset = train_dataset[val_index].shuffle()
                 train_dataset = train_dataset[train_index].shuffle()
                 test_dataset = test_dataset.shuffle()
+
+
 
                 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
                 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
