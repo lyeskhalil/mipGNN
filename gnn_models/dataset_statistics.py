@@ -63,6 +63,7 @@ for i in range(11):
 
         num_vars_nodes += SG_var.number_of_nodes()
         num_cons_nodes += SG_con.number_of_nodes()
+        print(num_vars_nodes)
 
         num_edges += graph.number_of_edges()
 
