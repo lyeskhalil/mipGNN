@@ -178,30 +178,3 @@ def create_data_object(graph, bias_threshold):
     data.index_var = torch.from_numpy(np.array(index_var)).to(torch.long)
 
     return data, node_to_varnode, node_to_connode
-
-# pd = "../data_new/data_graphsonly/gisp/p_hat300-2.clq/train/"
-#pd = "../datagen/data/gisp/p_hat300-2.clq/test/"
-#filename = os.listdir(pd)[0]
-#graph = nx.read_gpickle(pd + filename)
-#
-#
-#out, node_to_varnode, y_real =get_prediction("../gnn_models/EdgeConv/trained_p_hat300-2", graph)
-#
-#print(out, out.mean())
-#print(y_real)
-#
-
-#dict_results = get_variable_cpxid(graph, node_to_varnode, out)
-#print(dict_results)
-
-#y_prediction = [out[var_seqid] for 
-
-#loss = torch.nn.MSELoss()
-#output = loss(torch.from_numpy(out), torch.from_numpy(y_real))
-#print(output)
-#loss = torch.nn.L1Loss()
-#output = loss(torch.from_numpy(out), torch.from_numpy(y_real))
-#print(output)
-#np.random.shuffle(out)
-#output = loss(torch.from_numpy(out), torch.from_numpy(y_real))
-#print(output)
