@@ -58,11 +58,11 @@ for i in range(11):
         graph = nx.convert_node_labels_to_integers(graph)
         graph = graph.to_directed() if not nx.is_directed(graph) else graph
 
-        SG_var = graph.subgraph([n for n, attrdict in graph.nodes.items() if attrdict['bipartite'] == '0'])
-        SG_con = graph.subgraph([n for n, attrdict in graph.nodes.items() if attrdict['bipartite'] == '1'])
+        SG_var = [i for i, (node, node_data) in enumerate(graph.nodes(data=True)) if node_data['bipartite'] == '0']
+        SG_con = [i for i, (node, node_data) in enumerate(graph.nodes(data=True)) if node_data['bipartite'] == '1']
 
-        num_vars_nodes += SG_var.number_of_nodes()
-        num_cons_nodes += SG_con.number_of_nodes()
+        num_vars_nodes += len(SG_var)
+        num_cons_nodes += len(SG_con)
         print(num_vars_nodes)
 
         num_edges += graph.number_of_edges()
