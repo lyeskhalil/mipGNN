@@ -58,6 +58,7 @@ for i in range(11):
         graph = graph.to_directed() if not nx.is_directed(graph) else graph
 
         for i, (node, node_data) in enumerate(graph.nodes(data=True)):
+
             # Node is a variable node.
             if node_data['bipartite'] == 0:
                 num_vars_nodes += 1
@@ -66,7 +67,6 @@ for i in range(11):
             elif node_data['bipartite'] == 1:
                 num_cons_nodes += 1
 
-        for i, (s, t, edge_data) in enumerate(graph.edges(data=True)):
-            num_edges += 1
+        num_edges += graph.number_of_edges()
 
     print(num_vars_nodes / num_graphs, num_cons_nodes / num_graphs, num_edges / num_edges)
