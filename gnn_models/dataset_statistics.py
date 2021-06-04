@@ -41,7 +41,7 @@ dataset_list = [
     "../data_new/data_graphsonly/gisp/p_hat300-1.clq/train/",
     "../data_new/data_graphsonly/gisp/brock200_4.clq/train/",
     "../data_new/data_graphsonly/gisp/brock200_2.clq/train/",
-    "../data_new/data_graphsonly/fcmnf/L_n200_p0.02_c500/train/",
+"../data_new/data_graphsonly/fcmnf/L_n200_p0.02_c500/train/",
 ]
 
 dataset_list = [
@@ -53,8 +53,9 @@ dataset_list = [
 ]
 
 dataset_list = [
+    "../data_new/data_graphsonly/fcmnf/L_n200_p0.02_c500/train/",
     #"../data_new/data_graphsonly/gisp/gen200_p0.9_55.clq/train/",
-    "../data_new/data_graphsonly/gisp/gen200_p0.9_44.clq/train/",
+    #"../data_new/data_graphsonly/gisp/gen200_p0.9_44.clq/train/",
 ]
 
 
@@ -64,13 +65,14 @@ for i in range(11):
     name = name_list[i]
     pd = dataset_list[i]
 
-    num_graphs = len(os.listdir(pd))
+    # TODO
+    num_graphs = len(os.listdir(pd)[0:50])
     num_vars_nodes = 0
     num_cons_nodes = 0
     num_edges = 0
 
     # Loop over file in datasets.
-    for num, filename in enumerate(os.listdir(pd)):
+    for num, filename in enumerate(os.listdir(pd)[0:50]):
 
         print(filename, num, num_graphs)
 
