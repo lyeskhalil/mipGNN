@@ -65,9 +65,6 @@ class GraphDataset(InMemoryDataset):
         for num, filename in enumerate(os.listdir(pd)):
             print(filename, num, num_graphs)
 
-            if (num == 881):
-                continue
-
             # Get graph.
             graph = nx.read_gpickle(pd + filename)
 
@@ -264,13 +261,7 @@ name_list = [
     # "L_n200_p0.02_c500_test"
 ]
 
-# i = int(sys.argv[1])
-# m = sys.argv[2]
-# bias = float(sys.argv[3])
-
 test_scores = []
-
-# Datasets.
 
 for rep in [0, 1, 2, 3, 4]:
     for i in [0, 2, 4, 6, 8, 10, 12, 14, 16, 18]:
@@ -315,12 +306,10 @@ for rep in [0, 1, 2, 3, 4]:
 
                 # Prepare data.
                 bias_threshold = bias
-                # TODO: Just for network flow.
-                # batch_size = 5
 
                 batch_size = 10
-                # TODO: Change
-                num_epochs = 50
+
+                num_epochs = 30
 
                 pathr = osp.join(osp.dirname(osp.realpath(__file__)), '.', 'data', 'DS')
 
@@ -439,13 +428,5 @@ for rep in [0, 1, 2, 3, 4]:
                                    fmt='%1.5f')
                         break
 
-                    # print('Epoch: {:03d}, LR: {:.7f}, Train Loss: {:.7f},  '
-                    #       'Train Acc: {:.7f}, Val Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, lr, train_loss,
-                    #                                                                     train_acc, val_acc, test_acc))
-                    #
-                    # print("F1", train_f1, val_f1, test_f1)
-                    # print("Pr", train_pr, val_pr, test_pr)
-                    # print("Re", train_re, val_re, test_re)
-
             torch.cuda.empty_cache()
-print(test_scores)
+
