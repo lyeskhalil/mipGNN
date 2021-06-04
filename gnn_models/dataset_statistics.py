@@ -53,9 +53,9 @@ dataset_list = [
 ]
 
 dataset_list = [
-    "../data_new/data_graphsonly/fcmnf/L_n200_p0.02_c500/train/",
+    #"../data_new/data_graphsonly/fcmnf/L_n200_p0.02_c500/train/",
     #"../data_new/data_graphsonly/gisp/gen200_p0.9_55.clq/train/",
-    #"../data_new/data_graphsonly/gisp/gen200_p0.9_44.clq/train/",
+    "../data_new/data_graphsonly/gisp/gen200_p0.9_44.clq/train/",
 ]
 
 
