@@ -53,7 +53,7 @@ dataset_list = [
 ]
 
 dataset_list = [
-    "../data_new/data_graphsonly/gisp/gen200_p0.9_55.clq/train/",
+    #"../data_new/data_graphsonly/gisp/gen200_p0.9_55.clq/train/",
     "../data_new/data_graphsonly/gisp/gen200_p0.9_44.clq/train/",
 ]
 
