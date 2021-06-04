@@ -9,7 +9,7 @@ Execute `./create_env.sh`.
 
 ## Training the models
 
-Wer assume your root directory is `code`.
+We assume your root directory is `code`.
 
 Execute `cd gnn_models` followed by `python train_class.py`. Trained models are written to `./gnn_models/models`.
 
