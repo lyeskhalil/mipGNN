@@ -5,6 +5,8 @@
 
 See `requirements.txt` and `requirements_pip.txt`.
 
+Execute `./create_env.sh`.
+
 ## Training the models
 
 Wer assume your root directory is `code`.
