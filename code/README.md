@@ -16,5 +16,6 @@ Pretrained models can be found in `./gnn_models/models_pretrained`.
 
 ## Using trained models on downstream tasks
 
+Execute `cd model_execution` followed by `python mipeval.py`. Per-instance MIP solving results are written to `output_dir = "OUTPUT/"`.
 
 
