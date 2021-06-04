@@ -66,8 +66,8 @@ for i in range(11):
 
         num_edges += graph.number_of_edges()
 
-    print(num_vars_nodes / num_graphs, num_cons_nodes / num_graphs, num_edges / num_edges)
+    print(num_vars_nodes / num_graphs, num_cons_nodes / num_graphs, num_edges / num_graphs)
 
-    log.append([num_vars_nodes / num_graphs, num_cons_nodes / num_graphs, num_edges / num_edges])
+    log.append([num_vars_nodes / num_graphs, num_cons_nodes / num_graphs, num_edges / num_graphs])
 
 print(log)
