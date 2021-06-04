@@ -35,6 +35,7 @@ dataset_list = [
     "../data_new/data_graphsonly/fcmnf/L_n200_p0.02_c500/train/",
 ]
 
+log = []
 # Loop over datasets.
 for i in range(11):
     name = name_list[i]
@@ -48,7 +49,7 @@ for i in range(11):
     # Loop over file in datasets.
     for num, filename in enumerate(os.listdir(pd)):
 
-        # print(filename, num, num_graphs)
+        print(filename, num, num_graphs)
 
         # Get graph.
         graph = nx.read_gpickle(pd + filename)
@@ -57,16 +58,16 @@ for i in range(11):
         graph = nx.convert_node_labels_to_integers(graph)
         graph = graph.to_directed() if not nx.is_directed(graph) else graph
 
-        for i, (node, node_data) in enumerate(graph.nodes(data=True)):
+        SG_var = graph.subgraph([n for n, attrdict in graph.nodes.items() if attrdict['bipartite'] == '0'])
+        SG_con = graph.subgraph([n for n, attrdict in graph.nodes.items() if attrdict['bipartite'] == '1'])
 
-            # Node is a variable node.
-            if node_data['bipartite'] == 0:
-                num_vars_nodes += 1
-
-            # Node is constraint node.
-            elif node_data['bipartite'] == 1:
-                num_cons_nodes += 1
+        num_vars_nodes += SG_var.number_of_nodes()
+        num_cons_nodes += SG_con.number_of_nodes()
 
         num_edges += graph.number_of_edges()
 
     print(num_vars_nodes / num_graphs, num_cons_nodes / num_graphs, num_edges / num_edges)
+
+    log.append([num_vars_nodes / num_graphs, num_cons_nodes / num_graphs, num_edges / num_edges])
+
+print(log)
