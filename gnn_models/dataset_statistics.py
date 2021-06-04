@@ -60,14 +60,10 @@ for i in range(11):
         for i, (node, node_data) in enumerate(graph.nodes(data=True)):
             # Node is a variable node.
             if node_data['bipartite'] == 0:
-                print("ff")
-
                 num_vars_nodes += 1
 
             # Node is constraint node.
             elif node_data['bipartite'] == 1:
-                print("ff")
-
                 num_cons_nodes += 1
 
         for i, (s, t, edge_data) in enumerate(graph.edges(data=True)):
