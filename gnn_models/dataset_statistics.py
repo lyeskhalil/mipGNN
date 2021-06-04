@@ -58,6 +58,10 @@ for i in range(11):
         graph = nx.convert_node_labels_to_integers(graph)
         graph = graph.to_directed() if not nx.is_directed(graph) else graph
 
+        for node, node_data in graph.nodes(data=True):
+            print(node_data['bipartite'])
+        exit()
+
         SG_var = [i for node, node_data in graph.nodes(data=True) if node_data['bipartite'] == '0']
         SG_con = [i for node, node_data in graph.nodes(data=True) if node_data['bipartite'] == '1']
 
