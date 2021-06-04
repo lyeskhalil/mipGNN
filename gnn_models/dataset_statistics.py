@@ -57,10 +57,10 @@ for i in range(11):
         graph = nx.convert_node_labels_to_integers(graph)
         graph = graph.to_directed() if not nx.is_directed(graph) else graph
 
-        SG_var = graph.subgraph([n for n, attrdict in graph.node.items() if attrdict
+        SG_var = graph.subgraph([n for n, attrdict in graph.nodes.items() if attrdict
         ['bipartite'] == '0'])
 
-        SG_con = graph.subgraph([n for n, attrdict in graph.node.items() if attrdict
+        SG_con = graph.subgraph([n for n, attrdict in graph.nodes.items() if attrdict
         ['bipartite'] == '1'])
 
         num_vars_nodes += SG_var.number_of_nodes()
