@@ -48,7 +48,7 @@ for i in range(11):
     # Loop over file in datasets.
     for num, filename in enumerate(os.listdir(pd)):
 
-        # print(filename, num, num_graphs)
+        print(filename, num, num_graphs)
 
         # Get graph.
         graph = nx.read_gpickle(pd + filename)
