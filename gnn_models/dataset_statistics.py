@@ -47,7 +47,7 @@ for i in range(11):
     num_edges = 0
 
     # Loop over file in datasets.
-    for num, filename in enumerate(os.listdir(pd)[0:4]):
+    for num, filename in enumerate(os.listdir(pd)):
 
         print(filename, num, num_graphs)
 
@@ -64,7 +64,7 @@ for i in range(11):
 
         num_vars_nodes += len(SG_var)
         num_cons_nodes += len(SG_con)
-       
+
 
         num_edges += graph.number_of_edges()
 
