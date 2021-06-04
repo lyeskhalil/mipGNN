@@ -27,12 +27,6 @@ import utils
 import predict
 
 import pickle
-sys.path.extend(["/home/khalile2/projects/def-khalile2/software/DiscreteNet"])
-from discretenet.problems.gisp import GISPProblem
-from discretenet.problems.fcmnf import FCMNFProblem
-
-sys.path.extend(["../datagen"])
-import bias_search
 
 def rename_variables(var_names):
     for i in range(len(var_names)):
@@ -141,21 +135,9 @@ def mipeval(
         assert (len(graph) > 0 or len(instance_params) > 0) and len(model) > 0
         """ Read in the pickled graph and the trained model """
         time_vcg_reading = time.time()
-        if len(graph) > 0:
-            print("Reading VCG...")
-            graph = nx.read_gpickle(graph)
-            print("\t took %g secs." % (time.time()-time_vcg))
-        elif len(instance_params) > 0:
-            parameters_path = instance_params
-            with open(parameters_path, "rb") as fd:
-                params  = pickle.load(fd)
-            if "gisp" in instance:
-                loaded_problem = GISPProblem(**params)
-            elif "fcmnf" in instance:
-                loaded_problem = FCMNFProblem(**params)
-            graph = loaded_problem.get_variable_constraint_graph()
-            bias_search.labelVCG(graph, np.zeros(num_variables), instance_cpx)
-            print("\t took %g secs." % (time.time()-time_vcg))
+        print("Reading VCG...")
+        graph = nx.read_gpickle(graph)
+        print("\t took %g secs." % (time.time()-time_vcg))
         time_vcg_reading = time.time() - time_vcg_reading
 
         print("Predicting...")
