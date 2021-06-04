@@ -77,6 +77,7 @@ def mipeval(
     barebones=0,
     cpx_emphasis=1,
     cpx_threads=1,
+    cpx_tmp='./cpx_tmp',
     timelimit=60,
     memlimit=1024,
     freq_best=100,
@@ -95,6 +96,7 @@ def mipeval(
 
     """ Create CPLEX instance """
     instance_cpx = cplex.Cplex(instance)
+    sense_str = instance_cpx.objective.sense[instance_cpx.objective.get_sense()]
     num_variables = instance_cpx.variables.get_num()
     num_constraints = instance_cpx.linear_constraints.get_num()    
     start_time = instance_cpx.get_time()
@@ -119,7 +121,7 @@ def mipeval(
     instance_cpx.parameters.workmem.set(memlimit)
     instance_cpx.parameters.mip.limits.treememory.set(20000)
     instance_cpx.parameters.mip.strategy.file.set(2)
-    instance_cpx.parameters.workdir.set("./cpx_tmp/")
+    instance_cpx.parameters.workdir.set(cpx_tmp)
     if barebones:
         instance_cpx.parameters.mip.limits.cutpasses.set(-1)
         instance_cpx.parameters.mip.strategy.heuristicfreq.set(-1)
@@ -157,15 +159,15 @@ def mipeval(
         time_vcg_reading = time.time() - time_vcg_reading
 
         print("Predicting...")
-        time_pred = time.time()
+        timestamp_pred = time.time()
         prediction, node_to_varnode = predict.get_prediction(model_name=model, graph=graph)
         dict_varname_seqid = predict.get_variable_cpxid(graph, node_to_varnode, prediction)
-        print("\t took %g secs." % (time.time()-time_pred))
-        time_pred = time.time() - time_pred
+        print("\t took %g secs." % (time.time()-timestamp_pred))
+        time_pred = time.time() - timestamp_pred
         # print(prediction)
         # todo check dimensions of p
 
-        time_rem_cplex = timelimit - (time.time() - time_vcg)
+        time_rem_cplex = timelimit - time_pred
         print("time_rem_cplex = %g" % time_rem_cplex)
         instance_cpx.parameters.timelimit.set(time_rem_cplex)
 
@@ -233,6 +235,7 @@ def mipeval(
 
             mipstart_string = sys.stdout if logfile == "sys.stdout" else io.StringIO()
 
+            #frac_variables = [0.001*(1.5**i) for i in range(18)] #[0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
             #frac_variables = [0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
             #frac_variables = np.flip(np.linspace(0, 1, num=num_mipstarts+1))[:-1]
             #print(frac_variables)
@@ -242,7 +245,9 @@ def mipeval(
             #threshold_set = [threshold_set[max([0, int(math.ceil(frac_variables[i]*num_variables)) - 1])] for i in range(len(frac_variables))]
             
             threshold_set = [0.01*(2**i) for i in range(6)]
+            
             threshold_set.reverse()
+            threshold_set = np.clip(threshold_set, a_min=0, a_max=0.5)
             print("threshold_set = ", threshold_set)
             
             if mipstart_strategy == 'repair':
@@ -253,14 +258,14 @@ def mipeval(
                 print("invalid mipstart_strategy %s" % mipstart_strategy)
                 exit()
 
-            best_objval_mipstart = -math.inf
+            best_objval_mipstart = -math.inf if sense_str == 'maximize' else math.inf
             for idx, threshold in enumerate(threshold_set):
-                time_rem_cplex = timelimit - (time.time() - time_vcg)
+                time_rem_cplex = timelimit - time_pred #(time.time() - time_vcg)
                 if time_rem_cplex <= 0:
                     break
 
                 indices_integer = np.where((prediction >= 1-threshold) | (prediction <= threshold))[0]
-                print(len(indices_integer), len(prediction))
+                print(idx, threshold, len(indices_integer), len(prediction))
 
                 if len(indices_integer) == 0:
                     continue
@@ -279,7 +284,10 @@ def mipeval(
                 instance_cpx.solve()
                 instance_cpx.MIP_starts.delete()
                 
-                if instance_cpx.solution.is_primal_feasible() and instance_cpx.solution.get_objective_value() > best_objval_mipstart:
+                if instance_cpx.solution.is_primal_feasible(): #and instance_cpx.solution.get_objective_value() > best_objval_mipstart:
+                    is_sol_better = (instance_cpx.solution.get_objective_value() > best_objval_mipstart) if sense_str == 'maximize' else (instance_cpx.solution.get_objective_value() < best_objval_mipstart)
+                    if not is_sol_better:
+                        continue
                     best_objval_mipstart = instance_cpx.solution.get_objective_value()
                     best_time = time.time() - time_vcg
                     incb_str_cur = ("Found incumbent of value %g after %g sec. mipstart %d %g %g\n" % (best_objval_mipstart, best_time, len(indices_integer), threshold, len(indices_integer)/num_variables))
@@ -298,7 +306,7 @@ def mipeval(
     elif method[0] == 'default_emptycb':
         branch_cb = instance_cpx.register_callback(callbacks_cplex.branch_empty)
 
-    time_rem_cplex = timelimit - (time.time() - time_vcg)
+    time_rem_cplex = timelimit - time_pred #(time.time() - time_vcg)
     print("time_rem_cplex = %g" % time_rem_cplex)
     
     if time_rem_cplex > 0:
@@ -323,7 +331,7 @@ def mipeval(
         best_objval = instance_cpx.solution.get_objective_value()
         gap = instance_cpx.solution.MIP.get_mip_relative_gap()
 
-    summary_string.write('solving stats,%s,%g,%g,%g,%g,%i,%g,%g,%g,%s,%i,%i\n' % (
+    summary_string.write('solving stats,%s,%g,%g,%g,%g,%i,%g,%s,%i,%i,%g,%g\n' % (
             cplex_status, 
             best_objval,
             best_bound,
@@ -331,18 +339,17 @@ def mipeval(
             total_time,
             num_nodes,
             timelimit - time_rem_cplex,
-            time_vcg_reading,
-            time_pred,
             instance_name,
             num_variables,
-            num_constraints))
-
+            num_constraints,
+            time_vcg_reading,
+            time_pred))
     if logfile != 'sys.stdout':
         if instance_cpx.solution.is_primal_feasible():
             incumbent_str = ''
             if is_primal_mipstart:
-                incumbent_str += utils.parse_cplex_log(mipstart_string.getvalue(), time_offset=timelimit-time_rem_cplex)
-            incumbent_str += utils.parse_cplex_log(logstring.getvalue(), time_offset=timelimit-time_rem_cplex)
+                incumbent_str += utils.parse_cplex_log(mipstart_string.getvalue(), time_offset=time_pred)
+            incumbent_str += utils.parse_cplex_log(logstring.getvalue(), time_offset=time_pred)
             print(incumbent_str)
             summary_string.write(incumbent_str)
         summary_string = summary_string.getvalue()
@@ -361,6 +368,7 @@ if __name__ == '__main__':
     parser.add_argument("-model", type=str, default="../gnn_models/EdgeConv/trained_p_hat300-2")
     parser.add_argument("-cpx_emphasis", type=int, default=1)
     parser.add_argument("-cpx_threads", type=int, default=1)
+    parser.add_argument("-cpx_tmp", type=str, default='./cpx_tmp/')
     parser.add_argument("-barebones", type=int, default=0)
     parser.add_argument("-timelimit", type=float, default=60)
     parser.add_argument("-memlimit", type=float, default=1024)

@@ -21,7 +21,7 @@ from torch_geometric.data import DataLoader
 
 def get_prediction(model_name, graph, bias_threshold=0.00):
     model_name_only = os.path.basename(model_name)
-    if model_name_only[0:3] == "ECS" or "trained" in model_name:
+    if model_name_only[0:3] == "ECS" or model_name_only[0:8] == "Rand_ECS" or "trained" in model_name:
         from gnn_models.EdgeConv.mip_bipartite_simple_class import SimpleNet
     elif model_name_only[0:3] == "EC_":
         from gnn_models.EdgeConv.mip_bipartite_class import SimpleNet
