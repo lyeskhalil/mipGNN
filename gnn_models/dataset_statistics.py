@@ -5,9 +5,7 @@ sys.path.insert(0, '../..')
 sys.path.insert(0, '.')
 
 import os
-import os.path as osp
 import networkx as nx
-
 
 name_list = [
     "p_hat300-2.clq_train",
@@ -50,8 +48,7 @@ for i in range(11):
     # Loop over file in datasets.
     for num, filename in enumerate(os.listdir(pd)):
 
-
-        #print(filename, num, num_graphs)
+        # print(filename, num, num_graphs)
 
         # Get graph.
         graph = nx.read_gpickle(pd + filename)
@@ -76,4 +73,4 @@ for i in range(11):
         for i, (s, t, edge_data) in enumerate(graph.edges(data=True)):
             num_edges += 1
 
-    print(num_vars_nodes/num_graphs, num_cons_nodes/num_graphs, num_edges/num_edges)
+    print(num_vars_nodes / num_graphs, num_cons_nodes / num_graphs, num_edges / num_edges)
