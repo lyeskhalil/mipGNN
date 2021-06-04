@@ -4,6 +4,8 @@ from discretenet.problems.gisp import GISPGenerator
 from discretenet.problems.fcmnf import FCMNFGenerator
 import argparse
 import networkx as nx
+import bias_search
+import numpy as np
 
 def generate(problem_class, random_seed, path_prefix, graph_instance, n_instances, n_jobs):
     if problem_class == 'gisp':
@@ -46,8 +48,6 @@ def generate(problem_class, random_seed, path_prefix, graph_instance, n_instance
 
     for instance in instances:
         print(instance.get_name())
-        vcg = instance.get_variable_constraint_graph()
-        print(vcg.number_of_nodes())
-        nx.write_gpickle(vcg, "%s/%s_graph_bias.pkl" % (path_prefix, instance.get_name())
+        bias_search.search("%s/%s.mps" % (path_prefix, instance.get_name(), 0)
 
 generate("fcmnf", 0, "data/debug/fcmnf/", "", 1, 1)
