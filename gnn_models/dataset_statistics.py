@@ -35,6 +35,7 @@ dataset_list = [
     "../data_new/data_graphsonly/fcmnf/L_n200_p0.02_c500/train/",
 ]
 
+log = []
 # Loop over datasets.
 for i in range(11):
     name = name_list[i]
@@ -66,3 +67,7 @@ for i in range(11):
         num_edges += graph.number_of_edges()
 
     print(num_vars_nodes / num_graphs, num_cons_nodes / num_graphs, num_edges / num_edges)
+
+    log.append([num_vars_nodes / num_graphs, num_cons_nodes / num_graphs, num_edges / num_edges])
+
+print(log)
