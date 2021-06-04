@@ -47,7 +47,7 @@ for i in range(11):
     num_edges = 0
 
     # Loop over file in datasets.
-    for num, filename in enumerate(os.listdir(pd)):
+    for num, filename in enumerate(os.listdir(pd))[0:4]:
 
         print(filename, num, num_graphs)
 
