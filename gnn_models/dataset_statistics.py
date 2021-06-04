@@ -44,6 +44,14 @@ dataset_list = [
     "../data_new/data_graphsonly/fcmnf/L_n200_p0.02_c500/train/",
 ]
 
+dataset_list = [
+    #"../data_new/data_graphsonly/gisp/C125.9.clq/train/",
+    #"../data_new/data_graphsonly/gisp/p_hat300-1.clq/train/",
+    #"../data_new/data_graphsonly/gisp/brock200_4.clq/train/",
+    #"../data_new/data_graphsonly/gisp/brock200_2.clq/train/",
+    "../data_new/data_graphsonly/fcmnf/L_n200_p0.02_c500/train/",
+]
+
 log = []
 # Loop over datasets.
 for i in range(11):
