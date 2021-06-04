@@ -35,19 +35,44 @@ dataset_list = [
     "../data_new/data_graphsonly/fcmnf/L_n200_p0.02_c500/train/",
 ]
 
+
+dataset_list = [
+    "../data_new/data_graphsonly/gisp/C125.9.clq/train/",
+    "../data_new/data_graphsonly/gisp/p_hat300-1.clq/train/",
+    "../data_new/data_graphsonly/gisp/brock200_4.clq/train/",
+    "../data_new/data_graphsonly/gisp/brock200_2.clq/train/",
+"../data_new/data_graphsonly/fcmnf/L_n200_p0.02_c500/train/",
+]
+
+dataset_list = [
+    #"../data_new/data_graphsonly/gisp/C125.9.clq/train/",
+    #"../data_new/data_graphsonly/gisp/p_hat300-1.clq/train/",
+    #"../data_new/data_graphsonly/gisp/brock200_4.clq/train/",
+    #"../data_new/data_graphsonly/gisp/brock200_2.clq/train/",
+    "../data_new/data_graphsonly/fcmnf/L_n200_p0.02_c500/train/",
+]
+
+dataset_list = [
+    #"../data_new/data_graphsonly/fcmnf/L_n200_p0.02_c500/train/",
+    #"../data_new/data_graphsonly/gisp/gen200_p0.9_55.clq/train/",
+    "../data_new/data_graphsonly/gisp/gen200_p0.9_44.clq/train/",
+]
+
+
 log = []
 # Loop over datasets.
 for i in range(11):
     name = name_list[i]
     pd = dataset_list[i]
 
-    num_graphs = len(os.listdir(pd))
+    # TODO
+    num_graphs = len(os.listdir(pd)[0:50])
     num_vars_nodes = 0
     num_cons_nodes = 0
     num_edges = 0
 
     # Loop over file in datasets.
-    for num, filename in enumerate(os.listdir(pd)):
+    for num, filename in enumerate(os.listdir(pd)[0:50]):
 
         print(filename, num, num_graphs)
 
@@ -58,16 +83,17 @@ for i in range(11):
         graph = nx.convert_node_labels_to_integers(graph)
         graph = graph.to_directed() if not nx.is_directed(graph) else graph
 
-        SG_var = graph.subgraph([n for n, attrdict in graph.nodes.items() if attrdict['bipartite'] == '0'])
-        SG_con = graph.subgraph([n for n, attrdict in graph.nodes.items() if attrdict['bipartite'] == '1'])
+        SG_var = [i for node, node_data in graph.nodes(data=True) if node_data['bipartite'] == 0]
+        SG_con = [i for node, node_data in graph.nodes(data=True) if node_data['bipartite'] == 1]
 
-        num_vars_nodes += SG_var.number_of_nodes()
-        num_cons_nodes += SG_con.number_of_nodes()
+        num_vars_nodes += len(SG_var)
+        num_cons_nodes += len(SG_con)
+
 
         num_edges += graph.number_of_edges()
 
-    print(num_vars_nodes / num_graphs, num_cons_nodes / num_graphs, num_edges / num_edges)
+    print(num_vars_nodes / num_graphs, num_cons_nodes / num_graphs, num_edges / num_graphs)
 
-    log.append([num_vars_nodes / num_graphs, num_cons_nodes / num_graphs, num_edges / num_edges])
+    log.append([num_vars_nodes / num_graphs, num_cons_nodes / num_graphs, num_edges / num_graphs])
 
 print(log)
