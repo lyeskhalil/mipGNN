@@ -1,13 +1,14 @@
 # MIP-GNN
 
+We assume your root directory is `code`.
 
 ## Install the requirements
 
 See `requirements.txt` and `requirements_pip.txt`.
 
-## Training the models
+Execute `./create_env.sh`.
 
-Wer assume your root directory is `code`.
+## Training the models
 
 Execute `cd gnn_models` followed by `python train_class.py`. Trained models are written to `./gnn_models/models`.
 
