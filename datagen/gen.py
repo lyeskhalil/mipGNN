@@ -41,13 +41,13 @@ def generate(problem_class, random_seed, path_prefix, graph_instance, n_instance
             save=True, 
             save_params=True, 
             save_features=False, 
-            return_instances=False
+            return_instances=True
             )
 
-    # for instance in instances:
-    #     print(instance.get_name())
-    #     vcg = instance.get_variable_constraint_graph()
-    #     print(vcg.number_of_nodes())
-    #     nx.write_gpickle(vcg, "%s/%s_graph.pkl" % (path_prefix, instance.get_name())
+    for instance in instances:
+        print(instance.get_name())
+        vcg = instance.get_variable_constraint_graph()
+        print(vcg.number_of_nodes())
+        nx.write_gpickle(vcg, "%s/%s_graph_bias.pkl" % (path_prefix, instance.get_name())
 
 generate("fcmnf", 0, "data/debug/fcmnf/", "", 1, 1)
